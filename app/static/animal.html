@@ -789,9 +789,9 @@
   .tab-view { display: none; }
   .tab-view.active { display: block; }
   .tab-bar {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: 9000;
+    position: sticky; top: 0; z-index: 9000;
     display: flex; background: rgba(255,255,255,.97); backdrop-filter: blur(14px);
-    border-top: 1px solid rgba(0,0,0,.08); box-shadow: 0 -6px 24px rgba(0,0,0,.08);
+    border-bottom: 1px solid rgba(0,0,0,.08); box-shadow: 0 6px 24px rgba(0,0,0,.08);
   }
   .tab-item {
     flex: 1; min-width: 0; padding: 8px 2px 7px; text-align: center; cursor: pointer;
@@ -990,7 +990,7 @@ function reorderMain() {
     var main = document.querySelector('main');
     if (!main) return;
     var groups = {
-      journey: ['todayDyn', 'map-sec', 'stats-sec', 'quiz-section'],
+      journey: ['todayDyn', 'map-sec', 'stats-sec'],
       photos: ['photos'],
       story: ['storySection', 'adoptCardBtn', 'scienceSection'],
       ach: ['achievements-section', 'dailySection'],
@@ -1122,12 +1122,22 @@ if ('caches' in window) {
 </header>
 
 <main>
+<!-- Tab 底部导航 -->
+  <div class="tab-bar" id="tabBar">
+    <div class="tab-item active" data-tab="journey"><span class="tab-ico">🗺️</span><span class="tab-lbl">旅程</span></div>
+    <div class="tab-item" data-tab="photos"><span class="tab-ico">📷</span><span class="tab-lbl">照片</span></div>
+    <div class="tab-item" data-tab="story"><span class="tab-ico">📖</span><span class="tab-lbl">故事</span></div>
+    <div class="tab-item" data-tab="quiz"><span class="tab-ico">📚</span><span class="tab-lbl">知识</span></div>
+    <div class="tab-item" data-tab="ach"><span class="tab-ico">🏆</span><span class="tab-lbl">成就</span></div>
+    <div class="tab-item" data-tab="mine"><span class="tab-ico">💬</span><span class="tab-lbl">我的</span></div>
+  </div>
   <div class="tab-main">
     <div class="tab-view tab-journey" id="tabJourney"></div>
     <div class="tab-view tab-photos" id="tabPhotos"></div>
     <div class="tab-view tab-story" id="tabStory"></div>
     <div class="tab-view tab-ach" id="tabAch"></div>
     <div class="tab-view tab-mine" id="tabMine"></div>
+    <div class="tab-view tab-quiz" id="tabQuiz"></div>
   </div>
   <!-- 地图区（主角） -->
   <!-- 今日动态（置顶） -->
@@ -2569,6 +2579,111 @@ if ('caches' in window) {
       // ---------- 物种科普模块 ----------
       (function() {
         try {
+          // 科普知识问答（独立模块，不依赖物种科普数据）
+          try {
+          // 科普知识问答
+                      var quizData = {
+                        'noe': [
+                          { q: '白鹳依赖什么进行长距离飞行？', options: ['快速扇动翅膀', '热气流滑翔', '借助风力', '夜间飞行'], answer: 1, exp: 20 },
+                          { q: '白鹳幼鸟第一次迁徙是怎样的？', options: ['跟随父母', '独立完成，无成鸟引导', '跟随其他鸟类', '不迁徙'], answer: 1, exp: 20 },
+                          { q: '白鹳选择飞越哪里穿过地中海？', options: ['最宽处', '直布罗陀海峡（最窄处）', '西西里岛', '不穿过地中海'], answer: 1, exp: 20 },
+                          { q: '白鹳在非洲越冬时主要吃什么？', options: ['鱼类', '蝗虫等昆虫', '小型哺乳动物', '植物种子'], answer: 1, exp: 20 }
+                        ],
+                        'turtle': [
+                          { q: '欧斑鸠是在什么时间迁徙的？', options: ['白天', '夜间', '清晨', '黄昏'], answer: 1, exp: 20 },
+                          { q: '欧斑鸠的IUCN保护等级是？', options: ['无危(LC)', '易危(VU)', '濒危(EN)', '极危(CR)'], answer: 1, exp: 20 },
+                          { q: '欧洲欧斑鸠种群1980-2015年下降了多少？', options: ['30%', '50%', '78%', '90%'], answer: 2, exp: 20 },
+                          { q: '欧斑鸠通常把巢建在哪里？', options: ['高大乔木上', '灌木丛中，偏好荆棘', '悬崖上', '地面上'], answer: 1, exp: 20 }
+                        ],
+                        'redkite': [
+                          { q: '红鸢的尾巴是什么形状？', options: ['圆形', '叉形', '楔形', '方形'], answer: 1, exp: 20 },
+                          { q: '红鸢主要吃什么？', options: ['活的猎物', '腐肉', '鱼类', '植物种子'], answer: 1, exp: 20 },
+                          { q: '红鸢的IUCN保护等级是？', options: ['极危(CR)', '濒危(EN)', '易危(VU)', '无危(LC)'], answer: 3, exp: 20 },
+                          { q: '红鸢在哪个国家有最成功的重引入项目？', options: ['德国', '法国', '英国', '西班牙'], answer: 2, exp: 20 }
+                        ],
+                        'honeybuzzard': [
+                          { q: '蜂鹰主要吃什么？', options: ['小型哺乳动物', '蜜蜂和黄蜂的幼虫', '鱼类', '植物种子'], answer: 1, exp: 20 },
+                          { q: '蜂鹰的面部有什么特殊结构？', options: ['坚硬的喙', '鳞片状羽毛防止被蛰', '大耳朵', '夜视眼'], answer: 1, exp: 20 },
+                          { q: '蜂鹰冬天在哪里越冬？', options: ['欧洲南部', '北非', '西非', '中东'], answer: 2, exp: 20 },
+                          { q: '蜂鹰飞行时翅膀呈什么形状？', options: ['平展', '海鸥式上扬', 'V形', '收拢'], answer: 1, exp: 20 }
+                        ],
+                        'herringgull': [
+                          { q: '银鸥会用什么技巧获取食物？', options: ['把贝壳扔到地上砸碎', '用网捕鱼', '挖洞找虫子', '爬树摘果子'], answer: 0, exp: 20 },
+                          { q: '银鸥的食性是什么？', options: ['只吃鱼', '只吃植物', '杂食', '只吃腐肉'], answer: 2, exp: 20 },
+                          { q: '银鸥幼鸟需要几年才能长成成鸟羽毛？', options: ['1年', '2年', '4年', '6年'], answer: 2, exp: 20 },
+                          { q: '银鸥的婚配制度是什么？', options: ['一夫多妻', '一妻多夫', '一夫一妻', '随意交配'], answer: 2, exp: 20 }
+                        ]
+                      };
+            
+                      var animalQuiz = quizData[animalId] || [];
+                      if (animalQuiz.length > 0) {
+                        var quizDiv = document.createElement('div');
+                        quizDiv.className = 'quiz-section';
+                        quizDiv.innerHTML =
+                          '<div class="quiz-title">🎯 知识问答 <span style="font-size:11px;color:var(--sub);font-weight:400;">答对获经验</span></div>' +
+                          '<div class="quiz-question" id="quizQuestion"></div>' +
+                          '<div class="quiz-options" id="quizOptions"></div>' +
+                          '<div class="quiz-result" id="quizResult"></div>' +
+                          '<button class="quiz-next" id="quizNext">下一题 →</button>';
+                        document.getElementById('tabQuiz').appendChild(quizDiv);
+            
+                        var currentQuiz = 0;
+                        function showQuiz() {
+                          if (currentQuiz >= animalQuiz.length) {
+                            quizDiv.innerHTML = '<div class="quiz-title">🎯 知识问答</div><div style="font-size:12px;color:var(--accent);text-align:center;padding:10px;">🎉 今日问答已全部完成！明天再来挑战吧</div>';
+                            return;
+                          }
+                          var q = animalQuiz[currentQuiz];
+                          document.getElementById('quizQuestion').textContent = (currentQuiz+1) + '. ' + q.q;
+                          var optionsDiv = document.getElementById('quizOptions');
+                          optionsDiv.innerHTML = '';
+                          q.options.forEach(function(opt, idx) {
+                            var btn = document.createElement('div');
+                            btn.className = 'quiz-option';
+                            btn.textContent = String.fromCharCode(65+idx) + '. ' + opt;
+                            btn.addEventListener('click', function() {
+                              var result = document.getElementById('quizResult');
+                              var nextBtn = document.getElementById('quizNext');
+                              if (idx === q.answer) {
+                                btn.classList.add('correct');
+                                result.className = 'quiz-result correct show';
+                                result.textContent = '✅ 回答正确！+' + q.exp + ' 经验';
+                                // 增加经验
+                                try {
+                                  var expKey = 'exp_' + animalId;
+                                  var exp = parseInt(localStorage.getItem(expKey) || '0', 10) + q.exp;
+                                  localStorage.setItem(expKey, exp);
+                                } catch(e) {}
+                                // 成就：初露锋芒（第一次答对）
+                                if (window._unlockAch) { window._unlockAch('quiz1', '初露锋芒'); }
+                                // 成就：知识达人（答对全部题目）
+                                var doneKey = 'quiz_done_' + animalId;
+                                var done = parseInt(localStorage.getItem(doneKey) || '0', 10);
+                                done++;
+                                localStorage.setItem(doneKey, done);
+                                if (window._unlockAch && done >= animalQuiz.length) { window._unlockAch('quizall', '知识达人'); }
+                              } else {
+                                btn.classList.add('wrong');
+                                optionsDiv.children[q.answer].classList.add('correct');
+                                result.className = 'quiz-result wrong show';
+                                result.textContent = '❌ 回答错误，正确答案是 ' + String.fromCharCode(65+q.answer);
+                              }
+                              nextBtn.classList.add('show');
+                              optionsDiv.querySelectorAll('.quiz-option').forEach(function(o) { o.style.pointerEvents = 'none'; });
+                            });
+                            optionsDiv.appendChild(btn);
+                          });
+                          document.getElementById('quizResult').className = 'quiz-result';
+                          document.getElementById('quizNext').classList.remove('show');
+                        }
+                        document.getElementById('quizNext').addEventListener('click', function() {
+                          currentQuiz++;
+                          showQuiz();
+                        });
+                        showQuiz();
+                      }
+          } catch(e) { console.log('科普问答模块错误:', e); }
+
           var scienceData = {
             'noe': {
               items: [
@@ -2690,107 +2805,7 @@ if ('caches' in window) {
             data.facts.map(function(f) { return '<li>• ' + f + '</li>'; }).join('') +
             '</ul>';
 
-          // 科普知识问答
-          var quizData = {
-            'noe': [
-              { q: '白鹳依赖什么进行长距离飞行？', options: ['快速扇动翅膀', '热气流滑翔', '借助风力', '夜间飞行'], answer: 1, exp: 20 },
-              { q: '白鹳幼鸟第一次迁徙是怎样的？', options: ['跟随父母', '独立完成，无成鸟引导', '跟随其他鸟类', '不迁徙'], answer: 1, exp: 20 },
-              { q: '白鹳选择飞越哪里穿过地中海？', options: ['最宽处', '直布罗陀海峡（最窄处）', '西西里岛', '不穿过地中海'], answer: 1, exp: 20 },
-              { q: '白鹳在非洲越冬时主要吃什么？', options: ['鱼类', '蝗虫等昆虫', '小型哺乳动物', '植物种子'], answer: 1, exp: 20 }
-            ],
-            'turtle': [
-              { q: '欧斑鸠是在什么时间迁徙的？', options: ['白天', '夜间', '清晨', '黄昏'], answer: 1, exp: 20 },
-              { q: '欧斑鸠的IUCN保护等级是？', options: ['无危(LC)', '易危(VU)', '濒危(EN)', '极危(CR)'], answer: 1, exp: 20 },
-              { q: '欧洲欧斑鸠种群1980-2015年下降了多少？', options: ['30%', '50%', '78%', '90%'], answer: 2, exp: 20 },
-              { q: '欧斑鸠通常把巢建在哪里？', options: ['高大乔木上', '灌木丛中，偏好荆棘', '悬崖上', '地面上'], answer: 1, exp: 20 }
-            ],
-            'redkite': [
-              { q: '红鸢的尾巴是什么形状？', options: ['圆形', '叉形', '楔形', '方形'], answer: 1, exp: 20 },
-              { q: '红鸢主要吃什么？', options: ['活的猎物', '腐肉', '鱼类', '植物种子'], answer: 1, exp: 20 },
-              { q: '红鸢的IUCN保护等级是？', options: ['极危(CR)', '濒危(EN)', '易危(VU)', '无危(LC)'], answer: 3, exp: 20 },
-              { q: '红鸢在哪个国家有最成功的重引入项目？', options: ['德国', '法国', '英国', '西班牙'], answer: 2, exp: 20 }
-            ],
-            'honeybuzzard': [
-              { q: '蜂鹰主要吃什么？', options: ['小型哺乳动物', '蜜蜂和黄蜂的幼虫', '鱼类', '植物种子'], answer: 1, exp: 20 },
-              { q: '蜂鹰的面部有什么特殊结构？', options: ['坚硬的喙', '鳞片状羽毛防止被蛰', '大耳朵', '夜视眼'], answer: 1, exp: 20 },
-              { q: '蜂鹰冬天在哪里越冬？', options: ['欧洲南部', '北非', '西非', '中东'], answer: 2, exp: 20 },
-              { q: '蜂鹰飞行时翅膀呈什么形状？', options: ['平展', '海鸥式上扬', 'V形', '收拢'], answer: 1, exp: 20 }
-            ],
-            'herringgull': [
-              { q: '银鸥会用什么技巧获取食物？', options: ['把贝壳扔到地上砸碎', '用网捕鱼', '挖洞找虫子', '爬树摘果子'], answer: 0, exp: 20 },
-              { q: '银鸥的食性是什么？', options: ['只吃鱼', '只吃植物', '杂食', '只吃腐肉'], answer: 2, exp: 20 },
-              { q: '银鸥幼鸟需要几年才能长成成鸟羽毛？', options: ['1年', '2年', '4年', '6年'], answer: 2, exp: 20 },
-              { q: '银鸥的婚配制度是什么？', options: ['一夫多妻', '一妻多夫', '一夫一妻', '随意交配'], answer: 2, exp: 20 }
-            ]
-          };
 
-          var animalQuiz = quizData[animalId] || [];
-          if (animalQuiz.length > 0) {
-            var quizDiv = document.createElement('div');
-            quizDiv.className = 'quiz-section';
-            quizDiv.innerHTML =
-              '<div class="quiz-title">🎯 知识问答 <span style="font-size:11px;color:var(--sub);font-weight:400;">答对获经验</span></div>' +
-              '<div class="quiz-question" id="quizQuestion"></div>' +
-              '<div class="quiz-options" id="quizOptions"></div>' +
-              '<div class="quiz-result" id="quizResult"></div>' +
-              '<button class="quiz-next" id="quizNext">下一题 →</button>';
-            facts.parentNode.appendChild(quizDiv);
-
-            var currentQuiz = 0;
-            function showQuiz() {
-              if (currentQuiz >= animalQuiz.length) {
-                quizDiv.innerHTML = '<div class="quiz-title">🎯 知识问答</div><div style="font-size:12px;color:var(--accent);text-align:center;padding:10px;">🎉 今日问答已全部完成！明天再来挑战吧</div>';
-                return;
-              }
-              var q = animalQuiz[currentQuiz];
-              document.getElementById('quizQuestion').textContent = (currentQuiz+1) + '. ' + q.q;
-              var optionsDiv = document.getElementById('quizOptions');
-              optionsDiv.innerHTML = '';
-              q.options.forEach(function(opt, idx) {
-                var btn = document.createElement('div');
-                btn.className = 'quiz-option';
-                btn.textContent = String.fromCharCode(65+idx) + '. ' + opt;
-                btn.addEventListener('click', function() {
-                  var result = document.getElementById('quizResult');
-                  var nextBtn = document.getElementById('quizNext');
-                  if (idx === q.answer) {
-                    btn.classList.add('correct');
-                    result.className = 'quiz-result correct show';
-                    result.textContent = '✅ 回答正确！+' + q.exp + ' 经验';
-                    // 增加经验
-                    try {
-                      var expKey = 'exp_' + animalId;
-                      var exp = parseInt(localStorage.getItem(expKey) || '0', 10) + q.exp;
-                      localStorage.setItem(expKey, exp);
-                    } catch(e) {}
-                    // 成就：初露锋芒（第一次答对）
-                    if (window._unlockAch) { window._unlockAch('quiz1', '初露锋芒'); }
-                    // 成就：知识达人（答对全部题目）
-                    var doneKey = 'quiz_done_' + animalId;
-                    var done = parseInt(localStorage.getItem(doneKey) || '0', 10);
-                    done++;
-                    localStorage.setItem(doneKey, done);
-                    if (window._unlockAch && done >= animalQuiz.length) { window._unlockAch('quizall', '知识达人'); }
-                  } else {
-                    btn.classList.add('wrong');
-                    optionsDiv.children[q.answer].classList.add('correct');
-                    result.className = 'quiz-result wrong show';
-                    result.textContent = '❌ 回答错误，正确答案是 ' + String.fromCharCode(65+q.answer);
-                  }
-                  nextBtn.classList.add('show');
-                  optionsDiv.querySelectorAll('.quiz-option').forEach(function(o) { o.style.pointerEvents = 'none'; });
-                });
-                optionsDiv.appendChild(btn);
-              });
-              document.getElementById('quizResult').className = 'quiz-result';
-              document.getElementById('quizNext').classList.remove('show');
-            }
-            document.getElementById('quizNext').addEventListener('click', function() {
-              currentQuiz++;
-              showQuiz();
-            });
-            showQuiz();
-          }
         } catch(e) { console.log('科普模块错误:', e); }
       })();
 
@@ -3568,14 +3583,5 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 
-  <!-- Tab 底部导航 -->
-  <div class="tab-bar" id="tabBar">
-    <div class="tab-item active" data-tab="journey"><span class="tab-ico">🗺️</span><span class="tab-lbl">旅程</span></div>
-    <div class="tab-item" data-tab="photos"><span class="tab-ico">📷</span><span class="tab-lbl">照片</span></div>
-    <div class="tab-item" data-tab="story"><span class="tab-ico">📖</span><span class="tab-lbl">故事</span></div>
-    <div class="tab-item" data-tab="ach"><span class="tab-ico">🏆</span><span class="tab-lbl">成就</span></div>
-    <div class="tab-item" data-tab="mine"><span class="tab-ico">💬</span><span class="tab-lbl">我的</span></div>
-  </div>
-
-</body>
+  </body>
 </html>
