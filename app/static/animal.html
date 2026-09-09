@@ -788,6 +788,13 @@
   .tab-main { padding-bottom: 72px; }
   .tab-view { display: none; }
   .tab-view.active { display: block; }
+  .pulse-dot circle {
+    animation: pulseA 2.2s ease-in-out infinite;
+  }
+  @keyframes pulseA {
+    0%, 100% { opacity: .95; }
+    50% { opacity: .35; }
+  }
   .tab-bar {
     position: sticky; top: 0; z-index: 9000;
     display: flex; background: rgba(255,255,255,.97); backdrop-filter: blur(14px);
@@ -1506,28 +1513,59 @@ if ('caches' in window) {
     clearTrackLayers();
     if (!map || smooth.length < 2) return;
     
+    // ===== 0. 动物专属主题（每只动物有自己的颜色与图标） =====
+    var animalThemes = {
+      noe:         { main: '#10B981', dark: '#047857', light: '#A7F3D0', bg: '#E2E8F0', emoji: '🕊️' },
+      turtle:      { main: '#0EA5E9', dark: '#0369A1', light: '#BAE6FD', bg: '#E0F2FE', emoji: '🐢' },
+      redkite:     { main: '#F59E0B', dark: '#B45309', light: '#FDE68A', bg: '#FEF3C7', emoji: '🪁' },
+      honeybuzzard:{ main: '#F97316', dark: '#C2410C', light: '#FED7AA', bg: '#FFEDD5', emoji: '🐝' },
+      herringgull: { main: '#64748B', dark: '#334155', light: '#CBD5E1', bg: '#F1F5F9', emoji: '🕊️' },
+      koa:         { main: '#2563EB', dark: '#1E40AF', light: '#BFDBFE', bg: '#DBEAFE', emoji: '🦈' }
+    };
+    var th = animalThemes[animalId] || animalThemes.noe;
+    
+    // 起点标记：旅程从这里开始（动物图标）
+    var sMark = L.marker(smooth[0], {
+      icon: L.divIcon({
+        className: '',
+        html: '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,' + th.light + ',' + th.main + ');border:3px solid #fff;box-shadow:0 3px 12px ' + th.main + '66;display:flex;align-items:center;justify-content:center;font-size:17px;">' + th.emoji + '</div>',
+        iconSize: [36, 36], iconAnchor: [18, 18]
+      })
+    }).addTo(map);
+    trackLayers.push(sMark);
+    
     // ===== 1. 🪶 轨迹生长（默认，NatGeo风格）：线从起点逐渐画出 =====
     if (style === 'ant') {
       // 淡色底图轨迹（已完成的部分）
-      var trailBg = L.polyline(smooth, { color: '#E2E8F0', weight: 5, opacity: 0.55, dashArray: null }).addTo(map);
+      var trailBg = L.polyline(smooth, { color: th.bg, weight: 5, opacity: 0.6, dashArray: null }).addTo(map);
       trackLayers.push(trailBg);
-      // 主轨迹：从起点到当前播放位置，翠绿渐变+发光
+      // 主轨迹：从起点到当前播放位置，主题色渐变+发光
       var curEnd = Math.max(2, idx + 1);
       var drawn = smooth.slice(0, curEnd);
-      var glow = L.polyline(drawn, { color: '#34D399', weight: 15, opacity: 0.22 }).addTo(map);
+      var glow = L.polyline(drawn, { color: th.main, weight: 15, opacity: 0.22 }).addTo(map);
       trackLayers.push(glow);
-      var main = L.polyline(drawn, { color: '#10B981', weight: 6, opacity: 1 }).addTo(map);
-      trackLayers.push(main);
+      // 渐变主轨：按时间从浅到深（起点亮 → 当前位置深）
+      var segN = 6;
+      for (var si2 = 0; si2 < segN; si2++) {
+        var sStart = Math.floor(si2 * drawn.length / segN);
+        var sEnd = Math.max(sStart + 1, Math.floor((si2 + 1) * drawn.length / segN));
+        var seg = L.polyline(drawn.slice(sStart, sEnd), {
+          color: si2 >= segN - 1 ? th.main : th.light,
+          weight: si2 >= segN - 1 ? 6 : 4.5,
+          opacity: 0.35 + (si2 / segN) * 0.65
+        }).addTo(map);
+        trackLayers.push(seg);
+      }
       // 已走过的轨迹（主色覆盖）
       if (idx < smooth.length - 1) {
-        var ahead = L.polyline(smooth.slice(curEnd), { color: '#A7F3D0', weight: 1.5, opacity: 0.25, dashArray: '4,6' }).addTo(map);
+        var ahead = L.polyline(smooth.slice(curEnd), { color: th.light, weight: 1.5, opacity: 0.25, dashArray: '4,6' }).addTo(map);
         trackLayers.push(ahead);
       }
-      // 当前播放位置发光点
+      // 当前播放位置：脉冲呼吸发光点（动物正在这里！）
       var curPos = smooth[curEnd - 1];
-      var halo = L.circleMarker(curPos, { radius: 10, fillColor: '#34D399', color: '#fff', weight: 2, fillOpacity: 0.35 }).addTo(map);
+      var halo = L.circleMarker(curPos, { radius: 11, fillColor: th.main, color: '#fff', weight: 2, fillOpacity: 0.3, className: 'pulse-dot' }).addTo(map);
       trackLayers.push(halo);
-      var core = L.circleMarker(curPos, { radius: 5, fillColor: '#10B981', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
+      var core = L.circleMarker(curPos, { radius: 5, fillColor: th.dark, color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
       trackLayers.push(core);
     }
     
@@ -1546,11 +1584,11 @@ if ('caches' in window) {
       });
       // 起点（蓝）终点（红）大标记
       var sDot = L.marker(smooth[0], {
-        icon: L.divIcon({ className: '', html: '<div style="background:linear-gradient(135deg,#3B82F6,#1D4ED8);color:#fff;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;border:3px solid #fff;box-shadow:0 3px 10px rgba(59,130,246,.5);">起</div>', iconSize: [38,38], iconAnchor: [19,19] })
+        icon: L.divIcon({ className: '', html: '<div style="background:linear-gradient(135deg,' + th.light + ',' + th.main + ');width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;border:3px solid #fff;box-shadow:0 3px 10px ' + th.main + '66;">' + th.emoji + '</div>', iconSize: [36,36], iconAnchor: [18,18] })
       }).addTo(map);
       trackLayers.push(sDot);
       var eDot = L.marker(smooth[smooth.length-1], {
-        icon: L.divIcon({ className: '', html: '<div style="background:linear-gradient(135deg,#EF4444,#B91C1C);color:#fff;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;border:3px solid #fff;box-shadow:0 3px 10px rgba(239,68,68,.5);">终</div>', iconSize: [38,38], iconAnchor: [19,19] })
+        icon: L.divIcon({ className: '', html: '<div style="background:linear-gradient(135deg,' + th.main + ',' + th.dark + ');color:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;border:3px solid #fff;box-shadow:0 3px 10px ' + th.main + '66;">' + th.emoji + '</div>', iconSize: [36,36], iconAnchor: [18,18] })
       }).addTo(map);
       trackLayers.push(eDot);
       // 连接虚线
@@ -1596,10 +1634,10 @@ if ('caches' in window) {
     // ===== 4. ➡️ 方向流线：像地图导航的箭头线 =====
     else if (style === 'arrow') {
       // 底图淡色线
-      var aBg = L.polyline(smooth, { color: '#DBEAFE', weight: 7, opacity: 0.6 }).addTo(map);
+      var aBg = L.polyline(smooth, { color: th.bg, weight: 7, opacity: 0.6 }).addTo(map);
       trackLayers.push(aBg);
       // 主体导航线
-      var aMain = L.polyline(smooth, { color: '#1D4ED8', weight: 5, opacity: 0.9 }).addTo(map);
+      var aMain = L.polyline(smooth, { color: th.main, weight: 5, opacity: 0.9 }).addTo(map);
       trackLayers.push(aMain);
       // 箭头：沿轨迹均匀分布，方向跟随轨迹
       var aStep = Math.max(1, Math.floor(smooth.length / 10));
@@ -1610,14 +1648,14 @@ if ('caches' in window) {
         var arrow = L.marker(p2, {
           icon: L.divIcon({
             className: '',
-            html: '<div style="transform:rotate(' + angle + 'deg);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:22px solid #1D4ED8;filter:drop-shadow(0 0 5px rgba(29,78,216,.9));"></div>',
+            html: '<div style="transform:rotate(' + angle + 'deg);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:22px solid ' + th.main + ';filter:drop-shadow(0 0 5px ' + th.main + ';"></div>',
             iconSize: [14, 14], iconAnchor: [7, 7]
           })
         }).addTo(map);
         trackLayers.push(arrow);
       }
       // 当前位置标记
-      var aCur = L.circleMarker(smooth[smooth.length-1], { radius: 9, fillColor: '#1D4ED8', color: '#fff', weight: 3, fillOpacity: 1 }).addTo(map);
+      var aCur = L.circleMarker(smooth[smooth.length-1], { radius: 9, fillColor: th.main, color: '#fff', weight: 3, fillOpacity: 1, className: 'pulse-dot' }).addTo(map);
       trackLayers.push(aCur);
     }
     
@@ -1790,8 +1828,10 @@ if ('caches' in window) {
     lineLayer = L.polyline(smoothPath(points, 2), {
       color: '#8fb5ac', weight: 2, opacity: .35, dashArray: '5,8'
     }).addTo(map);
-    L.circleMarker(points[0], { radius: 6, color: '#fff', weight: 2.5, fillColor: '#0E7C66', fillOpacity: 1 })
+    trackLayers.push(lineLayer);
+    var startDot = L.circleMarker(points[0], { radius: 6, color: '#fff', weight: 2.5, fillColor: '#0E7C66', fillOpacity: 1 })
       .addTo(map).bindTooltip('起点');
+    trackLayers.push(startDot);
 
     // 电影式开场：先全球视角，然后 flyTo 到动物位置
     if (points.length) {
@@ -1854,6 +1894,11 @@ if ('caches' in window) {
       var t = res.d.track;
       var times = res.d.times || [];
       points = (t.geometry.coordinates || []).map(function (c) { return [c[1], c[0]]; });
+      // 数据就绪：直接显示完整渐变轨迹（清除初始占位线）
+      if (points.length > 1) {
+        idx = points.length - 1;
+        try { updateView(); } catch(e) { console.log('track init err', e); }
+      }
       photos = a.photos || [];
       _lbPhotos = photos.map(function(p) { return (p.url || p) + ''; });
       timestamps = times.length === points.length
