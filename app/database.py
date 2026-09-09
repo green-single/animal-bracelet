@@ -71,7 +71,9 @@ def init_db():
                     [(a.get("id"), a.get("name", ""), a.get("species", ""),
                       a.get("story", ""), a.get("origin", "example"),
                       a.get("data_note", ""),
-                      json.dumps(a.get("photo_urls") or [], ensure_ascii=False),
+                      (json.dumps(a.get("photo_urls"), ensure_ascii=False)
+                       if isinstance(a.get("photo_urls"), (list, tuple))
+                       else a.get("photo_urls") or "[]"),
                       a.get("region_label", ""), a.get("created_at")) for a in animals],
                 )
                 conn.executemany(
