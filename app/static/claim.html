@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>领养你的动物 · 动物追踪手环</title>
+<style>
+  :root {
+    --bg: #0A0E14; --card: #151A23; --ink: #F4F3EE; --sub: #8B95A5;
+    --accent: #10B981; --accent2: #06B6D4; --gold: #F59E0B;
+    --line: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+    background: var(--bg); color: var(--ink); min-height: 100vh;
+    overflow-x: hidden; overflow-y: auto;
+  }
+
+  /* ---------- 星空背景 ---------- */
+  .starfield {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(ellipse at 50% 30%, #1a2332 0%, #0A0E14 70%);
+  }
+  .star {
+    position: absolute; width: 2px; height: 2px; background: #fff;
+    border-radius: 50%; animation: twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 1; }
+  }
+
+  /* ---------- 全屏阶段容器 ---------- */
+  .stage {
+    position: relative; z-index: 1; min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 24px;
+    opacity: 0; pointer-events: none; transition: opacity .6s ease;
+  }
+  .stage.active { opacity: 1; pointer-events: auto; }
+
+  /* ---------- Stage 1: 扫描寻找中 ---------- */
+  .scan-container {
+    width: 200px; height: 200px; position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .scan-ring {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: var(--accent);
+    border-right-color: var(--accent2);
+    animation: spin 2s linear infinite;
+  }
+  .scan-ring:nth-child(2) {
+    inset: 20px; animation-direction: reverse; animation-duration: 3s;
+    border-top-color: var(--gold); border-right-color: var(--accent);
+  }
+  .scan-ring:nth-child(3) {
+    inset: 40px; animation-duration: 4s;
+    border-top-color: var(--accent2); border-right-color: var(--gold);
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .scan-core {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(16,185,129,0.3), transparent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; animation: corePulse 2s ease-in-out infinite;
+  }
+  @keyframes corePulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(16,185,129,0.3); }
+    50% { transform: scale(1.1); box-shadow: 0 0 40px rgba(16,185,129,0.5); }
+  }
+  .scan-line {
+    position: absolute; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    animation: scanLine 2s ease-in-out infinite;
+  }
+  @keyframes scanLine {
+    0% { top: 10%; opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { top: 90%; opacity: 0; }
+  }
+  .loading-text {
+    margin-top: 40px; font-size: 15px; color: var(--sub);
+    text-align: center; line-height: 2;
+  }
+  .loading-text b { color: var(--accent); font-weight: 600; }
+  .loading-dots::after {
+    content: ''; animation: dots 1.5s steps(4) infinite;
+  }
+  @keyframes dots {
+    0% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
+  }
+
+  /* ---------- Stage 2: 电影式揭示 ---------- */
+  .reveal-light {
+    position: absolute; top: 50%; left: 50%;
+    width: 0; height: 0; border-radius: 50%;
+    background: radial-gradient(circle, rgba(16,185,129,0.4), transparent 70%);
+    transform: translate(-50%, -50%);
+    animation: lightExpand 1.5s ease-out forwards;
+  }
+  @keyframes lightExpand {
+    0% { width: 0; height: 0; opacity: 0; }
+    50% { opacity: 1; }
+    100% { width: 600px; height: 600px; opacity: 0.3; }
+  }
+  .reveal-avatar {
+    width: 180px; height: 180px; border-radius: 50%;
+    border: 3px solid var(--accent); overflow: hidden;
+    box-shadow: 0 0 80px rgba(16,185,129,0.5), 0 0 120px rgba(6,182,212,0.2);
+    transform: scale(0) rotate(-180deg);
+    animation: revealCinematic 1.2s cubic-bezier(.34,1.56,.64,1) .5s forwards;
+    position: relative; z-index: 2;
+  }
+  .reveal-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  @keyframes revealCinematic {
+    0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+    60% { transform: scale(1.15) rotate(10deg); opacity: 1; }
+    80% { transform: scale(0.95) rotate(-5deg); }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .reveal-avatar-ring {
+    position: absolute; width: 200px; height: 200px; border-radius: 50%;
+    border: 1px dashed rgba(16,185,129,0.4);
+    animation: ringRotate 20s linear infinite;
+    z-index: 1;
+  }
+  @keyframes ringRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .reveal-label {
+    margin-top: 32px; font-size: 12px; color: var(--accent);
+    letter-spacing: .4em; text-transform: uppercase; opacity: 0;
+    animation: fadeUp .8s ease 1.2s forwards;
+    position: relative; z-index: 2;
+  }
+  .reveal-name {
+    margin-top: 12px; font-size: 52px; font-weight: 800;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--gold) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; opacity: 0;
+    animation: fadeUp .8s ease 1.4s forwards;
+    position: relative; z-index: 2;
+    text-shadow: 0 0 40px rgba(16,185,129,0.3);
+  }
+  .reveal-species {
+    margin-top: 8px; font-size: 15px; color: var(--sub); opacity: 0;
+    animation: fadeUp .8s ease 1.6s forwards;
+    position: relative; z-index: 2;
+  }
+  .reveal-story {
+    margin-top: 24px; font-size: 14px; color: var(--sub); line-height: 1.9;
+    max-width: 380px; text-align: center; opacity: 0;
+    animation: fadeUp .8s ease 1.8s forwards;
+    position: relative; z-index: 2;
+    font-style: italic;
+  }
+  .reveal-story::before { content: '"'; color: var(--accent); font-size: 20px; }
+  .reveal-story::after { content: '"'; color: var(--accent); font-size: 20px; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---------- 昵称输入 ---------- */
+  .nickname-section {
+    margin-top: 32px; width: 100%; max-width: 320px; opacity: 0;
+    animation: fadeUp .8s ease 2s forwards;
+    position: relative; z-index: 2;
+  }
+  .nickname-label {
+    font-size: 13px; color: var(--sub); margin-bottom: 10px;
+    text-align: center; letter-spacing: .05em;
+  }
+  .nickname-input {
+    width: 100%; padding: 16px; background: rgba(255,255,255,0.05);
+    border: 1.5px solid var(--line); border-radius: 16px; color: var(--ink);
+    font-size: 17px; text-align: center; outline: none;
+    transition: all .3s ease; backdrop-filter: blur(10px);
+  }
+  .nickname-input:focus {
+    border-color: var(--accent);
+    background: rgba(16,185,129,0.05);
+    box-shadow: 0 0 20px rgba(16,185,129,0.2);
+  }
+  .nickname-hint {
+    font-size: 11px; color: var(--sub); margin-top: 8px;
+    text-align: center; opacity: .6;
+  }
+
+  /* ---------- 按钮 ---------- */
+  .btn {
+    display: block; width: 100%; max-width: 320px; margin-top: 28px; padding: 18px;
+    background: linear-gradient(135deg, var(--accent), #059669);
+    color: #fff; border: none; border-radius: 18px;
+    font-size: 17px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 8px 30px rgba(16,185,129,0.4);
+    transition: all .2s ease; opacity: 0;
+    animation: fadeUp .8s ease 2.2s forwards;
+    position: relative; z-index: 2;
+    letter-spacing: .05em;
+  }
+  .btn:active { transform: scale(.97); box-shadow: 0 4px 15px rgba(16,185,129,0.3); }
+  .btn:disabled { opacity: .5; cursor: default; transform: none; }
+  .btn.ghost {
+    background: transparent; color: var(--sub); border: 1.5px solid var(--line);
+    box-shadow: none; margin-top: 14px; font-size: 14px; padding: 14px;
+  }
+
+  /* ---------- Stage 3: 庆祝 + 证书 ---------- */
+  .confetti-container {
+    position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 100;
+  }
+  .confetti {
+    position: absolute; width: 10px; height: 10px; top: -20px;
+    animation: confettiFall 3s linear forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+  .celebrate-icon {
+    font-size: 80px; animation: bounce 1s ease infinite;
+    filter: drop-shadow(0 0 30px rgba(245,158,11,0.5));
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+  .celebrate-title {
+    font-size: 32px; font-weight: 800; margin-top: 24px;
+    background: linear-gradient(135deg, var(--gold), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .celebrate-sub {
+    font-size: 15px; color: var(--sub); margin-top: 12px;
+    text-align: center; line-height: 1.8; max-width: 340px;
+  }
+  .level-badge {
+    margin-top: 20px; padding: 8px 20px;
+    background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(16,185,129,0.2));
+    border: 1px solid var(--gold); border-radius: 20px;
+    font-size: 13px; color: var(--gold); font-weight: 600;
+    animation: fadeUp .8s ease .5s forwards; opacity: 0;
+  }
+
+  /* ---------- 领养证书 ---------- */
+  .certificate {
+    width: 100%; max-width: 360px; background: linear-gradient(145deg, #1A1F29, #151A23);
+    border: 2px solid var(--gold); border-radius: 24px; padding: 32px 24px;
+    position: relative; overflow: hidden; margin-top: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(245,158,11,0.1);
+  }
+  .certificate::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--gold), var(--accent), var(--accent2), var(--gold));
+  }
+  .certificate::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--gold), var(--accent), var(--accent2), var(--gold));
+  }
+  .cert-title {
+    font-size: 11px; color: var(--gold); letter-spacing: .4em;
+    text-align: center; text-transform: uppercase;
+  }
+  .cert-animal {
+    font-size: 26px; font-weight: 700; text-align: center;
+    margin-top: 16px; color: var(--ink);
+  }
+  .cert-nickname {
+    font-size: 14px; color: var(--accent); text-align: center;
+    margin-top: 6px; font-weight: 600;
+  }
+  .cert-divider {
+    width: 60px; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 20px auto;
+  }
+  .cert-info {
+    font-size: 13px; color: var(--sub); text-align: center; line-height: 2.2;
+  }
+  .cert-info b { color: var(--ink); font-weight: 600; }
+  .cert-seal {
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 3px solid var(--gold); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 28px; margin: 20px auto 0;
+    background: rgba(245,158,11,0.1);
+    box-shadow: 0 0 20px rgba(245,158,11,0.2);
+    animation: sealSpin 10s linear infinite;
+  }
+  @keyframes sealSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* ---------- 已领养状态 ---------- */
+  .already-claimed { text-align: center; }
+  .already-claimed .icon { font-size: 64px; margin-bottom: 20px; }
+  .already-claimed h2 { font-size: 24px; margin-bottom: 12px; }
+  .already-claimed p {
+    font-size: 14px; color: var(--sub); line-height: 1.8; max-width: 320px;
+  }
+
+  /* ---------- 错误状态 ---------- */
+  .error-state { text-align: center; }
+  .error-state .icon { font-size: 64px; margin-bottom: 20px; }
+  .error-state h2 { font-size: 22px; margin-bottom: 12px; }
+  .error-state p { font-size: 14px; color: var(--sub); line-height: 1.7; max-width: 300px; }
+</style>
+<meta name="theme-color" content="#0A0E14">
+</head>
+<body>
+
+<!-- 星空背景 -->
+<div class="starfield" id="starfield"></div>
+
+<!-- Stage 1: 扫描寻找中 -->
+<div class="stage active" id="stageLoading">
+  <div class="scan-container">
+    <div class="scan-ring"></div>
+    <div class="scan-ring"></div>
+    <div class="scan-ring"></div>
+    <div class="scan-line"></div>
+    <div class="scan-core">🌍</div>
+  </div>
+  <div class="loading-text">
+    正在全球卫星定位系统中搜寻<br>
+    <b>属于你的那只动物</b><span class="loading-dots"></span>
+  </div>
+</div>
+
+<!-- Stage 2: 电影式揭示 -->
+<div class="stage" id="stageReveal">
+  <div class="reveal-light"></div>
+  <div class="reveal-avatar-ring"></div>
+  <div class="reveal-avatar"><img id="revealAvatar" src="" alt=""></div>
+  <div class="reveal-label">Meet Your Animal</div>
+  <div class="reveal-name" id="revealName">—</div>
+  <div class="reveal-species" id="revealSpecies">—</div>
+  <div class="reveal-story" id="revealStory">—</div>
+  <div class="nickname-section">
+    <div class="nickname-label">给它起个专属昵称（可选）</div>
+    <input type="text" class="nickname-input" id="nicknameInput" placeholder="比如：小白、阿鹳..." maxlength="20">
+    <div class="nickname-hint">这个昵称只有你能看到，是你们之间的小秘密</div>
+  </div>
+  <button class="btn" id="claimBtn">确认领养 🐾</button>
+</div>
+
+<!-- Stage 3: 庆祝 + 证书 -->
+<div class="stage" id="stageCelebrate">
+  <div class="confetti-container" id="confettiContainer"></div>
+  <div class="celebrate-icon">🎉</div>
+  <div class="celebrate-title">领养成功！</div>
+  <div class="celebrate-sub" id="celebrateSub">你现在是它的主人了<br>它的每一次迁徙，都有你在陪伴</div>
+  <div class="level-badge">⭐ Lv.1 新手守护者 · 经验 0/100</div>
+  <div class="certificate" id="certificate">
+    <div class="cert-title">Adoption Certificate</div>
+    <div class="cert-animal" id="certAnimal">—</div>
+    <div class="cert-nickname" id="certNickname"></div>
+    <div class="cert-divider"></div>
+    <div class="cert-info">
+      <div>领养日期：<b id="certDate">—</b></div>
+      <div>追踪编号：<b id="certCode">—</b></div>
+      <div>数据来源：<b>Movebank 公开科研数据</b></div>
+    </div>
+    <div class="cert-seal">🐾</div>
+  </div>
+  <button class="btn" id="trackBtn">开始追踪它的旅程 →</button>
+  <button class="btn ghost" id="shareBtn">分享领养证书</button>
+</div>
+
+<!-- 已领养状态 -->
+<div class="stage" id="stageClaimed">
+  <div class="already-claimed">
+    <div class="icon">🏠</div>
+    <h2>这只动物已经有主人了</h2>
+    <p>每一只动物只有一条领养码，一人领养后即失效，这是为了保护这份专属感。<br><br>你仍然可以去看看它的故事和旅程。</p>
+    <button class="btn" id="viewBtn" style="margin-top:28px;">去看看它 →</button>
+  </div>
+</div>
+
+<!-- 错误状态 -->
+<div class="stage" id="stageError">
+  <div class="error-state">
+    <div class="icon" id="errorIcon">⚠️</div>
+    <h2 id="errorTitle">出错了</h2>
+    <p id="errorText">请稍后再试</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  // 生成星空
+  var starfield = document.getElementById('starfield');
+  for (var i = 0; i < 80; i++) {
+    var star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.animationDelay = Math.random() * 3 + 's';
+    star.style.opacity = Math.random() * 0.8 + 0.2;
+    starfield.appendChild(star);
+  }
+
+  var code = decodeURIComponent((location.pathname.match(/\/c\/([^/]+)/) || [])[1] || '');
+  var animalData = null;
+  var nickname = '';
+
+  function showStage(id) {
+    document.querySelectorAll('.stage').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+  }
+
+  function createConfetti() {
+    var container = document.getElementById('confettiContainer');
+    var colors = ['#10B981', '#F59E0B', '#06B6D4', '#EC4899', '#8B5CF6', '#fff'];
+    for (var i = 0; i < 80; i++) {
+      var c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random() * 100 + '%';
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.animationDelay = Math.random() * 2 + 's';
+      c.style.animationDuration = (2 + Math.random() * 2) + 's';
+      c.style.width = (6 + Math.random() * 8) + 'px';
+      c.style.height = (6 + Math.random() * 8) + 'px';
+      c.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+      container.appendChild(c);
+    }
+  }
+
+  // 动物故事库（真实信息）
+  var animalStories = {
+    'noe': '出生在法国阿尔萨斯的夏天，每年秋天飞越直布罗陀海峡，到西非塞内加尔越冬。五年间累计飞行25772公里，相当于绕地球半圈。',
+    'turtle': '从捷克共和国出发，穿越地中海，到西非萨赫勒地区越冬。作为易危物种，每一次迁徙都充满危险，但它依然勇敢前行。'
+  };
+
+  // 验证领养码
+  fetch('/api/claim/' + encodeURIComponent(code))
+    .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+    .then(function (res) {
+      if (!res.ok) {
+        document.getElementById('errorIcon').textContent = '❓';
+        document.getElementById('errorTitle').textContent = '这个领养码无效';
+        document.getElementById('errorText').textContent = '请确认手环吊牌上的二维码是否完整、是否扫对了码。';
+        showStage('stageError');
+        return;
+      }
+
+      animalData = res.d.animal;
+
+      // 已被领养
+      if (res.d.status === 'claimed') {
+        document.getElementById('viewBtn').addEventListener('click', function() {
+          location.href = '/animal/' + animalData.id;
+        });
+        showStage('stageClaimed');
+        return;
+      }
+
+      // 填充揭示页面
+      var firstPhoto = (animalData.photos && animalData.photos[0]) ?
+        (animalData.photos[0].url || animalData.photos[0]) : '';
+      document.getElementById('revealAvatar').src = firstPhoto;
+      document.getElementById('revealName').textContent = animalData.name;
+      document.getElementById('revealSpecies').textContent = animalData.species;
+      document.getElementById('revealStory').textContent =
+        animalStories[animalData.id] || (animalData.story || '').substring(0, 100);
+
+      // 延迟2秒后从"扫描中"切换到"揭示"
+      setTimeout(function() {
+        showStage('stageReveal');
+      }, 2000);
+
+      // 领养按钮
+      document.getElementById('claimBtn').addEventListener('click', function () {
+        var btn = this;
+        nickname = document.getElementById('nicknameInput').value.trim();
+        btn.disabled = true;
+        btn.textContent = '领养中...';
+
+        fetch('/api/claim/' + encodeURIComponent(code), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nickname: nickname })
+        })
+          .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+          .then(function (res) {
+            if (res.ok) {
+              // 填充证书
+              document.getElementById('certAnimal').textContent = animalData.name;
+              document.getElementById('certNickname').textContent = nickname ? ('昵称：' + nickname) : '';
+              document.getElementById('certDate').textContent = new Date().toLocaleDateString('zh-CN');
+              document.getElementById('certCode').textContent = code;
+              document.getElementById('celebrateSub').innerHTML =
+                '你现在是 <b style="color:var(--accent)">' + animalData.name + '</b> 的主人了<br>' +
+                '它的每一次迁徙，都有你在陪伴';
+
+              createConfetti();
+              showStage('stageCelebrate');
+
+              // 保存昵称和领养信息到 localStorage
+              if (nickname) {
+                try { localStorage.setItem('nickname_' + animalData.id, nickname); } catch(e) {}
+              }
+              try {
+                localStorage.setItem('adopted_' + animalData.id, JSON.stringify({
+                  date: new Date().toISOString(),
+                  code: code,
+                  nickname: nickname
+                }));
+              } catch(e) {}
+            } else {
+              btn.disabled = false;
+              btn.textContent = '确认领养 🐾';
+              alert((res.d && res.d.detail) || '领养失败，请重试');
+            }
+          })
+          .catch(function () {
+            btn.disabled = false;
+            btn.textContent = '确认领养 🐾';
+            alert('网络错误，请重试');
+          });
+      });
+
+      // 开始追踪按钮
+      document.getElementById('trackBtn').addEventListener('click', function() {
+        location.href = '/animal/' + animalData.id;
+      });
+
+      // 分享按钮
+      document.getElementById('shareBtn').addEventListener('click', function() {
+        var text = '我领养了 ' + animalData.name + '（' + animalData.species + '）！一起来追踪它的迁徙旅程吧！' + location.origin + '/animal/' + animalData.id;
+        if (navigator.share) {
+          navigator.share({ title: '动物追踪手环', text: text, url: location.origin + '/animal/' + animalData.id });
+        } else if (navigator.clipboard) {
+          navigator.clipboard.writeText(text).then(function() {
+            alert('分享文案已复制到剪贴板，快去分享给朋友吧！');
+          });
+        } else {
+          alert(text);
+        }
+      });
+    })
+    .catch(function () {
+      document.getElementById('errorIcon').textContent = '⚠️';
+      document.getElementById('errorTitle').textContent = '无法连接服务';
+      document.getElementById('errorText').textContent = '请检查网络连接后重新扫码。';
+      showStage('stageError');
+    });
+})();
+</script>
+</body>
+</html>

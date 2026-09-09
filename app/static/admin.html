@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>主办方管理后台 · 动物追踪手环</title>
+<style>
+  :root {
+    --bg: #F4F3EE; --card: #FFFFFF; --ink: #1A1B1C; --sub: #6B7280;
+    --accent: #12796F; --accent-soft: rgba(18,121,111,0.10);
+    --line: rgba(0,0,0,0.08); --danger: #DC2626; --warning: #F59E0B; --success: #059669;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+    background: var(--bg); color: var(--ink); min-height: 100vh;
+  }
+  header {
+    background: linear-gradient(135deg, #0f5e56, #1a8a7d);
+    color: #fff; padding: 20px 24px; display: flex; align-items: center; gap: 12px;
+  }
+  header .logo {
+    width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,.2);
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+  header h1 { font-size: 18px; }
+  header small { display: block; font-size: 12px; opacity: .8; font-weight: 400; }
+  .back-link { margin-left: auto; color: #fff; text-decoration: none; font-size: 13px; opacity: .9; }
+
+  main { max-width: 960px; margin: 20px auto 60px; padding: 0 16px; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .stat-num { font-size: 28px; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 12px; color: var(--sub); margin-top: 4px; }
+
+  .section {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .section h2 { font-size: 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .section h2 .badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 10px 8px; border-bottom: 2px solid var(--line); color: var(--sub); font-weight: 600; font-size: 12px; }
+  td { padding: 10px 8px; border-bottom: 1px solid var(--line); }
+  tr:last-child td { border-bottom: none; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; }
+  .tag.unused { background: rgba(5,150,105,.1); color: var(--success); }
+  .tag.claimed { background: rgba(220,38,38,.1); color: var(--danger); }
+  .tag.real { background: rgba(18,121,111,.1); color: var(--accent); }
+  .tag.demo { background: rgba(245,158,11,.1); color: var(--warning); }
+
+  .btn {
+    padding: 8px 16px; border: none; border-radius: 10px; background: var(--accent);
+    color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s;
+  }
+  .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .btn.ghost { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+  .btn.danger { background: var(--danger); }
+
+  .sync-box { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .sync-status { font-size: 13px; color: var(--sub); }
+  .sync-log {
+    margin-top: 12px; padding: 12px; background: #1a1a1a; color: #a8ffb8; border-radius: 10px;
+    font-family: Consolas, monospace; font-size: 12px; max-height: 200px; overflow-y: auto;
+    display: none; white-space: pre-wrap;
+  }
+  .sync-log.show { display: block; }
+
+  .code-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .code-item {
+    padding: 10px; border: 1px solid var(--line); border-radius: 10px; text-align: center;
+    font-family: Consolas, monospace; font-size: 13px; font-weight: 600;
+  }
+  .code-item.unused { background: rgba(5,150,105,.05); border-color: rgba(5,150,105,.2); }
+  .code-item.claimed { background: rgba(220,38,38,.05); border-color: rgba(220,38,38,.2); opacity: .7; }
+
+  footer { text-align: center; padding: 20px; font-size: 11px; color: var(--sub); }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">⚙️</div>
+  <div>
+    <h1>主办方管理后台</h1>
+    <small>动物追踪手环 · 数据管理中心</small>
+  </div>
+  <a href="/" class="back-link">← 返回首页</a>
+  <a href="/admin/logout" class="back-link" style="margin-left:8px;">退出登录</a>
+</header>
+
+<main>
+  <!-- 快速操作指南 -->
+  <div class="section" style="background: linear-gradient(135deg, rgba(18,121,111,.06), rgba(18,121,111,.02));">
+    <h2>📖 快速操作指南</h2>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+      <div style="padding:12px; background:#fff; border-radius:10px; border:1px solid var(--line);">
+        <div style="font-size:13px; font-weight:700; color:var(--accent); margin-bottom:6px;">🔄 1. 更新数据</div>
+        <div style="font-size:12px; color:var(--sub); line-height:1.6;">点击"立即同步 Noé 数据"按钮，从 Movebank 拉取最新轨迹。建议每周点一次。</div>
+      </div>
+      <div style="padding:12px; background:#fff; border-radius:10px; border:1px solid var(--line);">
+        <div style="font-size:13px; font-weight:700; color:var(--accent); margin-bottom:6px;">🦩 2. 查看动物</div>
+        <div style="font-size:12px; color:var(--sub); line-height:1.6;">下方"动物档案"表格列出所有动物，点"查看 →"进入该动物的详情页（和普通用户看到的一样）。</div>
+      </div>
+      <div style="padding:12px; background:#fff; border-radius:10px; border:1px solid var(--line);">
+        <div style="font-size:13px; font-weight:700; color:var(--accent); margin-bottom:6px;">🎫 3. 管理领养码</div>
+        <div style="font-size:12px; color:var(--sub); line-height:1.6;">最下方显示未使用的领养码。每个码对应一只动物，扫码后一次性使用。二维码图片在项目 data/qrcodes/ 目录。</div>
+      </div>
+      <div style="padding:12px; background:#fff; border-radius:10px; border:1px solid var(--line);">
+        <div style="font-size:13px; font-weight:700; color:var(--accent); margin-bottom:6px;">👥 4. 你 vs 普通用户</div>
+        <div style="font-size:12px; color:var(--sub); line-height:1.6;">普通用户扫码只能看到对应的那一只动物。你能通过 /admin 看到所有动物和全局数据。这个地址不要公开。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 统计概览 -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num" id="totalAnimals">—</div>
+      <div class="stat-label">动物总数</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="totalCodes">—</div>
+      <div class="stat-label">领养码总数</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="usedCodes">—</div>
+      <div class="stat-label">已使用</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="unusedCodes">—</div>
+      <div class="stat-label">未使用</div>
+    </div>
+  </div>
+
+  <!-- 数据同步 -->
+  <div class="section">
+    <h2>🔄 数据同步 <span class="badge">Movebank</span></h2>
+    <div class="sync-box">
+      <button class="btn" id="syncBtn" onclick="triggerSync()">立即同步 Noé 数据</button>
+      <div class="sync-status" id="syncStatus">上次同步：—</div>
+    </div>
+    <div class="sync-log" id="syncLog"></div>
+  </div>
+
+  <!-- 动物列表 -->
+  <div class="section">
+    <h2>🦩 动物档案</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>动物</th>
+          <th>物种</th>
+          <th>数据来源</th>
+          <th>定位点数</th>
+          <th>追踪时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="animalTable">
+        <tr><td colspan="6" style="text-align:center;color:var(--sub);">加载中...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 领养码列表 -->
+  <div class="section">
+    <h2>🎫 领养码状态</h2>
+    <div id="codeList" style="margin-bottom:12px;">加载中...</div>
+    <div class="code-grid" id="codeGrid"></div>
+  </div>
+</main>
+
+<footer>
+  动物追踪手环 · 主办方管理后台<br>
+  数据来源：Movebank CC0 · 照片：Wikimedia Commons
+</footer>
+
+<script>
+// 加载统计数据
+function loadStats() {
+  // 加载管理员统计
+  fetch('/api/admin/stats').then(r => r.json()).then(d => {
+    document.getElementById('totalAnimals').textContent = d.animal_count || 0;
+    document.getElementById('totalCodes').textContent = d.total_codes || 0;
+    document.getElementById('usedCodes').textContent = d.used_codes || 0;
+    document.getElementById('unusedCodes').textContent = d.unused_codes || 0;
+  });
+
+  // 加载动物列表
+  fetch('/api/animals').then(r => r.json()).then(d => {
+    var animals = d.animals || [];
+    var rows = '';
+    animals.forEach(function(a) {
+      var originTag = a.origin !== 'example'
+        ? '<span class="tag real">真实数据</span>'
+        : '<span class="tag demo">示例</span>';
+      rows += '<tr>' +
+        '<td><b>' + a.name + '</b></td>' +
+        '<td>' + a.species + '</td>' +
+        '<td>' + originTag + '</td>' +
+        '<td>' + (a.track_count || '—') + '</td>' +
+        '<td>' + (a.track_start ? a.track_start.slice(0,10) : '—') + ' → ' + (a.track_end ? a.track_end.slice(0,10) : '—') + '</td>' +
+        '<td><a href="/animal/' + a.id + '" target="_blank" style="color:var(--accent);font-size:12px;">查看 →</a></td>' +
+      '</tr>';
+    });
+    document.getElementById('animalTable').innerHTML = rows;
+  });
+
+  // 加载未使用领养码（最多10个）
+  fetch('/api/demo/codes').then(r => r.json()).then(d => {
+    var codes = d.codes || [];
+    document.getElementById('codeList').innerHTML = '最近 ' + codes.length + ' 个未使用领养码（共 ' + (document.getElementById('unusedCodes').textContent || '?') + ' 个）：';
+    var html = '';
+    codes.forEach(function(c) {
+      html += '<div class="code-item unused">' + c + '</div>';
+    });
+    document.getElementById('codeGrid').innerHTML = html;
+  });
+}
+
+// 触发数据同步
+function triggerSync() {
+  var btn = document.getElementById('syncBtn');
+  var log = document.getElementById('syncLog');
+  var status = document.getElementById('syncStatus');
+  btn.disabled = true;
+  btn.textContent = '同步中...';
+  log.classList.add('show');
+  log.textContent = '正在从 Movebank 拉取 Noé 最新数据...\n';
+
+  fetch('/api/sync', {method: 'POST'})
+    .then(r => r.json())
+    .then(d => {
+      log.textContent += JSON.stringify(d, null, 2) + '\n\n✅ 同步完成！';
+      status.textContent = '上次同步：' + new Date().toLocaleString('zh-CN');
+      btn.disabled = false;
+      btn.textContent = '立即同步 Noé 数据';
+      loadStats();
+    })
+    .catch(e => {
+      log.textContent += '❌ 同步失败：' + e.message;
+      btn.disabled = false;
+      btn.textContent = '立即同步 Noé 数据';
+    });
+}
+
+// 初始化
+loadStats();
+</script>
+</body>
+</html>

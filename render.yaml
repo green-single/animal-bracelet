@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: animal-bracelet
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run.py
+    envVars:
+      - key: ANIMAL_BRACE_URL
+        value: https://animal-bracelet.onrender.com
+      - key: PORT
+        value: "8000"
+    healthCheckPath: /
+    autoDeploy: true

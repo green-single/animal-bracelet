@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>动物追踪手环 · 项目进度分析与未来计划</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+    background: #F4F3EE; color: #1A1B1C; line-height: 1.7;
+    padding: 24px 16px 48px;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 800; }
+  .sub { font-size: 12.5px; color: #6B7280; margin-top: 4px; }
+  .card {
+    background: #fff; border: 1px solid rgba(0,0,0,0.08); border-radius: 16px;
+    padding: 18px 20px; margin-top: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  }
+  .card h2 { font-size: 15px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .card h2 .n {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 7px; background: #0E7C66; color: #fff;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+  .kpis { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .kpi {
+    flex: 1 1 130px; min-width: 0; border-radius: 14px; padding: 12px 14px;
+    background: linear-gradient(135deg, rgba(14,124,102,0.08), rgba(14,124,102,0.16));
+  }
+  .kpi .v { font-size: 22px; font-weight: 800; color: #0E7C66; }
+  .kpi .l { font-size: 11.5px; color: #6B7280; margin-top: 2px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th { text-align: left; font-size: 11.5px; color: #6B7280; font-weight: 600; padding: 6px 8px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+  td { padding: 8px; border-bottom: 1px dashed rgba(0,0,0,0.07); vertical-align: top; }
+  .bar-wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .bar { flex: 1 1 160px; min-width: 110px; height: 9px; border-radius: 6px; background: #EFEEE9; overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 6px; }
+  .pct { width: 46px; text-align: right; font-size: 11.5px; color: #6B7280; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 20px; white-space: nowrap; }
+  .tag.done { background: rgba(14,124,102,0.12); color: #0E7C66; }
+  .tag.part { background: rgba(245,166,35,0.14); color: #B06E00; }
+  .tag.todo { background: #EFEEE9; color: #6B7280; }
+  .tag.real { background: rgba(14,124,102,0.14); color: #0E7C66; }
+  .tag.demo { background: rgba(245,166,35,0.14); color: #B06E00; }
+  .tl { position: relative; padding-left: 26px; }
+  .tl::before { content: ''; position: absolute; left: 7px; top: 6px; bottom: 6px; width: 2px; background: rgba(0,0,0,0.10); }
+  .tl-item { position: relative; padding: 0 0 16px; }
+  .tl-item::before {
+    content: ''; position: absolute; left: -26px; top: 5px; width: 16px; height: 16px;
+    border-radius: 50%; background: #fff; border: 4px solid #0E7C66;
+  }
+  .tl-item.today::before { border-color: #E5533D; }
+  .tl-item.next::before { border-color: #F5A623; }
+  .tl-item.later::before { border-color: #9AA0A6; }
+  .tl-item .t { font-size: 13px; font-weight: 700; }
+  .tl-item.today .t { color: #E5533D; }
+  .tl-item.next .t { color: #B06E00; }
+  .tl-item.later .t { color: #6B7280; }
+  .tl-item .d { font-size: 12.5px; color: #374151; margin-top: 3px; }
+  ul.risk { list-style: none; }
+  ul.risk li { font-size: 12.5px; padding: 8px 0; border-bottom: 1px dashed rgba(0,0,0,0.07); display: flex; gap: 10px; }
+  ul.risk li:last-child { border-bottom: none; }
+  ul.risk .k { flex-shrink: 0; font-weight: 700; color: #0E7C66; min-width: 92px; }
+  ul.risk .k.warn { color: #B06E00; }
+  .steps { font-size: 13px; }
+  .steps li { padding: 7px 0; border-bottom: 1px dashed rgba(0,0,0,0.07); }
+  .steps li b { color: #0E7C66; }
+  .note { font-size: 11.5px; color: #6B7280; margin-top: 12px; line-height: 1.6; }
+  .footer { text-align: center; font-size: 11px; color: #9AA0A6; margin-top: 24px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>动物追踪手环 · 项目进度分析与未来计划</h1>
+  <div class="sub">生成日期：2026-09-04 · 数据基于项目实测与交付记录 · 完成度均为自评（非精确计量）</div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="v">9</div><div class="l">核心模块（7 项已基本完成）</div></div>
+    <div class="kpi"><div class="v">5</div><div class="l">动物档案（1 真 4 模拟）</div></div>
+    <div class="kpi"><div class="v">23</div><div class="l">二维码（20 领养 + 3 推广）</div></div>
+    <div class="kpi"><div class="v">25</div><div class="l">本地化真实照片（CC 协议）</div></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">1</span>模块进度总览</h2>
+    <table>
+      <tr><th style="width:56%">模块</th><th style="width:30%">进度</th><th>状态</th></tr>
+      <tr>
+        <td>系统架构与全流程（扫码→领养→地图→照片→重复码拦截）</td>
+        <td><div class="bar-wrap"><div class="bar"><i style="width:100%;background:#0E7C66"></i></div><span class="pct">100%</span></div></td>
+        <td><span class="tag done">已完成</span></td>
+      </tr>
+      <tr>
+        <td>二维码与 A4 打印稿（20 领养码 + 3 推广码，已交付 PDF）</td>
+        <td><div class="bar-wrap"><div class="bar"><i style="width:100%;background:#0E7C66"></i></div><span class="pct">100%</span></div></td>
+        <td><span class="tag done">已完成</span></td>
+      </tr>
+      <tr>
+        <td>地图真实化（Esri 卫星+地名叠加 / 圆形头像 / 世界视角）</td>
+        <td><div class="bar-wrap"><div class="bar"><i style="width:95%;background:#0E7C66"></i></div><span class="pct">95%</span></div></td>
+        <td><span class="tag done">接近完成</span></td>
+      </tr>
+      <tr>
+        <td>轨迹体验（300 点 / Catmull-Rom 平滑 / 播放插值 / 沿途影像联动）</td>
+        <td><div class="bar-wrap"><div class="bar"><i style="width:95%;background:#0E7C66"></i></div><span class="pct">95%</span></div></td>
+        <td><span class="tag done">接近完成</span></td>
+      </tr>
+      <tr>
+        <td>真实数据能力（OBIS 拉取 / 导入 / 自动同步接口）</td>
+        <td><div class="bar-wrap"><div class="bar"><i style="width:90%;background:#0E7C66"></i></div><span class="pct">90%</span></div></td>
+        <td><span class="tag done">基本完成</span></td>
+      </tr>
+      <tr>
+        <td>免费部署方案文档（GitHub + Render + 保活 + 云库）</td>
+        <td><div class="bar-wrap"><div class="bar"><i style="width:85%;background:#F5A623"></i></div><span class="pct">85%</span></div></td>
+        <td><span class="tag part">待执行上线</span></td>
+      </tr>
+      <tr>
+        <td>照片体系（25 张 CC 真实照片本地化，标注来源许可）</td>
+        <td><div class="bar-wrap"><div class="bar"><i style="width:80%;background:#F5A623"></i></div><span class="pct">80%</span></div></td>
+        <td><span class="tag part">待个体照</span></td>
+      </tr>
+      <tr>
+        <td>PWA / App 化（manifest + Service Worker + 图标就绪）</td>
+        <td><div class="bar-wrap"><div class="bar"><i style="width:70%;background:#F5A623"></i></div><span class="pct">70%</span></div></td>
+        <td><span class="tag part">未启用</span></td>
+      </tr>
+      <tr>
+        <td>数据持久化（Neon 免费云数据库接入）</td>
+        <td><div class="bar-wrap"><div class="bar"><i style="width:20%;background:#D8D6CF"></i></div><span class="pct">20%</span></div></td>
+        <td><span class="tag todo">待启动</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">2</span>数据真实性矩阵（当前状态）</h2>
+    <table>
+      <tr><th>动物</th><th>轨迹</th><th>时效</th><th>照片</th></tr>
+      <tr>
+        <td><b>Noel 绿海龟</b></td>
+        <td><span class="tag real">真实</span> OBIS 遥测 · 300 点</td>
+        <td>2011 年（偏老，待换新源）</td>
+        <td>资料图（CC 真图，非个体照）</td>
+      </tr>
+      <tr><td>Koa 大白鲨</td><td><span class="tag demo">模拟</span></td><td>—</td><td>资料图（CC 真图，非个体照）</td></tr>
+      <tr><td>Tembo 非洲象</td><td><span class="tag demo">模拟</span></td><td>—</td><td>资料图（CC 真图，非个体照）</td></tr>
+      <tr><td>Pippin 帝企鹅</td><td><span class="tag demo">模拟</span></td><td>—</td><td>资料图（CC 真图，非个体照）</td></tr>
+      <tr><td>Nuna 北极燕鸥</td><td><span class="tag demo">模拟</span></td><td>—</td><td>资料图（CC 真图，非个体照）</td></tr>
+    </table>
+    <div class="note">升级目标：接入 2024–2025 活跃研究（Movebank / Ocearch），时效压到一年以内（目标数月）；照片优先"这只动物本人"的真实照片，拿不到就明示"资料图（CC）"，宁缺毋假。</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">3</span>路线图</h2>
+    <div class="tl">
+      <div class="tl-item">
+        <div class="t">✔ 已完成 · 前 3 天</div>
+        <div class="d">产品调研（Fahlo 类确认）→ 系统完整搭建 → 二维码打印稿交付 → 三项改进（专门文件夹 / 世界地图 / 流动性）→ OBIS 真实数据接入（Noel）→ 地图与轨迹视觉升级 → 免费部署方案 + PWA 就绪</div>
+      </div>
+      <div class="tl-item today">
+        <div class="t">★ 明天 · 09-05（上线日）</div>
+        <div class="d">你注册 GitHub（免费）→ 我部署到 Render 免费层 → 绑定正式网址 → 重新生成二维码并打印 → 手机在任何地方可扫码</div>
+      </div>
+      <div class="tl-item next">
+        <div class="t">▸ 本周（数据真与照片真）</div>
+        <div class="d">注册 Movebank → 挑选 2024–2025 活跃研究，接入 1~2 只真实动物（替换模拟）→ 落实个体照片或"资料图"标注 → 可选启动每周自动同步</div>
+      </div>
+      <div class="tl-item later">
+        <div class="t">▸ 后续（体验与推广）</div>
+        <div class="d">领养分享卡（发朋友圈传播）→ NFC 贴片（碰一碰）→ PWA 启用（手机装成 App）→ Neon 云数据库（数据永不丢）→ 可选原生 App 打包</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">4</span>风险与对策</h2>
+    <ul class="risk">
+      <li><span class="k">免费层休眠</span><span>Render 免费实例 15 分钟无访问会休眠、唤醒需 30~60 秒 → 用免费 UptimeRobot 每 10 分钟 ping 一次保活；人多后若体验不佳可升级付费层（约 ¥50/月）。</span></li>
+      <li><span class="k warn">数据许可</span><span>OBIS / Movebank 数据集许可不同（CC0 / CC BY / CC BY-NC）。个人与学术用途（SURF）没问题；商用前必须核对许可并署名。</span></li>
+      <li><span class="k">数据时效</span><span>卫星追踪无秒级实时（标签上传频率 + 防偷猎延迟），Fahlo 亦延迟数周~数月。承诺口径：数据一年以内（目标数月），页面如实显示"最后定位时间"。</span></li>
+      <li><span class="k">局域网 IP</span><span>当前二维码指向热点地址 172.20.10.2，换网络即失效 → 上线后全部改为正式域名，一次解决。</span></li>
+      <li><span class="k">数据丢失</span><span>免费层实例重启不保留磁盘 → 领养记录上线后迁到 Neon 免费云库（永久额度），轨迹可随时从 OBIS 重建。</span></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">5</span>明天行动清单</h2>
+    <ol class="steps">
+      <li><b>你（唯一需要做的）</b>：注册 GitHub 免费账号 <b>https://github.com/signup</b>，注册完告诉我。</li>
+      <li><b>我</b>：项目推 GitHub → Render 部署（含环境变量）→ 验证线上全流程。</li>
+      <li><b>我</b>：重新生成指向正式域名的二维码 → 重新合成 A4 打印稿 → 交付。</li>
+      <li><b>可选</b>：顺手启用 UptimeRobot 保活，注册 Movebank 账号。</li>
+    </ol>
+    <div class="note">备注：PWA（手机装 App 体验）代码已就绪但未启用；原生 App（APK）为可选后续项，不阻塞任何当前目标。</div>
+  </div>
+
+  <div class="footer">动物追踪手环项目 · C:\DoubaoProjects\animal-bracelet · 进度报告</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>动物追踪手环 · 扫码领养真实迁徙的动物</title>
+<meta name="description" content="扫描手环上的二维码，领养一只真实存在的动物，查看它的迁徙轨迹、照片和故事。数据来自公开科研数据库。">
+<style>
+  :root {
+    --bg: #F4F3EE; --card: #FFFFFF; --ink: #1A1B1C; --sub: #6B7280;
+    --accent: #12796F; --accent-soft: rgba(18,121,111,0.10);
+    --line: rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+    background: var(--bg); color: var(--ink); min-height: 100vh;
+    animation: pageIn .4s ease both;
+  }
+  @keyframes pageIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+  header {
+    display: flex; align-items: center; gap: 10px; padding: 16px 20px;
+  }
+  .logo {
+    width: 38px; height: 38px; border-radius: 11px; background: var(--accent);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 19px; font-weight: 700;
+  }
+  .brand { font-size: 17px; font-weight: 600; }
+  .brand small { display: block; font-size: 11px; color: var(--sub); font-weight: 400; }
+
+  main { max-width: 640px; margin: 8px auto 56px; padding: 0 16px; }
+
+  /* Hero 区域 */
+  .hero {
+    background: linear-gradient(135deg, #0f5e56, #1a8a7d);
+    border-radius: 22px; padding: 32px 24px; margin-bottom: 20px;
+    color: #fff; text-align: center; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -40px; right: -40px; width: 160px; height: 160px;
+    background: rgba(255,255,255,.08); border-radius: 50%;
+  }
+  .hero::after {
+    content: ''; position: absolute; bottom: -60px; left: -30px; width: 140px; height: 140px;
+    background: rgba(255,255,255,.06); border-radius: 50%;
+  }
+  .hero-icon { font-size: 48px; margin-bottom: 12px; position: relative; z-index: 1; }
+  .hero h1 { font-size: 24px; margin-bottom: 10px; position: relative; z-index: 1; }
+  .hero p { font-size: 14px; line-height: 1.7; opacity: .92; position: relative; z-index: 1; }
+
+  /* 亮点数据 */
+  .stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .stat-num { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 11px; color: var(--sub); margin-top: 4px; line-height: 1.4; }
+
+  /* 功能介绍 */
+  .features { margin-bottom: 20px; }
+  .feature-item {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px 18px; margin-bottom: 10px; display: flex; gap: 14px; align-items: flex-start;
+  }
+  .feature-icon { font-size: 24px; flex-shrink: 0; width: 40px; height: 40px;
+    background: var(--accent-soft); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .feature-text h3 { font-size: 14px; margin-bottom: 4px; }
+  .feature-text p { font-size: 12.5px; color: var(--sub); line-height: 1.6; }
+
+
+  /* 真实动物展示 */
+  .real-sec { margin-bottom: 24px; }
+  .real-sec h2 { font-size: 17px; margin-bottom: 4px; }
+  .real-sub { font-size: 12px; color: var(--sub); margin-bottom: 12px; }
+  .real-grid { display: flex; flex-direction: column; gap: 12px; }
+  .real-card {
+    display: flex; align-items: center; gap: 14px; padding: 10px 14px;
+    background: var(--card); border: 1px solid rgba(18,121,111,.14); border-radius: 14px;
+    text-decoration: none; color: var(--ink); transition: all .2s ease;
+  }
+  .real-card:hover { transform: translateX(4px); border-color: var(--accent); box-shadow: 0 4px 16px rgba(18,121,111,.12); }
+  .real-photo {
+    width: 56px; height: 56px; border-radius: 12px; background-size: cover;
+    background-position: center; flex-shrink: 0; border: 1px solid rgba(0,0,0,.06);
+  }
+  .real-info { flex: 1; min-width: 0; }
+  .real-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .real-meta { font-size: 11.5px; color: var(--sub); }
+  .real-tag {
+    display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 8px;
+    background: rgba(18,121,111,.1); color: #0f5e56; font-weight: 700; margin-top: 3px;
+  }
+
+  /* 示例体验 */
+  .demo-sec { margin-bottom: 20px; }
+  .demo-sec h2 { font-size: 16px; margin-bottom: 10px; }
+  .demo-card {
+    display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+    background: var(--card); border: 1.5px solid var(--accent); border-radius: 16px;
+    text-decoration: none; color: var(--ink); transition: all .2s ease;
+    box-shadow: 0 2px 12px rgba(18,121,111,.1);
+  }
+  .demo-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(18,121,111,.18); }
+  .demo-icon {
+    width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, #1a8a7d, #0f5e56);
+    display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0;
+  }
+  .demo-info { flex: 1; min-width: 0; }
+  .demo-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+  .demo-desc { font-size: 12px; color: var(--sub); line-height: 1.5; }
+  .demo-arrow { font-size: 20px; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+  .demo-tag {
+    display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 8px;
+    background: var(--accent-soft); color: var(--accent); font-weight: 700; margin-left: 6px;
+  }
+
+  /* 扫码引导 */
+  .cta {
+    background: linear-gradient(135deg, rgba(18,121,111,0.08), rgba(18,121,111,0.16));
+    border: 1.5px solid var(--accent); border-radius: 18px; padding: 24px 20px;
+    text-align: center; margin-bottom: 20px;
+  }
+  .cta h2 { font-size: 18px; margin-bottom: 8px; }
+  .cta p { font-size: 13px; color: #374151; line-height: 1.7; margin-bottom: 16px; }
+  .cta-steps { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .cta-step {
+    background: #fff; border-radius: 12px; padding: 10px 14px; font-size: 12px;
+    font-weight: 600; color: var(--accent); border: 1px solid var(--line);
+  }
+
+  /* 数据来源说明 */
+  .data-note {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px 18px; margin-bottom: 20px;
+  }
+  .data-note h3 { font-size: 13px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .data-note p { font-size: 12px; color: var(--sub); line-height: 1.7; }
+  .data-note a { color: var(--accent); text-decoration: none; }
+
+  footer {
+    text-align: center; padding: 20px; font-size: 11px; color: var(--sub); line-height: 1.8;
+  }
+  footer a { color: var(--sub); text-decoration: none; }
+
+  .code-search {
+    margin-top: 22px; display: flex; justify-content: center; gap: 8px;
+  }
+  .code-search input {
+    width: 260px; max-width: 70vw; padding: 12px 16px; border-radius: 12px;
+    border: 1px solid rgba(0,0,0,.12); background: #fff; font-size: 14px;
+    outline: none; box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  }
+  .code-search input:focus { border-color: #0E7C66; }
+  .code-search button {
+    padding: 12px 22px; border-radius: 12px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, #0E7C66, #10B981); color: #fff;
+    font-size: 14px; font-weight: 600;
+  }
+  .code-search button:active { transform: scale(.96); }
+
+
+  /* ===== 盲盒墙 ===== */
+  .blind-sec { margin-bottom: 24px; }
+  .blind-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 480px) { .blind-grid { grid-template-columns: repeat(2, 1fr); } }
+  .blind-card {
+    position: relative; border-radius: 16px; padding: 18px 10px 14px;
+    text-align: center; cursor: pointer; overflow: hidden;
+    background: linear-gradient(150deg, #0f5e56, #1a8a7d);
+    border: 1px solid rgba(255,255,255,.18);
+    box-shadow: 0 4px 16px rgba(15,94,86,.18);
+    transition: transform .2s ease, box-shadow .2s ease;
+    min-height: 128px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 6px;
+  }
+  .blind-card:active { transform: scale(.96); }
+  .blind-card::before {
+    content: ''; position: absolute; top: -30px; right: -30px; width: 90px; height: 90px;
+    background: rgba(255,255,255,.07); border-radius: 50%;
+  }
+  .blind-q { font-size: 30px; font-weight: 800; color: rgba(255,255,255,.9); line-height: 1; }
+  .blind-num {
+    font-size: 11px; font-weight: 700; color: rgba(255,255,255,.65);
+    letter-spacing: 2px;
+  }
+  .blind-hint { font-size: 10px; color: rgba(255,255,255,.55); margin-top: 2px; }
+  .blind-card.revealed {
+    background: #fff; border: 1.5px solid rgba(245,158,11,.5);
+    box-shadow: 0 6px 22px rgba(245,158,11,.25);
+  }
+  .blind-photo {
+    width: 56px; height: 56px; border-radius: 50%; background-size: cover;
+    background-position: center; border: 2.5px solid #fff;
+    box-shadow: 0 3px 12px rgba(0,0,0,.18); margin-bottom: 4px;
+  }
+  .blind-name { font-size: 13px; font-weight: 800; color: #1A1B1C; }
+  .blind-persona { font-size: 10px; color: #0A5C4C; font-weight: 600; margin-top: 2px; }
+  .blind-mine {
+    position: absolute; top: 8px; left: 8px; font-size: 9px; font-weight: 800;
+    background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #fff;
+    padding: 2px 8px; border-radius: 10px; box-shadow: 0 2px 8px rgba(245,158,11,.5);
+  }
+  .blind-link { position: absolute; inset: 0; border-radius: 16px; }
+</style>
+<link rel="manifest" href="/static/manifest.webmanifest">
+<meta name="theme-color" content="#0E7C66">
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+
+
+<script>
+var PERSONA = {
+  noe: { title: '归家的旅者', tagline: '家永远在等我。', emoji: '🤍' },
+  turtle: { title: '温柔的信使', tagline: '咕……我还在这里。', emoji: '🕊️' },
+  redkite: { title: '孤独的守望者', tagline: '风是我的路。', emoji: '🪁' },
+  honeybuzzard: { title: '甜食冒险家', tagline: '甜的东西，值得远行。', emoji: '🍯' },
+  herringgull: { title: '海岸的聪明鬼', tagline: '有吃的吗？', emoji: '🐚' },
+  koa: { title: '深海的独行侠', tagline: '深水不冷，孤独而已。', emoji: '🌊' }
+};
+window.PERSONA = PERSONA;
+var BLIND_ORDER = ['koa','honeybuzzard','herringgull','noe','redkite','turtle'];
+var BLIND_META = {
+  noe: { name: 'Noé · 白鹳', photo: '/static/assets/photos/noe_1.jpg' },
+  turtle: { name: 'Lumi · 欧斑鸠', photo: '/static/assets/photos/turtle_1.jpg' },
+  redkite: { name: 'Athos · 红鸢', photo: '/static/assets/photos/redkite_1.jpg' },
+  honeybuzzard: { name: 'Mel · 蜂鹰', photo: '/static/assets/photos/honeybuzzard_1.jpg' },
+  herringgull: { name: 'Silver · 银鸥', photo: '/static/assets/photos/herringgull_1.jpg' },
+  koa: { name: 'Koa · 大白鲨', photo: '/static/assets/photos/koa_1.jpg' }
+};
+window.initBlindWall = function initBlindWall() {
+  try {
+    var grid = document.getElementById('blindGrid');
+    if (!grid) return;
+    var html = '';
+    BLIND_ORDER.forEach(function(id, i) {
+      var meta = BLIND_META[id];
+      var p = PERSONA[id] || {};
+      var adopted = false;
+      try { adopted = !!localStorage.getItem('adopted_' + id); } catch(e) {}
+      var num = 'A' + (i + 1);
+      if (adopted) {
+        html += '<div class="blind-card revealed" data-id="' + id + '">' +
+          '<span class="blind-mine">我的动物</span>' +
+          '<div class="blind-photo" style="background-image:url(\'' + meta.photo + '\')"></div>' +
+          '<div class="blind-name">' + meta.name + '</div>' +
+          '<div class="blind-persona">' + (p.emoji || '') + ' ' + (p.title || '') + '</div>' +
+          '<div class="blind-hint">' + num + ' · 已揭晓</div>' +
+          '<a class="blind-link" href="/animal/' + id + '"></a>' +
+          '</div>';
+      } else {
+        html += '<div class="blind-card" data-id="' + id + '" data-num="' + num + '">' +
+          '<div class="blind-q">?</div>' +
+          '<div class="blind-num">' + num + '</div>' +
+          '<div class="blind-hint">扫码揭晓</div>' +
+          '</div>';
+      }
+    });
+    grid.innerHTML = html;
+    grid.addEventListener('click', function(e) {
+      var card = e.target.closest ? e.target.closest('.blind-card') : null;
+      if (card && !card.classList.contains('revealed')) {
+        var num = card.getAttribute('data-num') || '';
+        alert('这是盲盒 ' + num + ' 🎁\n\n你的那只动物藏在这里面。\n\n用你的手环二维码扫码，或者输入领养码，就能揭晓它！');
+      }
+    });
+  } catch(e) {}
+};
+document.addEventListener('DOMContentLoaded', function() { window.initBlindWall(); });
+// 彻底清除Service Worker与缓存
+if ('serviceWorker' in navigator) {
+  try { navigator.serviceWorker.getRegistrations().then(function(regs) { regs.forEach(function(r) { r.unregister(); }); }); } catch(e) {}
+}
+if ('caches' in window) {
+  try { caches.keys().then(function(keys) { keys.forEach(function(k) { caches.delete(k); }); }); } catch(e) {}
+}
+</script>
+</head>
+<body>
+<header>
+  <div class="logo">爪</div>
+  <div class="brand">动物追踪手环<small>扫码领养一只真实迁徙的动物</small></div>
+</header>
+
+<main>
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-icon">🦩</div>
+    <h1>每一只动物，都有它的旅程</h1>
+    <p>扫描手环上的二维码，领养一只真实存在的动物，<br>跟随它的足迹，看世界有多大。</p>
+    <div class="code-search">
+      <input id="codeInput" placeholder="已有领养码？输入查看动物" maxlength="20">
+      <button id="codeGo" type="button">查询</button>
+    </div>
+  </div>
+
+  <!-- 亮点数据 -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-num">25,772</div>
+      <div class="stat-label">公里迁徙距离</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">5年</div>
+      <div class="stat-label">持续追踪记录</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">1827</div>
+      <div class="stat-label">个真实定位点</div>
+    </div>
+  </div>
+
+  <!-- 功能介绍 -->
+  <div class="features">
+    <div class="feature-item">
+      <div class="feature-icon">📱</div>
+      <div class="feature-text">
+        <h3>扫码领养</h3>
+        <p>扫描手环吊牌上的二维码，即可领养一只属于你的动物，获得它的专属档案。</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">🗺️</div>
+      <div class="feature-text">
+        <h3>真实迁徙轨迹</h3>
+        <p>在世界地图上回放动物的迁徙路线，从繁殖地到越冬地，看它飞越山川海洋。</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">📷</div>
+      <div class="feature-text">
+        <h3>真实照片档案</h3>
+        <p>浏览动物的真实照片，了解它的生活习性和故事，每一张都有来源许可。</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">🔬</div>
+      <div class="feature-text">
+        <h3>科研级数据</h3>
+        <p>所有定位数据来自 Movebank 等公开科研数据库，CC0 开源协议，真实可追溯。</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 真实动物展示区 -->
+  <div class="blind-sec">
+    <h2>🎁 神秘盲盒</h2>
+    <p class="real-sub">每只手环对应一只动物 · 扫码揭晓你的那只（<b>保持悬念，别剧透</b>）</p>
+    <div class="blind-grid" id="blindGrid"></div>
+  </div>
+    <div class="demo-sec">
+    <h2>👀 还没有手环？先体验一下</h2>
+    <a href="/animal/koa" class="demo-card">
+      <div class="demo-icon">🦈</div>
+      <div class="demo-info">
+        <div class="demo-name">Koa · 大白鲨<span class="demo-tag">示例</span></div>
+        <div class="demo-desc">300个真实定位点 · 太平洋海域 · 点击查看它的迁徙轨迹和照片</div>
+      </div>
+      <div class="demo-arrow">→</div>
+    </a>
+  </div>
+
+  <!-- 扫码引导 -->
+  <div class="cta">
+    <h2>开始你的领养之旅</h2>
+    <p>拿到动物追踪手环后，用手机扫描吊牌上的二维码，<br>三步即可领养属于你的动物：</p>
+    <div class="cta-steps">
+      <div class="cta-step">1️⃣ 扫描二维码</div>
+      <div class="cta-step">2️⃣ 确认领养</div>
+      <div class="cta-step">3️⃣ 查看轨迹</div>
+    </div>
+  </div>
+
+  <!-- 数据来源说明 -->
+  <div class="data-note">
+    <h3>📊 关于数据真实性</h3>
+    <p>本项目展示的动物追踪数据全部来自公开科研数据库（如 <a href="https://www.movebank.org" target="_blank">Movebank</a>），采用 CC0 / CC BY 开源协议。每只动物都是真实存在的野生个体，定位数据来自科研人员放置的卫星/GPS 追踪器。照片来自 Wikimedia Commons 等开源图库，均标注来源许可。</p>
+  </div>
+</main>
+
+<footer>
+  动物追踪手环 · 让每一次迁徙都被看见<br>
+  数据来源：Movebank CC0 · 照片：Wikimedia Commons<br>
+  <a href="/animals">管理员入口</a>
+</footer>
+
+
+
+<script>
+// 输领养码查询动物
+function goByCode() {
+  var inp = document.getElementById('codeInput');
+  if (!inp) return;
+  var code = inp.value.trim().toUpperCase();
+  if (!code) return;
+  inp.disabled = true;
+  var btn = document.getElementById('codeGo');
+  if (btn) btn.textContent = '…';
+  fetch('/api/claim/' + encodeURIComponent(code)).then(function(r) {
+    if (r.status !== 200) { throw new Error('not found'); }
+    return r.json();
+  }).then(function(d) {
+    if (d && d.animal && d.animal.id) {
+      location.href = '/animal/' + d.animal.id;
+    } else { throw new Error('no animal'); }
+  }).catch(function() {
+    alert('未找到这个领养码对应的动物，请核对后重试');
+    if (inp) { inp.disabled = false; }
+    if (btn) { btn.textContent = '查询'; }
+  });
+}
+document.addEventListener('DOMContentLoaded', function() {
+  var btn = document.getElementById('codeGo');
+  var inp = document.getElementById('codeInput');
+  if (btn) btn.addEventListener('click', goByCode);
+  if (inp) {
+    inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') goByCode(); });
+  }
+});
+</script>
+</body>
+</html>

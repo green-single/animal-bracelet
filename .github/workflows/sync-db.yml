@@ -1,0 +1,45 @@
+name: Daily Movebank Sync
+
+on:
+  schedule:
+    # 每天 UTC 02:00（北京时间 10:00）自动同步真实数据
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # 支持手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl
+          python -m pip install --quiet --upgrade pip
+
+      - name: Sync Movebank data
+        env:
+          MB_USER: ${{ secrets.MB_USER }}
+          MB_PASS: ${{ secrets.MB_PASS }}
+        run: python scripts/sync_movebank_all.py
+
+      - name: Commit updated database
+        run: |
+          git config user.name "green-single"
+          git config user.email "green-single@users.noreply.github.com"
+          git add data/animals.db
+          if git diff --cached --quiet; then
+            echo "数据库无变化，跳过提交"
+          else
+            git commit -m "chore: 每日自动同步 Movebank 真实数据 [skip ci]"
+            git push
+          fi

@@ -1,0 +1,3214 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>她在哪 · 动物追踪手环</title>
+<link rel="stylesheet" href="/static/assets/lib/leaflet.css">
+<style>
+  :root {
+    --bg: #F4F3EE; --card: #FFFFFF; --ink: #1A1B1C; --sub: #6B7280;
+    --accent: #0E7C66; --accent-deep: #0A5C4C; --accent-soft: rgba(14,124,102,0.10);
+    --line: rgba(0,0,0,0.08); --red: #E5533D;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', Arial, sans-serif;
+    background: var(--bg); color: var(--ink);
+    animation: pageIn .4s ease both;
+  }
+  /* 注意：body 严禁出现 transform（含 identity matrix）——会让 position:fixed 灯箱失效、图片被推出视口 */
+  @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes pulseRing {
+    0%   { transform: scale(.55); opacity: .9; }
+    100% { transform: scale(1.9); opacity: 0; }
+  }
+
+  header {
+    display: flex; align-items: center; gap: 10px; padding: 14px 18px;
+    position: sticky; top: 0; background: rgba(244,243,238,0.9); backdrop-filter: blur(8px);
+    z-index: 1000; border-bottom: 1px solid var(--line);
+  }
+  .logo {
+    width: 34px; height: 34px; border-radius: 11px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 17px; font-weight: 700; box-shadow: 0 2px 8px rgba(14,124,102,.3);
+  }
+  .brand { font-size: 15px; font-weight: 700; }
+  .brand small { display: block; font-size: 11px; color: var(--sub); font-weight: 400; margin-top: 1px; }
+
+  main { max-width: 720px; margin: 0 auto 48px; padding: 14px; }
+
+  /* ---------- 顶部：她在哪（地图区为主角） ---------- */
+  .map-sec {
+    background: var(--card); border: 1px solid var(--line); border-radius: 20px;
+    overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,.06);
+    animation: fadeUp .5s ease .05s both;
+  }
+  .map-head {
+    display: flex; align-items: center; gap: 10px; padding: 16px 18px 12px;
+  }
+  .map-head .avatar {
+    width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0;
+    background: #e8e6df center/cover no-repeat;
+    border: 2px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,.18);
+  }
+  .map-head .t { font-size: 17px; font-weight: 800; }
+  .map-head .s { font-size: 11.5px; color: var(--sub); margin-top: 2px; }
+  .live {
+    display: inline-flex; align-items: center; gap: 5px; margin-left: 8px;
+    font-size: 10.5px; color: var(--accent); background: var(--accent-soft);
+    padding: 3px 9px; border-radius: 20px; font-weight: 700; vertical-align: 2px;
+  }
+  .live::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--red);
+    animation: pulseRing 1.6s ease-out infinite;
+  }
+  .view-btns { display: flex; gap: 7px; margin-left: auto; }
+  .view-btn {
+    padding: 7px 13px; border-radius: 18px; border: 1.5px solid var(--line);
+    background: #fff; color: var(--sub); font-size: 12px; font-weight: 700; cursor: pointer;
+    transition: all .18s ease; white-space: nowrap;
+  }
+  .view-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .view-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .track-style-switcher { display: inline-flex; gap: 4px; margin-left: 8px; background: rgba(255,255,255,0.95); padding: 4px; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+    .style-btn { width: 34px; height: 34px; border: none; background: transparent; border-radius: 50%; cursor: pointer; font-size: 17px; transition: all 0.25s cubic-bezier(0.4,0,0.2,1); display: flex; align-items: center; justify-content: center; }
+    .style-btn:hover { background: #E8F5F1; transform: scale(1.15); }
+    .style-btn.active { background: linear-gradient(135deg, #0E7C66, #10B981); box-shadow: 0 2px 10px rgba(14,124,102,0.5); transform: scale(1.1); }
+
+  #map { height: 430px; background: #dfe8ea; }
+  .loc-bar {
+    display: flex; align-items: center; gap: 12px; padding: 13px 18px;
+    background: linear-gradient(135deg, rgba(14,124,102,.08), rgba(14,124,102,.16));
+    flex-wrap: wrap;
+  }
+  .loc-pin {
+    width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+    color: #fff; display: flex; align-items: center; justify-content: center; font-size: 17px;
+    box-shadow: 0 2px 8px rgba(14,124,102,.35);
+  }
+  .loc-info { flex: 1 1 220px; min-width: 0; }
+  .loc-info .t { font-size: 13.5px; font-weight: 700; }
+  .loc-info .s { font-size: 12px; color: var(--sub); margin-top: 3px; line-height: 1.5; }
+  .loc-info .u { font-size: 11px; color: var(--accent); margin-top: 4px; font-weight: 600; }
+  .loc-info .u::before { content: '↻ '; }
+
+  /* ---------- 时间轴 + 沿途影像 ---------- */
+  .tl-sec { padding: 8px 18px 18px; }
+  .tl-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .play-btn {
+    min-width: 84px; padding: 10px 15px; border: none; border-radius: 12px;
+    background: var(--accent); color: #fff; font-size: 13.5px; font-weight: 700; cursor: pointer;
+    transition: all .18s ease;
+  }
+  .play-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .follow-btn {
+    background: rgba(16,185,129,.12); color: #059669; border: 1.5px solid rgba(16,185,129,.4);
+    border-radius: 999px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all .2s ease; flex-shrink: 0;
+  }
+  .follow-btn:hover { background: rgba(16,185,129,.2); }
+  .follow-btn.active { background: linear-gradient(135deg,#10B981,#059669); color: #fff; border-color: transparent; }
+  .play-btn.replay { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+  .tl-date { font-size: 13px; font-weight: 700; min-width: 128px; }
+  .tl-progress { font-size: 12px; color: var(--sub); }
+  input[type=range] { flex: 1 1 180px; min-width: 0; accent-color: var(--accent); height: 32px; }
+
+  .scene {
+    margin-top: 14px; border-radius: 16px; overflow: hidden;
+    border: 1px solid var(--line); background: #faf9f6;
+    display: grid; grid-template-columns: 168px 1fr; min-height: 118px;
+  }
+  .scene img {
+    width: 100%; height: 118px; object-fit: cover; display: block; background: #e8e6df;
+    transition: opacity .25s ease;
+  }
+  .scene-body { padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; }
+  .scene-body .k { font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: .05em; }
+  .scene-body .v { font-size: 13.5px; font-weight: 700; margin-top: 4px; line-height: 1.5; }
+  .scene-body .c { font-size: 10.5px; color: var(--sub); margin-top: 5px; line-height: 1.5; }
+
+  /* ---------- 迁徙统计卡片 ---------- */
+  .stats-sec { padding: 0 18px 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .stat-card {
+    background: linear-gradient(135deg, rgba(14,124,102,.06), rgba(14,124,102,.12));
+    border: 1px solid rgba(14,124,102,.15); border-radius: 14px; padding: 12px 10px;
+    text-align: center; transition: transform .15s ease;
+  }
+  .stat-card:hover { transform: translateY(-2px); }
+  .stat-card .v { font-size: 18px; font-weight: 800; color: var(--accent-deep); line-height: 1.2; }
+  .stat-card .v small { font-size: 11px; font-weight: 600; color: var(--sub); }
+  .stat-card .k { font-size: 10.5px; color: var(--sub); margin-top: 4px; font-weight: 600; letter-spacing: .03em; }
+
+  /* ---------- 季节迁徙快速跳转 ---------- */
+  .season-sec { padding: 0 18px 18px; }
+  .season-label { font-size: 11px; color: var(--sub); font-weight: 700; margin-bottom: 8px; letter-spacing: .05em; }
+  .season-btns { display: flex; gap: 8px; }
+  .season-btn {
+    flex: 1; padding: 10px 6px; border-radius: 12px; border: 1.5px solid var(--line);
+    background: #fff; cursor: pointer; transition: all .18s ease; text-align: center;
+  }
+  .season-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .season-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .season-btn .emoji { font-size: 18px; display: block; }
+  .season-btn .name { font-size: 11px; font-weight: 700; margin-top: 2px; }
+  .season-btn .range { font-size: 9.5px; opacity: .7; margin-top: 1px; }
+
+  /* ---------- 年份范围选择器 ---------- */
+  .year-sec { padding: 0 18px 18px; }
+  .year-label { font-size: 11px; color: var(--sub); font-weight: 700; margin-bottom: 8px; letter-spacing: .05em; }
+  .year-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .year-select {
+    flex: 1; min-width: 80px; padding: 9px 10px; border-radius: 10px;
+    border: 1.5px solid var(--line); background: #fff; font-size: 13px;
+    font-weight: 600; color: var(--ink); cursor: pointer; text-align: center;
+  }
+  .year-select:focus { outline: none; border-color: var(--accent); }
+  .year-sep { font-size: 13px; color: var(--sub); font-weight: 700; }
+  .year-apply {
+    padding: 9px 16px; border-radius: 10px; border: none; background: var(--accent);
+    color: #fff; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all .15s ease;
+  }
+  .year-apply:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .year-quick { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .year-chip {
+    padding: 5px 10px; border-radius: 14px; border: 1.5px solid var(--line);
+    background: #fff; font-size: 11px; font-weight: 600; color: var(--sub);
+    cursor: pointer; transition: all .15s ease;
+  }
+  .year-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .year-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* ---------- 照片灯箱 ---------- */
+  .lightbox {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,.94); z-index: 9999; justify-content: center; align-items: center;
+    flex-direction: column;
+  }
+  .lightbox.active { display: flex; }
+  .lightbox-img {
+    flex: 0 0 auto; max-width: 92vw; max-height: 82vh; width: auto; height: auto;
+    min-width: 120px; min-height: 120px;
+    object-fit: contain; border-radius: 8px;
+    background: rgba(255,255,255,.06);
+    box-shadow: 0 8px 40px rgba(0,0,0,.6); transition: opacity .3s ease;
+    display: block; margin: 0 auto; align-self: center;
+  }
+  .lightbox-img.loading { opacity: 0; }
+  .lightbox-spinner {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 44px; height: 44px; border: 4px solid rgba(255,255,255,.2);
+    border-top-color: #fff; border-radius: 50%;
+    animation: lbSpin 1s linear infinite; display: none;
+  }
+  .lightbox-spinner.show { display: block; }
+  .lightbox-error {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    max-width: 80%; color: #fff; font-size: 15px; line-height: 1.7;
+    text-align: center; padding: 16px 22px; border-radius: 10px;
+    background: rgba(255,255,255,.08); z-index: 2; display: none;
+  }
+  @keyframes lbSpin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+  .lightbox-close {
+    position: absolute; top: 16px; right: 16px; width: 44px; height: 44px;
+    border-radius: 50%; background: rgba(255,255,255,.15); border: none; color: #fff;
+    font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background .15s ease;
+  }
+  .lightbox-close:hover { background: rgba(255,255,255,.3); }
+  .lightbox-nav {
+    position: absolute; top: 50%; transform: translateY(-50%); width: 48px; height: 48px;
+    border-radius: 50%; background: rgba(255,255,255,.15); border: none; color: #fff;
+    font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background .15s ease;
+  }
+  .lightbox-nav:hover { background: rgba(255,255,255,.3); }
+  .lightbox-prev { left: 16px; }
+  .lightbox-next { right: 16px; }
+  .lightbox-counter {
+    position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+    color: rgba(255,255,255,.8); font-size: 14px; font-weight: 600;
+  }
+  .lightbox-hint {
+    position: absolute; bottom: 52px; left: 50%; transform: translateX(-50%);
+    color: rgba(255,255,255,.5); font-size: 11px;
+  }
+  .photo-item { cursor: pointer; transition: transform .15s ease; }
+  .photo-item:hover { transform: scale(1.02); }
+  .photo-wrap { position: relative; overflow: hidden; }
+  .photo-wrap img { width: 100%; height: 110px; object-fit: cover; display: block; background: #e8e6df; }
+  .photo-zoom {
+    position: absolute; bottom: 0; left: 0; right: 0; padding: 6px 8px;
+    background: linear-gradient(transparent, rgba(0,0,0,.65)); color: #fff;
+    font-size: 11px; font-weight: 600; text-align: center; opacity: 0;
+    transition: opacity .2s ease;
+  }
+  .photo-card:hover .photo-zoom { opacity: 1; }
+
+  /* ---------- 分享按钮 ---------- */
+  .share-row { display: flex; gap: 8px; margin-top: 14px; }
+  .share-btn {
+    flex: 1; padding: 10px; border-radius: 12px; border: 1.5px solid var(--accent);
+    background: #fff; color: var(--accent); font-size: 12.5px; font-weight: 700;
+    cursor: pointer; transition: all .18s ease; text-align: center;
+  }
+  .share-btn:hover { background: var(--accent); color: #fff; }
+  .share-btn.copied { background: var(--accent); color: #fff; }
+
+  /* ---------- 动物档案 ---------- */
+  .info-sec {
+    background: var(--card); border: 1px solid var(--line); border-radius: 20px;
+    padding: 18px; margin-top: 14px; box-shadow: 0 4px 20px rgba(0,0,0,.06);
+    animation: fadeUp .5s ease .12s both;
+  }
+  .info-top { display: flex; align-items: flex-start; gap: 14px; }
+  .info-hero {
+    width: 92px; height: 92px; border-radius: 20px; object-fit: cover; flex-shrink: 0;
+    background: #e8e6df; box-shadow: 0 4px 14px rgba(0,0,0,.15);
+  }
+  .species { font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: .05em; }
+  .badge {
+    display: inline-block; font-size: 10.5px; border-radius: 20px; padding: 2.5px 9px;
+    margin-left: 6px; vertical-align: 1px; font-weight: 700;
+  }
+  .badge.real { color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); }
+  .badge.demo { color: #8a5a00; background: #FCF3D9; }
+  h1 { font-size: 24px; margin: 3px 0 4px; }
+  .meta { font-size: 12px; color: var(--sub); line-height: 1.6; }
+
+  .story-fold { margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 12px; }
+  .story-toggle {
+    width: 100%; text-align: left; border: none; background: none; cursor: pointer;
+    font-size: 13px; font-weight: 700; color: var(--accent); padding: 6px 0;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .story-toggle .arr { transition: transform .2s ease; }
+  .story-fold.open .arr { transform: rotate(90deg); }
+  .story-body { display: none; font-size: 13.5px; line-height: 1.85; color: #374151; }
+  .story-fold.open .story-body { display: block; animation: fadeUp .3s ease both; }
+
+  .photo-wall { margin-top: 14px; }
+  .photo-wall .cap { font-size: 12px; color: var(--sub); margin-bottom: 8px; }
+  .photos { display: flex; gap: 10px; flex-wrap: wrap; }
+  .photo-card {
+    flex: 1 1 130px; min-width: 0; border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; background: #faf9f6; transition: transform .18s ease;
+  }
+  .photo-card:hover { transform: translateY(-2px); }
+  .photo-card img { width: 100%; height: 110px; object-fit: cover; display: block; background: #e8e6df; }
+
+  .note-block { font-size: 12px; color: var(--sub); line-height: 1.7; margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 12px; }
+  .back { display: inline-block; margin-top: 14px; font-size: 13px; color: var(--accent); text-decoration: none; font-weight: 700; }
+  .back:hover { text-decoration: underline; }
+
+  /* ---------- 圆形头像地图标记（divIcon） ---------- */
+  .avatar-marker { background: transparent; border: none; }
+  .avatar-marker .face {
+    border-radius: 50%; background: #fff center/cover no-repeat;
+    border: 2.5px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,.4);
+  }
+  .avatar-marker .ring {
+    position: absolute; inset: -8px; border-radius: 50%;
+    border: 2px solid rgba(229,83,61,.65); animation: pulseRing 1.9s ease-out infinite;
+  }
+  .avatar-marker .ring::before {
+    content: ''; position: absolute; inset: -4px; border-radius: 50%;
+    border: 2px solid rgba(229,83,61,.5); opacity: 0;
+    animation: pulseRing2 2s ease-out infinite;
+  }
+  .avatar-marker .ring::after {
+    content: ''; position: absolute; inset: -8px; border-radius: 50%;
+    border: 1px solid rgba(229,83,61,.3); opacity: 0;
+    animation: pulseRing2 2s ease-out infinite 1s;
+  }
+  @keyframes pulseRing2 {
+    0% { transform: scale(0.8); opacity: .8; }
+    100% { transform: scale(1.6); opacity: 0; }
+  }
+  .avatar-marker.play .ring { border-color: rgba(14,124,102,.55); animation-duration: 2.4s; }
+  .avatar-marker.play .ring::before { border-color: rgba(14,124,102,.4); }
+  .avatar-marker.play .ring::after { border-color: rgba(14,124,102,.25); }
+  .avatar-marker.play .face {
+    box-shadow: 0 0 20px rgba(14,124,102,.6), 0 0 40px rgba(14,124,102,.3);
+  }
+  .cinematic-overlay {
+    position: absolute; inset: 0; z-index: 1000; pointer-events: none;
+    background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.85) 100%);
+    opacity: 0; transition: opacity 1s ease;
+  }
+  .cinematic-overlay.active { opacity: 1; }
+  .cinematic-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: #fff; font-size: 18px; font-weight: 600; text-align: center;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.9); opacity: 0;
+    transition: opacity .5s ease; z-index: 1001; pointer-events: none;
+    line-height: 1.8;
+  }
+  .cinematic-text.active { opacity: 1; }
+
+  /* ---------- 等级经验系统 ---------- */
+  .level-section {
+    background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(16,185,129,0.08));
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 16px; padding: 16px; margin-top: 16px;
+  }
+  .level-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+  }
+  .level-badge {
+    display: flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(16,185,129,0.2));
+    border: 1px solid var(--gold); border-radius: 20px;
+    padding: 6px 14px; font-size: 13px; font-weight: 600; color: var(--gold);
+  }
+  .level-exp-text { font-size: 12px; color: var(--sub); }
+  .exp-bar {
+    width: 100%; height: 8px; background: rgba(255,255,255,0.08);
+    border-radius: 4px; overflow: hidden; position: relative;
+  }
+  .exp-fill {
+    height: 100%; background: linear-gradient(90deg, var(--gold), var(--accent));
+    border-radius: 4px; transition: width 1s ease;
+    box-shadow: 0 0 10px rgba(245,158,11,0.5);
+  }
+  .exp-fill::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: expShine 2s ease-in-out infinite;
+  }
+  @keyframes expShine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* ---------- 成就徽章系统 ---------- */
+  @keyframes achPop {
+    0% { transform: translateX(-50%) scale(.5); opacity: 0; }
+    60% { transform: translateX(-50%) scale(1.08); opacity: 1; }
+    100% { transform: translateX(-50%) scale(1); opacity: 1; }
+  }
+  .achievements-section {
+    margin-top: 16px; padding: 16px;
+    background: rgba(255,255,255,0.02); border-radius: 16px;
+    border: 1px solid var(--line);
+  }
+  .achievements-title {
+    font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .achievements-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  }
+  @media (max-width: 480px) { .achievements-grid { grid-template-columns: repeat(3, 1fr); } }
+  .achievement-item {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 10px 6px; border-radius: 12px; text-align: center;
+    transition: all .3s ease;
+  }
+  .achievement-item.unlocked {
+    background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(16,185,129,0.1));
+    border: 1px solid rgba(245,158,11,0.3);
+  }
+  .achievement-item.locked {
+    opacity: 0.4; filter: grayscale(1);
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--line);
+  }
+  .achievement-icon { font-size: 24px; margin-bottom: 4px; }
+  .achievement-name { font-size: 10px; color: var(--sub); line-height: 1.3; }
+  .achievement-item.unlocked .achievement-name { color: var(--gold); font-weight: 600; }
+
+  /* ---------- 升级庆祝动画 ---------- */
+  .level-up-overlay {
+    position: fixed; inset: 0; z-index: 9999; display: flex;
+    align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.8); opacity: 0; pointer-events: none;
+    transition: opacity .5s ease;
+  }
+  .level-up-overlay.active { opacity: 1; pointer-events: auto; }
+  .level-up-content {
+    text-align: center; animation: levelUpPop .8s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes levelUpPop {
+    0% { transform: scale(0); }
+    60% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+  .level-up-icon { font-size: 80px; margin-bottom: 16px; }
+  .level-up-title {
+    font-size: 36px; font-weight: 800;
+    background: linear-gradient(135deg, var(--gold), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: 8px;
+  }
+  .level-up-sub { font-size: 16px; color: var(--sub); }
+
+  /* ---------- 故事叙事模块 ---------- */
+  .story-section {
+    margin-top: 16px; padding: 20px;
+    background: linear-gradient(145deg, rgba(16,185,129,0.05), rgba(6,182,212,0.05));
+    border-radius: 16px; border: 1px solid rgba(16,185,129,0.15);
+  }
+  .story-title {
+    font-size: 16px; font-weight: 700; color: var(--ink);
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+  .story-evidence {
+    margin-top: 14px; padding: 12px 14px; border-radius: 12px;
+    background: rgba(18,121,111,.06); border: 1px dashed rgba(18,121,111,.35);
+    font-size: 12px; line-height: 1.8; color: var(--sub);
+  }
+  .story-evidence b { color: var(--accent); font-weight: 600; }
+  .story-chapters { display: flex; flex-direction: column; gap: 12px; }
+  .story-chapter {
+    background: rgba(255,255,255,0.03); border-radius: 12px;
+    padding: 14px; border-left: 3px solid var(--accent);
+    cursor: pointer; transition: all .3s ease;
+  }
+  .story-chapter:hover {
+    background: rgba(16,185,129,0.08);
+    transform: translateX(4px);
+  }
+  .story-chapter-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+  }
+  .story-chapter-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent); color: #fff; font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .story-chapter-title { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .story-chapter-time { font-size: 11px; color: var(--sub); margin-left: auto; }
+  .story-chapter-content {
+    font-size: 13px; color: var(--sub); line-height: 1.7;
+    max-height: 0; overflow: hidden; transition: max-height .3s ease;
+  }
+  .story-chapter.expanded .story-chapter-content { max-height: 500px; margin-top: 8px; }
+  .story-chapter-content img {
+    width: 100%; border-radius: 8px; margin-top: 8px;
+  }
+
+  /* ---------- 物种科普模块 ---------- */
+  .science-section {
+    margin-top: 16px; padding: 20px;
+    background: rgba(255,255,255,0.02); border-radius: 16px;
+    border: 1px solid var(--line);
+  }
+  .science-title {
+    font-size: 16px; font-weight: 700; color: var(--ink);
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+  .science-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .science-item {
+    background: rgba(255,255,255,0.03); border-radius: 10px;
+    padding: 12px; border: 1px solid var(--line);
+  }
+  .science-item-label {
+    font-size: 11px; color: var(--sub); margin-bottom: 4px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  .science-item-value { font-size: 13px; color: var(--ink); font-weight: 600; line-height: 1.5; }
+  .science-facts {
+    margin-top: 14px; padding: 14px;
+    background: rgba(245,158,11,0.05); border-radius: 10px;
+    border: 1px solid rgba(245,158,11,0.2);
+  }
+  .science-facts-title {
+    font-size: 13px; font-weight: 600; color: var(--gold); margin-bottom: 8px;
+  }
+  .science-facts-list { font-size: 12px; color: var(--sub); line-height: 1.8; }
+  .science-facts-list li { margin-bottom: 4px; padding-left: 4px; }
+  .conservation-badge {
+    display: inline-block; padding: 4px 10px; border-radius: 12px;
+    font-size: 11px; font-weight: 700;
+  }
+  .conservation-lc { background: rgba(16,185,129,0.2); color: #10B981; }
+  .conservation-vu { background: rgba(245,158,11,0.2); color: #F59E0B; }
+  .conservation-en { background: rgba(239,68,68,0.2); color: #EF4444; }
+
+  /* ---------- 日常任务系统 ---------- */
+  .daily-section {
+    margin-top: 16px; padding: 16px;
+    background: linear-gradient(145deg, rgba(6,182,212,0.05), rgba(16,185,129,0.05));
+    border-radius: 16px; border: 1px solid rgba(6,182,212,0.15);
+  }
+  .daily-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+  }
+  .daily-title {
+    font-size: 15px; font-weight: 700; color: var(--ink);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .daily-streak {
+    font-size: 12px; color: var(--gold); font-weight: 600;
+    background: rgba(245,158,11,0.1); padding: 4px 10px; border-radius: 12px;
+  }
+  .daily-tasks { display: flex; flex-direction: column; gap: 8px; }
+  .daily-task {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; background: rgba(255,255,255,0.03);
+    border-radius: 10px; border: 1px solid var(--line);
+    transition: all .3s ease;
+  }
+  .daily-task.completed {
+    background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.3);
+  }
+  .daily-task-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: rgba(255,255,255,0.05); display: flex;
+    align-items: center; justify-content: center; font-size: 16px;
+    flex-shrink: 0;
+  }
+  .daily-task.completed .daily-task-icon {
+    background: rgba(16,185,129,0.2);
+  }
+  .daily-task-info { flex: 1; min-width: 0; }
+  .daily-task-name { font-size: 13px; color: var(--ink); font-weight: 600; }
+  .daily-task.completed .daily-task-name { color: var(--accent); }
+  .daily-task-reward { font-size: 11px; color: var(--sub); margin-top: 2px; }
+  .daily-task-check {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid var(--line); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 12px; color: transparent; flex-shrink: 0;
+    transition: all .3s ease;
+  }
+  .daily-task.completed .daily-task-check {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+  }
+  .greet-btn {
+    width: 100%; margin-top: 10px; padding: 12px;
+    background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(16,185,129,0.15));
+    border: 1px solid rgba(245,158,11,0.3); border-radius: 12px;
+    color: var(--gold); font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all .2s ease;
+  }
+  .greet-btn:active { transform: scale(.97); }
+  .greet-btn:disabled { opacity: .5; cursor: default; }
+  .animal-mood {
+    margin-top: 8px; padding: 8px 12px;
+    background: rgba(255,255,255,0.03); border-radius: 8px;
+    font-size: 12px; color: var(--sub); text-align: center;
+    display: none;
+  }
+  .animal-mood.show { display: block; }
+
+  /* ---------- 成就进度条 ---------- */
+  .achievement-progress {
+    width: 100%; height: 4px; background: rgba(255,255,255,0.1);
+    border-radius: 2px; margin-top: 4px; overflow: hidden;
+  }
+  .achievement-progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--gold), var(--accent));
+    border-radius: 2px; transition: width .5s ease;
+  }
+  .achievement-item .achievement-name {
+    font-size: 10px; color: var(--sub); line-height: 1.3;
+  }
+  .achievement-item.unlocked .achievement-name {
+    color: var(--gold); font-weight: 600;
+  }
+  .rarity-badge {
+    font-size: 9px; padding: 1px 5px; border-radius: 6px;
+    margin-top: 2px; display: inline-block;
+  }
+  .rarity-common { background: rgba(156,163,175,0.2); color: #9CA3AF; }
+  .rarity-rare { background: rgba(59,130,246,0.2); color: #3B82F6; }
+  .rarity-epic { background: rgba(139,92,246,0.2); color: #8B5CF6; }
+  .rarity-legendary { background: rgba(245,158,11,0.2); color: #F59E0B; }
+
+  /* ---------- 故事解锁 ---------- */
+  .story-chapter.locked {
+    opacity: 0.5; filter: grayscale(0.5);
+    cursor: not-allowed;
+  }
+  .story-chapter.locked .story-chapter-content { display: none !important; }
+  .story-lock-hint {
+    font-size: 11px; color: var(--gold); margin-top: 4px;
+    display: none;
+  }
+  .story-chapter.locked .story-lock-hint { display: block; }
+
+  /* ---------- 关键节点故事弹窗 ---------- */
+  .story-popup {
+    position: absolute; z-index: 500; max-width: 240px;
+    background: rgba(15,20,30,0.95); backdrop-filter: blur(10px);
+    border: 1px solid var(--accent); border-radius: 12px;
+    padding: 12px; pointer-events: auto;
+    animation: storyPopupIn .5s ease;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  @keyframes storyPopupIn {
+    from { opacity: 0; transform: translateY(10px) scale(.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .story-popup-title {
+    font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 6px;
+  }
+  .story-popup-content {
+    font-size: 12px; color: var(--sub); line-height: 1.6;
+  }
+  .story-popup-close {
+    position: absolute; top: 6px; right: 8px;
+    color: var(--sub); cursor: pointer; font-size: 14px;
+  }
+
+  /* ---------- 科普知识问答 ---------- */
+  .quiz-section {
+    margin-top: 14px; padding: 14px;
+    background: rgba(139,92,246,0.05); border-radius: 12px;
+    border: 1px solid rgba(139,92,246,0.2);
+  }
+  .quiz-title {
+    font-size: 13px; font-weight: 700; color: var(--ink);
+    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+  }
+  .quiz-question {
+    font-size: 13px; color: var(--ink); margin-bottom: 10px; line-height: 1.5;
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 6px; }
+  .quiz-option {
+    padding: 8px 12px; background: rgba(255,255,255,0.03);
+    border: 1px solid var(--line); border-radius: 8px;
+    font-size: 12px; color: var(--sub); cursor: pointer;
+    transition: all .2s ease;
+  }
+  .quiz-option:hover { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.3); }
+  .quiz-option.correct { background: rgba(16,185,129,0.15); border-color: var(--accent); color: var(--accent); }
+  .quiz-option.wrong { background: rgba(239,68,68,0.1); border-color: #EF4444; color: #EF4444; }
+  .quiz-result {
+    margin-top: 8px; font-size: 12px; padding: 6px 10px;
+    border-radius: 6px; display: none;
+  }
+  .quiz-result.show { display: block; }
+  .quiz-result.correct { background: rgba(16,185,129,0.1); color: var(--accent); }
+  .quiz-result.wrong { background: rgba(239,68,68,0.1); color: #EF4444; }
+  .quiz-next {
+    margin-top: 8px; padding: 6px 12px; background: rgba(139,92,246,0.2);
+    border: none; border-radius: 6px; color: #8B5CF6;
+    font-size: 11px; cursor: pointer; display: none;
+  }
+  .quiz-next.show { display: inline-block; }
+
+  /* ---------- 输码查询 ---------- */
+  .code-search {
+    margin-left: auto; display: flex; align-items: center; gap: 6px;
+  }
+  .code-search input {
+    width: 130px; padding: 7px 10px; border-radius: 10px;
+    border: 1px solid var(--line); background: #fff; font-size: 12px;
+    outline: none; transition: border-color .2s;
+  }
+  .code-search input:focus { border-color: var(--accent); }
+  .code-search button {
+    padding: 7px 12px; border-radius: 10px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--accent), var(--accent2, var(--accent)));
+    color: #fff; font-size: 12px; white-space: nowrap;
+  }
+  .code-search button:active { transform: scale(.96); }
+  #scanBtn { margin-left: 4px; background: linear-gradient(135deg, #0E7C66, #0A5C4C); }
+  .scan-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,.92); z-index: 9998; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  }
+  .scan-overlay.active { display: flex; }
+  .scan-overlay video { width: min(88vw, 420px); border-radius: 14px; border: 2px solid rgba(255,255,255,.25); transform: scaleX(-1); }
+  .scan-frame { position: absolute; width: 240px; height: 240px; border: 2.5px solid rgba(120,255,180,.9); border-radius: 18px; box-shadow: 0 0 0 4000px rgba(0,0,0,.45); pointer-events: none; }
+  .scan-tip { color: #fff; font-size: 14px; opacity: .9; text-align: center; padding: 0 24px; line-height: 1.7; }
+  .scan-cancel { padding: 10px 30px; border: none; border-radius: 22px; background: rgba(255,255,255,.14); color: #fff; font-size: 15px; cursor: pointer; }
+  @media (max-width: 560px) {
+    .code-search input { width: 92px; }
+    .code-search button { padding: 7px 9px; }
+  }
+
+  /* ---------- 今日动态 / 领养卡 / 纪念信 / 留言板 ---------- */
+  .today-dyn {
+    margin: 0 0 14px; padding: 14px 16px; border-radius: 16px;
+    background: linear-gradient(135deg, rgba(14,124,102,.10), rgba(14,124,102,.16));
+    border: 1px solid rgba(14,124,102,.22); display: flex; gap: 12px; align-items: flex-start;
+  }
+  .today-ico { font-size: 26px; line-height: 1.2; }
+  .today-body { flex: 1; }
+  .today-title { font-size: 13.5px; font-weight: 700; color: #0A5C4C; margin-bottom: 3px; }
+  .today-text { font-size: 12.5px; color: #374151; line-height: 1.7; }
+  .today-text b { color: #0E7C66; }
+  .adopt-card-btn {
+    margin: 0 0 14px; width: 100%; padding: 12px; border: none; border-radius: 14px;
+    background: linear-gradient(135deg, #F59E0B, #8B5CF6); color: #fff;
+    font-size: 14.5px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(139,92,246,.3);
+  }
+  .adopt-card-btn:active { transform: scale(.98); }
+  .card-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,.88); z-index: 9996; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 18px;
+  }
+  .card-overlay.active { display: flex; }
+  .card-overlay canvas { width: min(92vw, 640px); border-radius: 16px; box-shadow: 0 16px 50px rgba(0,0,0,.5); background: #fff; }
+  .card-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .card-actions button {
+    padding: 10px 22px; border: none; border-radius: 22px; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  }
+  .card-close { background: rgba(255,255,255,.16); color: #fff; }
+  .card-download { background: linear-gradient(135deg, #0E7C66, #0A5C4C); color: #fff; }
+  .card-share { background: linear-gradient(135deg, #F59E0B, #D97706); color: #fff; }
+  .letter-sec { margin-top: 16px; }
+  .letter-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+  .letter-list { display: flex; flex-direction: column; gap: 8px; }
+  .letter-item {
+    border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px;
+    background: var(--card); font-size: 12.5px; line-height: 1.7; color: #374151;
+  }
+  .letter-item.open { border-color: rgba(14,124,102,.4); background: linear-gradient(135deg, rgba(14,124,102,.05), rgba(14,124,102,.1)); }
+  .letter-item .letter-head { display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+  .letter-item .letter-st { font-size: 11px; color: var(--sub); font-weight: 400; }
+  .letter-item .letter-body { margin-top: 6px; }
+  .letter-item.locked { opacity: .65; }
+  .msg-sec { margin-top: 18px; padding: 14px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
+  .msg-title { font-size: 14.5px; font-weight: 700; margin-bottom: 8px; }
+  .msg-sub { font-size: 11.5px; color: var(--sub); margin-bottom: 10px; }
+  .msg-input-row { display: flex; gap: 8px; }
+  .msg-input-row textarea {
+    flex: 1; min-height: 52px; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--line);
+    font-size: 13px; font-family: inherit; resize: vertical; background: #faf9f6;
+  }
+  .msg-input-row button {
+    padding: 0 18px; border: none; border-radius: 12px; background: var(--accent); color: #fff; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  }
+  .msg-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .msg-item { padding: 10px 13px; border-radius: 12px; background: #f6f5f1; font-size: 12.5px; line-height: 1.65; }
+  .msg-item .msg-time { font-size: 10.5px; color: var(--sub); margin-top: 3px; }
+  .msg-empty { font-size: 12px; color: var(--sub); text-align: center; padding: 12px 0; }
+</style>
+<link rel="manifest" href="/static/manifest.webmanifest">
+<meta name="theme-color" content="#0E7C66">
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+<script>
+// ---------- 区块重排：照片/故事提前，成就/任务后移 ----------
+function reorderMain() {
+  try {
+    var main = document.querySelector('main');
+    if (!main) return;
+    var ids = ['todayDyn', 'map-sec', 'stats-sec', 'photos', 'storySection', 'scienceSection', 'achievements-section', 'dailySection', 'quiz-section', 'letterSection', 'msgSection'];
+    ids.forEach(function(sel) {
+      var el = document.querySelector('.' + sel + ', #' + sel);
+      if (el) main.appendChild(el);
+    });
+  } catch(e) { console.log('reorder err', e); }
+}
+// 彻底清除Service Worker与缓存（防止旧版SW拦截照片请求）
+if ('serviceWorker' in navigator) {
+  try {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+      regs.forEach(function(r) { r.unregister(); });
+    });
+  } catch(e) {}
+}
+if ('caches' in window) {
+  try {
+    caches.keys().then(function(keys) {
+      keys.forEach(function(k) { caches.delete(k); });
+    });
+  } catch(e) {}
+}
+</script>
+</head>
+<body>
+  <!-- 照片灯箱（放在body开头，确保JS执行时元素存在） -->
+  <div class="lightbox" id="lightbox">
+    <div class="lightbox-spinner" id="lbSpinner"></div>
+    <div class="lightbox-error" id="lbError" style="display:none;"></div>
+    <button class="lightbox-close" id="lbClose">&times;</button>
+    <button class="lightbox-nav lightbox-prev" id="lbPrev">&#8249;</button>
+    <img class="lightbox-img" id="lbImg" src="" alt="">
+    <button class="lightbox-nav lightbox-next" id="lbNext">&#8250;</button>
+    <div class="lightbox-hint">点击任意处关闭 · 左右箭头切换 · ESC退出</div>
+    <div class="lightbox-counter" id="lbCounter">1 / 5</div>
+  </div>
+
+<div class="scan-overlay" id="scanOverlay">
+  <div class="scan-frame"></div>
+  <video id="scanVideo" autoplay playsinline muted></video>
+  <div class="scan-tip">将手环上的二维码对准取景框<br>识别后自动跳转到对应动物</div>
+  <button class="scan-cancel" id="scanCancel">取消</button>
+</div>
+
+<header>
+  <div class="logo">爪</div>
+  <div class="brand">动物追踪手环<small>你领养的动物 · 实时旅程</small></div>
+  <div class="code-search">
+    <input id="codeInput" placeholder="输领养码查动物" maxlength="20">
+    <button id="codeGo" type="button">查询</button>
+    <button id="scanBtn" type="button" title="扫手环上的二维码">📷 扫码</button>
+  </div>
+</header>
+
+<main>
+  <!-- 地图区（主角） -->
+  <!-- 今日动态（置顶） -->
+  <div class="today-dyn" id="todayDyn" style="display:none;">
+    <div class="today-ico" id="todayIco">🌅</div>
+    <div class="today-body">
+      <div class="today-title" id="todayTitle">今日动态</div>
+      <div class="today-text" id="todayText"></div>
+    </div>
+  </div>
+
+  <div class="map-sec">
+    <div class="map-head">
+      <div class="avatar" id="mapAvatar"></div>
+      <div>
+        <div class="t">
+          <span id="adoptedBadge" style="display:none;background:linear-gradient(135deg,#10B981,#059669);color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;margin-right:6px;vertical-align:middle;">你领养的</span>
+          <span id="mapName">…</span><span class="live">实时</span>
+        </div>
+        <div class="s" id="mapSub">正在加载旅程…</div>
+      </div>
+      <div class="view-btns">
+        <button class="view-btn" id="worldBtn">🌍 世界</button>
+        <button class="view-btn active" id="trackBtn">🐾 轨迹</button>
+        <div class="track-style-switcher">
+          <button class="style-btn active" data-style="ant" title="轨迹生长：线随旅程逐渐画出">🪶</button>
+          <button class="style-btn" data-style="dots" title="时间点阵：每个停留点的足迹">🎯</button>
+          <button class="style-btn" data-style="gradient" title="速度光谱：快慢一目了然">⚡</button>
+          <button class="style-btn" data-style="arrow" title="方向流线：导航箭头指示去向">➡️</button>
+          <button class="style-btn" data-style="heat" title="驻留热力：它在哪里生活">🔥</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="map"><div id="mapPlaceholder" style="padding:22px;color:var(--sub);font-size:13px;">地图加载中…</div></div>
+
+    <div class="loc-bar">
+      <div class="loc-pin">📍</div>
+      <div class="loc-info">
+        <div class="t" id="locRegion">当前区域：加载中…</div>
+        <div class="s" id="locDetail">—</div>
+        <div class="u" id="locUpdate">—</div>
+        <div class="u" id="locMoved" style="color:#10B981;font-weight:600;">—</div>
+      </div>
+    </div>
+
+    <div class="tl-sec">
+      <div class="tl-controls">
+        <button class="play-btn" id="playBtn">▶ 播放</button>
+        <button class="follow-btn active" id="followBtn" title="播放时地图自动跟随动物移动（像无人机跟拍）">🎥 跟随</button>
+        <span class="tl-date" id="tlDate">—</span>
+        <input type="range" id="tlSlider" min="0" max="0" value="0" step="1">
+        <span class="tl-progress" id="tlProgress">0 / 0</span>
+      </div>
+      <div class="scene" id="scene">
+        <img id="sceneImg" alt="沿途影像" style="opacity:0">
+        <div class="scene-body">
+          <div class="k" id="sceneTag">沿途影像</div>
+          <div class="v" id="sceneTitle">拖动时间轴，看她一路经过的风景</div>
+          <div class="c" id="sceneCredit">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 等级经验系统 -->
+    <div class="level-section">
+      <div class="level-header">
+        <div class="level-badge">
+          <span>⭐</span>
+          <span id="levelText">Lv.1 新手守护者</span>
+        </div>
+        <div class="level-exp-text" id="expText">0 / 100 EXP</div>
+      </div>
+      <div class="exp-bar">
+        <div class="exp-fill" id="expFill" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- 成就徽章系统 -->
+    <div class="achievements-section">
+      <div class="achievements-title">🏆 成就徽章 <span style="font-size:11px;color:var(--sub);font-weight:400;" id="achievementCount">0/16 已解锁</span></div>
+      <div id="adoptNeedTip" style="display:none;margin:0 0 10px;padding:9px 13px;border-radius:12px;background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(139,92,246,.12));border:1px solid rgba(245,158,11,.3);color:#92400e;font-size:12.5px;line-height:1.6;">🔒 所有成就都要先领养它才会解锁——扫描手环二维码，让它成为你的专属动物，然后通过每天的陪伴和互动来收集徽章。</div>
+      <div class="achievements-grid" id="achievementsGrid">
+        <!-- 🐣 初见 -->
+        <div class="achievement-item locked" data-ach="first">
+          <div class="achievement-icon">🐣</div>
+          <div class="achievement-name">初次相遇</div>
+        </div>
+        <div class="achievement-item locked" data-ach="greet">
+          <div class="achievement-icon">👋</div>
+          <div class="achievement-name">第一次问候</div>
+        </div>
+        <div class="achievement-item locked" data-ach="quiz1">
+          <div class="achievement-icon">🧠</div>
+          <div class="achievement-name">初露锋芒</div>
+        </div>
+        <div class="achievement-item locked" data-ach="story1">
+          <div class="achievement-icon">📖</div>
+          <div class="achievement-name">倾听者</div>
+        </div>
+        <!-- 📅 陪伴 -->
+        <div class="achievement-item locked" data-ach="seven">
+          <div class="achievement-icon">📅</div>
+          <div class="achievement-name">七日陪伴</div>
+        </div>
+        <div class="achievement-item locked" data-ach="day30">
+          <div class="achievement-icon">🗓️</div>
+          <div class="achievement-name">月之守护</div>
+        </div>
+        <div class="achievement-item locked" data-ach="day100">
+          <div class="achievement-icon">💎</div>
+          <div class="achievement-name">百日挚友</div>
+        </div>
+        <div class="achievement-item locked" data-ach="streak7">
+          <div class="achievement-icon">🔥</div>
+          <div class="achievement-name">七日连续</div>
+        </div>
+        <!-- 🦅 探索 -->
+        <div class="achievement-item locked" data-ach="migration">
+          <div class="achievement-icon">🦅</div>
+          <div class="achievement-name">迁徙见证者</div>
+        </div>
+        <div class="achievement-item locked" data-ach="photoall">
+          <div class="achievement-icon">📸</div>
+          <div class="achievement-name">足迹鉴赏家</div>
+        </div>
+        <div class="achievement-item locked" data-ach="storyall">
+          <div class="achievement-icon">📚</div>
+          <div class="achievement-name">故事收藏家</div>
+        </div>
+        <div class="achievement-item locked" data-ach="quizall">
+          <div class="achievement-icon">🎓</div>
+          <div class="achievement-name">知识达人</div>
+        </div>
+        <!-- 🌍 旅程 -->
+        <div class="achievement-item locked" data-ach="globe">
+          <div class="achievement-icon">🌍</div>
+          <div class="achievement-name">环球旅行家</div>
+        </div>
+        <div class="achievement-item locked" data-ach="thousand">
+          <div class="achievement-icon">🚀</div>
+          <div class="achievement-name">千里之行</div>
+        </div>
+        <div class="achievement-item locked" data-ach="border">
+          <div class="achievement-icon">🛫</div>
+          <div class="achievement-name">跨越边境</div>
+        </div>
+        <div class="achievement-item locked" data-ach="veteran">
+          <div class="achievement-icon">⭐</div>
+          <div class="achievement-name">传奇守护者</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 日常任务系统 -->
+    <div class="daily-section" id="dailySection">
+      <div class="daily-header">
+        <div class="daily-title">💌 今日陪伴</div>
+        <div class="daily-streak" id="dailyStreak">🔥 连续 0 天</div>
+      </div>
+      <div class="daily-tasks" id="dailyTasks">
+        <!-- 由 JS 动态生成 -->
+      </div>
+      <button class="greet-btn" id="greetBtn">👋 问候一下它</button>
+      <div class="animal-mood" id="animalMood"></div>
+    </div>
+
+    <!-- 故事叙事模块 -->
+    <div class="story-section" id="storySection">
+      <div class="story-title">📖 她的故事 <span style="font-size:11px;color:var(--sub);font-weight:400;" id="storyProgress"></span></div>
+      <div id="storyHint" style="display:none;margin:0 0 10px;padding:9px 13px;border-radius:12px;background:linear-gradient(135deg,rgba(14,124,102,.1),rgba(14,124,102,.16));border:1px solid rgba(14,124,102,.25);color:#0A5C4C;font-size:12.5px;line-height:1.6;"></div>
+      <div class="story-chapters" id="storyChapters">
+        <!-- 由 JS 动态生成 -->
+      </div>
+      <div class="story-evidence" id="storyEvidence">
+        <!-- 数据证据：由 JS 填充 -->
+      </div>
+    </div>
+
+    <!-- 专属领养卡 -->
+    <button class="adopt-card-btn" id="adoptCardBtn" style="display:none;">🎴 我的专属领养卡 · 保存它</button>
+
+    <!-- 物种科普模块 -->
+    <div class="science-section" id="scienceSection">
+      <div class="science-title">🔬 关于这个物种</div>
+      <div class="science-grid" id="scienceGrid">
+        <!-- 由 JS 动态生成 -->
+      </div>
+      <div class="science-facts" id="scienceFacts">
+        <!-- 由 JS 动态生成 -->
+      </div>
+    </div>
+
+    <!-- 纪念信 -->
+    <div class="letter-sec" id="letterSection">
+      <div class="letter-title">💌 写给守护者的信</div>
+      <div class="letter-list" id="letterList"></div>
+    </div>
+
+    <!-- 留言板 -->
+    <div class="msg-sec" id="msgSection">
+      <div class="msg-title">💬 和它说句话</div>
+      <div class="msg-sub">只有你和它能看到 · 它会记住你说的每一句</div>
+      <div class="msg-input-row">
+        <textarea id="msgInput" placeholder="今天想对它说……" maxlength="200"></textarea>
+        <button id="msgSend">发送</button>
+      </div>
+      <div class="msg-list" id="msgList"></div>
+    </div>
+  </div>
+
+  <!-- 升级庆祝遮罩 -->
+  <div class="level-up-overlay" id="levelUpOverlay">
+    <div class="level-up-content">
+      <div class="level-up-icon">🎉</div>
+      <div class="level-up-title" id="levelUpTitle">升级了！</div>
+      <div class="level-up-sub" id="levelUpSub">继续陪伴它，解锁更多成就</div>
+    </div>
+  </div>
+
+  <!-- 动物档案 -->
+  <div class="info-sec" id="infoSec">
+    <div class="info-top">
+      <img class="info-hero" id="infoHero" alt="">
+      <div>
+        <div class="species" id="species"></div>
+        <h1 id="name">…</h1>
+        <div class="meta" id="meta">—</div>
+      </div>
+    </div>
+    <div class="story-fold" id="storyFold">
+      <button class="story-toggle" id="storyToggle"><span class="arr">▶</span> 了解她的故事</button>
+      <div class="story-body" id="storyBody"></div>
+    </div>
+    <div class="photo-wall">
+      <div class="cap">她的照片 · Wikimedia Commons（CC 协议）</div>
+      <div class="photos" id="photos"></div>
+    </div>
+    <div class="note-block" id="dataNote"></div>
+  </div>
+</main>
+
+  <!-- 专属领养卡弹层 -->
+  <div class="card-overlay" id="cardOverlay">
+    <canvas id="adoptCanvas" width="800" height="450"></canvas>
+    <div class="card-actions">
+      <button class="card-download" id="cardDownload">💾 保存图片</button>
+      <button class="card-share" id="cardShare">📤 复制分享文案</button>
+      <button class="card-close" id="cardClose">关闭</button>
+    </div>
+  </div>
+
+<script src="/static/assets/lib/leaflet.js"></script>
+<script src="/static/assets/lib/leaflet-ant-path.js"></script>
+<script>
+(function () {
+  var animalId = decodeURIComponent((location.pathname.match(/\/animal\/([^/]+)/) || [, ''])[1] || '');
+  var points = [], timestamps = [], photos = [];
+  var map = null, lineLayer = null, pathLayer = null;
+  var worldMarker = null, playMarker = null;
+  var playing = false, timer = null, tweenTimer = null, idx = 0;
+  var photoIdx = -1;
+
+  function fmtDate(s) {
+    if (!s) return '—';
+    var d = new Date(s.replace(' ', 'T'));
+    return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  }
+  function fmtCoord(lat, lon) {
+    var ns = lat >= 0 ? 'N' : 'S', ew = lon >= 0 ? 'E' : 'W';
+    return Math.abs(lat).toFixed(2) + '°' + ns + ', ' + Math.abs(lon).toFixed(2) + '°' + ew;
+  }
+
+  // ---------- Catmull-Rom 样条平滑：让轨迹线柔和真实 ----------
+  function smoothPath(pts, segments) {
+    if (pts.length < 3) return pts;
+    var out = [pts[0]];
+    for (var i = 0; i < pts.length - 1; i++) {
+      var p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+      for (var j = 1; j <= segments; j++) {
+        var t = j / segments, t2 = t * t, t3 = t2 * t;
+        out.push([
+          0.5 * ((2 * p1[0]) + (-p0[0] + p2[0]) * t + (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 + (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3),
+          0.5 * ((2 * p1[1]) + (-p0[1] + p2[1]) * t + (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 + (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3)
+        ]);
+      }
+    }
+    return out;
+  }
+
+  // ---------- 圆形头像地图标记 ----------
+  function avatarIcon(size, avatarUrl, cls, withRing) {
+    return L.divIcon({
+      className: 'avatar-marker ' + (cls || ''),
+      html: '<div class="face" style="width:' + size + 'px;height:' + size + 'px;background-image:url(' + avatarUrl + ')"></div>' +
+            (withRing ? '<div class="ring"></div>' : ''),
+      iconSize: [size, size], iconAnchor: [size / 2, size / 2]
+    });
+  }
+
+  // ---------- 沿途影像联动 ----------
+  function setScene(i) {
+    if (!photos.length) return;
+    var img = document.getElementById('sceneImg');
+    // 不循环播放：只有 i < photos.length 时才显示对应照片
+    if (i < photos.length) {
+      var p = photos[i];
+      img.style.opacity = 0;
+      setTimeout(function () {
+        img.src = (p.url || p) + '';
+        img.style.opacity = 1;
+      }, 120);
+      document.getElementById('sceneTitle').textContent = '这是她第 ' + (i + 1) + ' 个定位点附近的影像';
+      document.getElementById('sceneCredit').textContent = (p.credit || 'Wikimedia Commons') + ' · ' + (p.license || 'CC');
+    } else {
+      // 没有对应照片时显示默认提示
+      img.style.opacity = 0;
+      setTimeout(function () {
+        img.src = '';
+        img.style.opacity = 0;
+      }, 120);
+      document.getElementById('sceneTitle').textContent = '拖动时间轴，看她一路经过的风景';
+      document.getElementById('sceneCredit').textContent = '—';
+    }
+    photoIdx = i;
+  }
+
+  // ---------- 播放：位置在 150ms 内平滑插值移动 ----------
+  function animateTo(latlng, duration) {
+    if (!playMarker) return;
+    var start = playMarker.getLatLng();
+    var t0 = Date.now();
+    if (tweenTimer) clearInterval(tweenTimer);
+    tweenTimer = setInterval(function () {
+      var p = Math.min(1, (Date.now() - t0) / duration);
+      playMarker.setLatLng([start.lat + (latlng.lat - start.lat) * p, start.lng + (latlng.lng - start.lng) * p]);
+      if (p >= 1) clearInterval(tweenTimer);
+    }, 25);
+  }
+  function setPlayDot(i) {
+    if (!map || !points.length) return;
+    var ll = L.latLng(points[i]);
+    if (playMarker) { animateTo(ll, 150); }
+    else {
+      playMarker = L.marker(ll, {
+        icon: avatarIcon(22, photos[0] ? (photos[0].url || photos[0]) + '' : '', 'play', false)
+      }).addTo(map);
+    }
+  }
+
+  var currentTrackStyle = 'ant';
+  var followCam = true;   // 播放时摄像机跟随
+  var lastFollowLL = null;
+  var trackLayers = [];
+  var _speedLegend = null;
+  
+  function clearTrackLayers() {
+    trackLayers.forEach(function(l) { if (map) map.removeLayer(l); });
+    trackLayers = [];
+    if (_speedLegend && _speedLegend.parentNode) _speedLegend.parentNode.removeChild(_speedLegend);
+    _speedLegend = null;
+  }
+  
+  function renderTrack(smooth, style) {
+    clearTrackLayers();
+    if (!map || smooth.length < 2) return;
+    
+    // ===== 1. 🪶 轨迹生长（默认，NatGeo风格）：线从起点逐渐画出 =====
+    if (style === 'ant') {
+      // 淡色底图轨迹（已完成的部分）
+      var trailBg = L.polyline(smooth, { color: '#94A3B8', weight: 2, opacity: 0.35, dashArray: null }).addTo(map);
+      trackLayers.push(trailBg);
+      // 主轨迹：从起点到当前播放位置，翠绿渐变+发光
+      var curEnd = Math.max(2, idx + 1);
+      var drawn = smooth.slice(0, curEnd);
+      var glow = L.polyline(drawn, { color: '#10B981', weight: 8, opacity: 0.15 }).addTo(map);
+      trackLayers.push(glow);
+      var main = L.polyline(drawn, { color: '#059669', weight: 3.5, opacity: 0.95 }).addTo(map);
+      trackLayers.push(main);
+      // 已走过的轨迹（主色覆盖）
+      if (idx < smooth.length - 1) {
+        var ahead = L.polyline(smooth.slice(curEnd), { color: '#A7F3D0', weight: 1.5, opacity: 0.25, dashArray: '4,6' }).addTo(map);
+        trackLayers.push(ahead);
+      }
+      // 当前播放位置发光点
+      var curPos = smooth[curEnd - 1];
+      var halo = L.circleMarker(curPos, { radius: 10, fillColor: '#34D399', color: '#fff', weight: 2, fillOpacity: 0.35 }).addTo(map);
+      trackLayers.push(halo);
+      var core = L.circleMarker(curPos, { radius: 5, fillColor: '#10B981', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
+      trackLayers.push(core);
+    }
+    
+    // ===== 2. 🎯 时间点阵：离散点，大小随时间变大，起终点大标记 =====
+    else if (style === 'dots') {
+      var dotStep = Math.max(1, Math.floor(smooth.length / 60));
+      smooth.forEach(function(p, i) {
+        if (i % dotStep !== 0 && i !== smooth.length - 1) return;
+        var ratio = i / smooth.length;
+        var size = 4 + ratio * 9;
+        // 时间由远及近：蓝→绿→黄→红
+        var color = ratio > 0.85 ? '#EF4444' : ratio > 0.6 ? '#F59E0B' : ratio > 0.3 ? '#10B981' : '#3B82F6';
+        var dot = L.circleMarker(p, { radius: size, fillColor: color, color: '#fff', weight: 1.5, fillOpacity: 0.9 }).addTo(map);
+        dot.bindTooltip(fmtDate(timestamps[Math.min(i, timestamps.length-1)]), { sticky: true });
+        trackLayers.push(dot);
+      });
+      // 起点（蓝）终点（红）大标记
+      var sDot = L.marker(smooth[0], {
+        icon: L.divIcon({ className: '', html: '<div style="background:linear-gradient(135deg,#3B82F6,#1D4ED8);color:#fff;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;border:3px solid #fff;box-shadow:0 3px 10px rgba(59,130,246,.5);">起</div>', iconSize: [38,38], iconAnchor: [19,19] })
+      }).addTo(map);
+      trackLayers.push(sDot);
+      var eDot = L.marker(smooth[smooth.length-1], {
+        icon: L.divIcon({ className: '', html: '<div style="background:linear-gradient(135deg,#EF4444,#B91C1C);color:#fff;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;border:3px solid #fff;box-shadow:0 3px 10px rgba(239,68,68,.5);">终</div>', iconSize: [38,38], iconAnchor: [19,19] })
+      }).addTo(map);
+      trackLayers.push(eDot);
+      // 连接虚线
+      var dash = L.polyline(smooth, { color: '#94A3B8', weight: 1.5, opacity: 0.5, dashArray: '6,8' }).addTo(map);
+      trackLayers.push(dash);
+    }
+    
+    // ===== 3. ⚡ 速度光谱：按移动速度着色（快=红，慢=蓝） =====
+    else if (style === 'gradient') {
+      // 计算每段速度
+      var speeds = [];
+      for (var si = 0; si < smooth.length - 1; si++) {
+        var dLat = (smooth[si+1][0] - smooth[si][0]) * 111.32;
+        var dLon = (smooth[si+1][1] - smooth[si][1]) * 111.32 * Math.cos(smooth[si][0] * Math.PI / 180);
+        var dist = Math.sqrt(dLat*dLat + dLon*dLon);
+        speeds.push(dist); // 简化：每段距离代表速度
+      }
+      var maxSp = Math.max.apply(null, speeds) || 1;
+      var minSp = Math.min.apply(null, speeds) || 0;
+      for (var vi = 0; vi < smooth.length - 1; vi++) {
+        var vratio = (speeds[vi] - minSp) / (maxSp - minSp);
+        // 慢(蓝绿) → 快(红橙)
+        var vr = Math.round(59 + vratio * (239 - 59));
+        var vg = Math.round(130 + vratio * (68 - 130));
+        var vb = Math.round(246 + vratio * (68 - 246));
+        // ⚡ 速度→线宽双重编码：越快线越粗（2.5 ~ 7）
+        var vw = 2.5 + vratio * 4.5;
+        var seg = L.polyline([smooth[vi], smooth[vi+1]], {
+          color: 'rgb(' + vr + ',' + vg + ',' + vb + ')',
+          weight: vw, opacity: 0.92
+        }).addTo(map);
+        trackLayers.push(seg);
+      }
+      // 图例提示
+      var legend = document.createElement('div');
+      legend.className = 'speed-legend';
+      legend.innerHTML = '<div style="font-size:11px;font-weight:600;margin-bottom:4px;color:#374151;">速度：细=慢 · 粗=快</div><span style="background:linear-gradient(90deg,rgb(59,130,246),rgb(16,185,129),rgb(239,68,68));width:130px;height:10px;display:inline-block;border-radius:5px;"></span><div style="font-size:10px;color:#6B7280;margin-top:3px;">慢 &nbsp;→&nbsp; 快</div>';
+      legend.style.cssText = 'position:absolute;bottom:80px;left:12px;z-index:1000;background:rgba(255,255,255,.9);padding:6px 10px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);display:flex;align-items:center;';
+      var mapParent = document.getElementById('map').parentNode;
+      mapParent.style.position = 'relative';
+      mapParent.appendChild(legend);
+      _speedLegend = legend;
+    }
+    
+    // ===== 4. ➡️ 方向流线：像地图导航的箭头线 =====
+    else if (style === 'arrow') {
+      // 底图淡色线
+      var aBg = L.polyline(smooth, { color: '#C7D2FE', weight: 2.5, opacity: 0.6 }).addTo(map);
+      trackLayers.push(aBg);
+      // 主体导航线
+      var aMain = L.polyline(smooth, { color: '#4F46E5', weight: 3, opacity: 0.85 }).addTo(map);
+      trackLayers.push(aMain);
+      // 箭头：沿轨迹均匀分布，方向跟随轨迹
+      var aStep = Math.max(1, Math.floor(smooth.length / 14));
+      for (var ai = aStep; ai < smooth.length - 1; ai += aStep) {
+        var p1 = smooth[ai - 1], p2 = smooth[ai];
+        var angle = Math.atan2(p2[1] - p1[1], p2[0] - p1[0]) * 180 / Math.PI;
+        // 箭头使用SVG三角（更清晰）
+        var arrow = L.marker(p2, {
+          icon: L.divIcon({
+            className: '',
+            html: '<div style="transform:rotate(' + angle + 'deg);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:14px solid #4F46E5;filter:drop-shadow(0 0 3px rgba(79,70,229,.8));"></div>',
+            iconSize: [14, 14], iconAnchor: [7, 7]
+          })
+        }).addTo(map);
+        trackLayers.push(arrow);
+      }
+      // 当前位置标记
+      var aCur = L.circleMarker(smooth[smooth.length-1], { radius: 6, fillColor: '#4F46E5', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
+      trackLayers.push(aCur);
+    }
+    
+    // ===== 5. 🔥 驻留热力：强调停留区域（动物在哪待得久） =====
+    else if (style === 'heat') {
+      // 用半透明圆叠加模拟热力，停留密集区域更亮
+      var heatStep = Math.max(1, Math.floor(smooth.length / 70));
+      for (var hi = 0; hi < smooth.length; hi += heatStep) {
+        var hp = smooth[hi];
+        var hColor = '#F59E0B';
+        // 热力半径基于局部密度（简化：固定半径）
+        for (var hl = 0; hl < 3; hl++) {
+          var heatCircle = L.circle(hp, {
+            radius: (26 - hl * 7) * 1000,
+            fillColor: hColor,
+            color: 'none',
+            fillOpacity: 0.10 - hl * 0.02
+          }).addTo(map);
+          trackLayers.push(heatCircle);
+        }
+      }
+      // 中心轨迹点（小）
+      var cStep = Math.max(1, Math.floor(smooth.length / 40));
+      smooth.forEach(function(p, i) {
+        if (i % cStep !== 0) return;
+        var cDot = L.circleMarker(p, { radius: 2.5, fillColor: '#DC2626', color: 'none', fillOpacity: 0.8 }).addTo(map);
+        trackLayers.push(cDot);
+      });
+    }
+  }
+
+  function updateView() {
+    var slider = document.getElementById('tlSlider');
+    document.getElementById('tlDate').textContent = timestamps[idx] ? fmtDate(timestamps[idx]) : '—';
+    document.getElementById('tlProgress').textContent = (idx + 1) + ' / ' + points.length;
+    if (map) {
+      var smooth = smoothPath(points.slice(0, idx + 1), 2);
+      renderTrack(smooth, currentTrackStyle);
+      setPlayDot(idx);
+      // 🎬 摄像机跟随：播放中自动把地图中心平滑移向动物当前位置
+      if (playing && followCam && points[idx]) {
+        var target = L.latLng(points[idx]);
+        var curZoom = map.getZoom();
+        var wantZoom = curZoom < 8 ? 8 : curZoom;   // 跟随时不缩小到低于8级
+        if (!lastFollowLL || lastFollowLL.distanceTo(target) > 40000) {
+          lastFollowLL = target;
+          map.panTo(target, { animate: true, duration: 0.9 });
+        }
+        if (map.getZoom() < wantZoom) map.setZoom(wantZoom, { animate: true });
+      }
+    }
+    setScene(idx);
+  }
+
+  function worldView() {
+    document.getElementById('worldBtn').classList.add('active');
+    document.getElementById('trackBtn').classList.remove('active');
+    if (lineLayer) lineLayer.setStyle({ opacity: 0 });
+    if (pathLayer) pathLayer.setStyle({ opacity: 0 });
+    if (map && points.length) {
+      map.setView([15, 10], 2, { animate: true });
+      if (!worldMarker) {
+        worldMarker = L.marker(points[points.length - 1], {
+          icon: avatarIcon(40, photos[0] ? (photos[0].url || photos[0]) + '' : '', '', true)
+        }).addTo(map).bindTooltip('她在这里 · ' + fmtDate(timestamps[timestamps.length - 1]));
+      }
+      worldMarker.setLatLng(points[points.length - 1]).openTooltip();
+    }
+  }
+  function trackView() {
+    document.getElementById('trackBtn').classList.add('active');
+    document.getElementById('worldBtn').classList.remove('active');
+    if (lineLayer) lineLayer.setStyle({ opacity: .55 });
+    if (pathLayer) pathLayer.setStyle({ opacity: .95 });
+    if (map && points.length) {
+      map.fitBounds(L.latLngBounds(points).pad(0.12), { animate: true });
+      if (worldMarker) worldMarker.closeTooltip();
+    }
+  }
+
+  function play() {
+    var btn = document.getElementById('playBtn');
+    var slider = document.getElementById('tlSlider');
+    if (playing) {
+      playing = false; clearInterval(timer); if (tweenTimer) clearInterval(tweenTimer);
+      lastFollowLL = null;
+      btn.textContent = '▶ 播放'; btn.classList.remove('replay');
+      return;
+    }
+    if (idx >= points.length - 1) { slider.value = 0; sliderChanged(); }
+    playing = true;
+    btn.textContent = '⏸ 暂停'; btn.classList.add('replay');
+    lastFollowLL = null;
+    if (followCam && map && points[idx]) { map.setZoom(8, { animate: true }); }
+    timer = setInterval(function () {
+      idx++;
+      if (idx >= points.length - 1) {
+        idx = points.length - 1;
+        playing = false; clearInterval(timer);
+        btn.textContent = '▶ 重播'; btn.classList.add('replay');
+
+        // 检测迁徙见证者成就
+        if (window._unlockAch) { window._unlockAch('migration', '迁徙见证者'); }
+      }
+      slider.value = idx; updateView();
+    }, 150);
+  }
+  function sliderChanged() {
+    idx = parseInt(document.getElementById('tlSlider').value, 10) || 0;
+    updateView();
+  }
+
+  function initMap() {
+    if (typeof L === 'undefined') {
+      document.getElementById('map').innerHTML =
+        '<div style="padding:24px;color:#6B7280;font-size:13px;">地图组件加载失败（需联网加载 Leaflet）。轨迹数据仍可正常获取。</div>';
+      return;
+    }
+    map = L.map('map');
+    var ph = document.getElementById('mapPlaceholder');
+    if (ph) ph.remove();
+
+    // 瓦片源（国内可用优先）：高德卫星+地名（国内直连快）→ Esri → Carto 逐级兜底
+    var tileSources = [
+      {
+        name: '高德卫星+地名',
+        layers: [
+          { url: 'https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', att: '影像 © 高德地图' },
+          { url: 'https://webst01.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}', att: '地名 © 高德地图', opacity: .9 }
+        ]
+      },
+      { name: '高德街道', url: 'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', att: '© 高德地图' },
+      {
+        name: '卫星+地名',
+        layers: [
+          { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', att: '影像 © Esri' },
+          { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', att: '地名 © Esri', opacity: .85 }
+        ]
+      },
+      { name: 'Esri 街道', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', att: '© Esri' },
+      { name: 'Carto', url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', att: '© CARTO' },
+    ];
+    var srcIdx = 0, tileErrors = 0, activeLayers = [];
+    function clearLayers() {
+      activeLayers.forEach(function (l) { map.removeLayer(l); });
+      activeLayers = [];
+    }
+    function addTiles() {
+      clearLayers();
+      var s = tileSources[srcIdx % tileSources.length];
+      var list = s.layers || [{ url: s.url, att: s.att }];
+      list.forEach(function (cfg) {
+        var l = L.tileLayer(cfg.url, { maxZoom: 17, attribution: cfg.att, opacity: cfg.opacity || 1 });
+        activeLayers.push(l);
+        l.addTo(map);
+      });
+      // 兜底：6 秒内没有任何瓦片加载成功（请求挂起），强制换源
+      var stuck = setTimeout(function () {
+        if (srcIdx < tileSources.length - 1) { srcIdx++; addTiles(); }
+      }, 6000);
+      activeLayers[0].once('load', function () { clearTimeout(stuck); });
+      activeLayers[0].on('tileerror', function () {
+        tileErrors++;
+        if (tileErrors >= 3 && srcIdx < tileSources.length - 1) {
+          tileErrors = 0; clearTimeout(stuck); srcIdx++; addTiles();
+        }
+      });
+    }
+    addTiles();
+
+    lineLayer = L.polyline(smoothPath(points, 2), {
+      color: '#8fb5ac', weight: 2, opacity: .35, dashArray: '5,8'
+    }).addTo(map);
+    L.circleMarker(points[0], { radius: 6, color: '#fff', weight: 2.5, fillColor: '#0E7C66', fillOpacity: 1 })
+      .addTo(map).bindTooltip('起点');
+
+    // 电影式开场：先全球视角，然后 flyTo 到动物位置
+    if (points.length) {
+      var lastPoint = points[points.length - 1];
+      map.setView([20, 10], 2, { animate: false });
+
+      // 添加电影式遮罩和文字
+      var mapEl = document.getElementById('map');
+      var overlay = document.createElement('div');
+      overlay.className = 'cinematic-overlay active';
+      overlay.id = 'cinematicOverlay';
+      mapEl.appendChild(overlay);
+
+      var cinText = document.createElement('div');
+      cinText.className = 'cinematic-text active';
+      cinText.id = 'cinematicText';
+      cinText.innerHTML = '🌍 全球定位中...<br><span style="font-size:13px;opacity:.8;">正在寻找她的位置</span>';
+      mapEl.appendChild(cinText);
+
+      // 1.5秒后 flyTo 到动物位置
+      setTimeout(function() {
+        cinText.innerHTML = '✨ 找到了！<br><span style="font-size:13px;opacity:.8;">她在这里</span>';
+        map.flyTo(lastPoint, 5, { duration: 2.5, easeLinearity: 0.25 });
+
+        // 飞行结束后移除遮罩
+        setTimeout(function() {
+          overlay.classList.remove('active');
+          cinText.classList.remove('active');
+          setTimeout(function() {
+            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            if (cinText.parentNode) cinText.parentNode.removeChild(cinText);
+          }, 1000);
+        }, 2500);
+      }, 1500);
+    }
+
+    trackView();
+    updateView();
+    setTimeout(function () { if (map) map.invalidateSize(); }, 200);
+  }
+
+  function loadAnimalData(retryCount) {
+    retryCount = retryCount || 0;
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function() { controller.abort(); }, 15000);
+    
+    fetch('/api/animal/' + encodeURIComponent(animalId), { signal: controller.signal })
+    .then(function (r) {
+      clearTimeout(timeoutId);
+      return r.json().then(function (d) { return { ok: r.ok, d: d }; });
+    })
+    .then(function (res) {
+      if (!res.ok) {
+        document.getElementById('mapName').textContent = '动物不存在';
+        document.getElementById('mapSub').textContent = '请检查网络连接后重试';
+        showLoadError('动物数据不存在，请检查链接是否正确。');
+        return;
+      }
+      var a = res.d.animal;
+      var t = res.d.track;
+      var times = res.d.times || [];
+      points = (t.geometry.coordinates || []).map(function (c) { return [c[1], c[0]]; });
+      photos = a.photos || [];
+      _lbPhotos = photos.map(function(p) { return (p.url || p) + ''; });
+      timestamps = times.length === points.length
+        ? times
+        : points.map(function (_, i) {
+            var ratio = points.length > 1 ? i / (points.length - 1) : 0;
+            return new Date(new Date('2025-01-15T00:00:00').getTime() + ratio * 300 * 86400000).toISOString().slice(0, 19).replace('T', ' ');
+          });
+
+      var avatarUrl = photos.length ? (photos[0].url || photos[0]) + '' : '';
+      document.getElementById('mapAvatar').style.backgroundImage = 'url(' + avatarUrl + ')';
+      document.getElementById('mapName').textContent = a.name;
+      document.getElementById('mapSub').textContent = a.species + ' · ' + (a.track_count || 0) + ' 个定位点';
+      document.getElementById('locRegion').innerHTML =
+        '当前区域：<b>' + (a.region_label || '未知区域') + '</b>';
+      var lastPt = points[points.length - 1];
+      document.getElementById('locDetail').textContent =
+        '最新定位 ' + fmtDate(a.track_end) + ' · ' + fmtCoord(lastPt[0], lastPt[1]);
+      document.getElementById('locUpdate').textContent =
+        '数据更新至 ' + fmtDate(a.updated_at) + ' · ' + (a.origin !== 'example' ? '真实数据' : '示例轨迹');
+
+      // ---------- ABCD 体验增强：今日动态 / 领养卡 / 纪念信 / 留言板 ----------
+      window._animalData = { a: a, points: points, timestamps: timestamps };
+      if (window.reorderMain) { window.reorderMain(); }
+      if (window._runAbcd) { try { window._runAbcd(); } catch(e) { console.log('abcd err', e); } }
+
+      // ---------- 持续更新感 ----------
+      // 1. 检查是否领养了这只动物（从 localStorage 读取昵称）
+      try {
+        var savedNickname = localStorage.getItem('nickname_' + animalId);
+        if (savedNickname) {
+          document.getElementById('adoptedBadge').style.display = 'inline-block';
+          document.getElementById('mapName').textContent = savedNickname + '（' + a.name + '）';
+        }
+      } catch(e) {}
+
+      // 2. 计算最后更新时间和移动距离
+      if (points.length > 1) {
+        var lastPt = points[points.length - 1];
+        var prevPt = points[Math.max(0, points.length - 2)];
+        var R = 6371;
+        var dLat = (lastPt[0]-prevPt[0])*Math.PI/180;
+        var dLon = (lastPt[1]-prevPt[1])*Math.PI/180;
+        var aa = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(prevPt[0]*Math.PI/180)*Math.cos(lastPt[0]*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+        var dist = R * 2 * Math.atan2(Math.sqrt(aa), Math.sqrt(1-aa));
+        var distStr = dist >= 1 ? dist.toFixed(1) + ' km' : Math.round(dist*1000) + ' m';
+        document.getElementById('locMoved').textContent = '📏 最近移动 ' + distStr;
+      }
+
+      // 3. 新数据点提示（最后7天的数据标注 NEW）
+      var now = new Date();
+      var sevenDaysAgo = new Date(now.getTime() - 7*24*60*60*1000);
+      var newPointCount = 0;
+      for (var ni = 0; ni < timestamps.length; ni++) {
+        var ptDate = new Date(timestamps[ni].replace(' ','T'));
+        if (ptDate >= sevenDaysAgo) newPointCount++;
+      }
+      if (newPointCount > 0) {
+        var liveBadge = document.querySelector('.live');
+        if (liveBadge) {
+          liveBadge.textContent = 'NEW +' + newPointCount;
+          liveBadge.style.background = '#10B981';
+        }
+      }
+
+      // ---------- 等级经验系统 ----------
+      (function() {
+        try {
+          var expKey = 'exp_' + animalId;
+          var lastVisitKey = 'last_visit_' + animalId;
+          var today = new Date().toDateString();
+          var lastVisit = localStorage.getItem(lastVisitKey);
+          var exp = parseInt(localStorage.getItem(expKey) || '0', 10);
+
+          // 每天第一次访问 +10 经验
+          if (lastVisit !== today) {
+            exp += 10;
+            localStorage.setItem(expKey, exp);
+            localStorage.setItem(lastVisitKey, today);
+          }
+
+          // 等级配置
+          var levels = [
+            { level: 1, name: '新手守护者', min: 0, max: 100 },
+            { level: 2, name: '初级守护者', min: 100, max: 300 },
+            { level: 3, name: '中级守护者', min: 300, max: 600 },
+            { level: 4, name: '高级守护者', min: 600, max: 1000 },
+            { level: 5, name: '传奇守护者', min: 1000, max: 99999 }
+          ];
+
+          var currentLevel = levels[0];
+          for (var li = 0; li < levels.length; li++) {
+            if (exp >= levels[li].min) currentLevel = levels[li];
+          }
+
+          var expInLevel = exp - currentLevel.min;
+          var expRange = currentLevel.max - currentLevel.min;
+          var expPercent = Math.min(100, (expInLevel / expRange) * 100);
+
+          document.getElementById('levelText').textContent = 'Lv.' + currentLevel.level + ' ' + currentLevel.name;
+          document.getElementById('expText').textContent = expInLevel + ' / ' + expRange + ' EXP';
+          document.getElementById('expFill').style.width = expPercent + '%';
+
+          // 检查是否刚升级（比较上次等级）
+          var prevLevelKey = 'prev_level_' + animalId;
+          var prevLevel = parseInt(localStorage.getItem(prevLevelKey) || '1', 10);
+          if (currentLevel.level > prevLevel) {
+            localStorage.setItem(prevLevelKey, currentLevel.level);
+            // 显示升级庆祝
+            var overlay = document.getElementById('levelUpOverlay');
+            document.getElementById('levelUpTitle').textContent = 'Lv.' + currentLevel.level + '！';
+            document.getElementById('levelUpSub').textContent = currentLevel.name + ' · 继续陪伴它，解锁更多成就';
+            if (window._unlockAch && currentLevel.level >= 5) { window._unlockAch('veteran', '传奇守护者'); }
+            overlay.classList.add('active');
+            setTimeout(function() { overlay.classList.remove('active'); }, 3000);
+          } else {
+            localStorage.setItem(prevLevelKey, currentLevel.level);
+          }
+        } catch(e) { console.log('等级系统错误:', e); }
+      })();
+
+      // ---------- 日常任务系统 ----------
+      (function() {
+        try {
+          var today = new Date().toDateString();
+          var dailyKey = 'daily_' + animalId + '_' + today;
+          var streakKey = 'streak_' + animalId;
+          var lastVisitKey = 'last_daily_' + animalId;
+
+          // 检查是否是新的一天
+          var lastVisit = localStorage.getItem(lastVisitKey);
+          var streak = parseInt(localStorage.getItem(streakKey) || '0', 10);
+          if (lastVisit !== today) {
+            var yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            if (lastVisit === yesterday.toDateString()) {
+              streak++;
+            } else {
+              streak = 1;
+            }
+            localStorage.setItem(streakKey, streak);
+            localStorage.setItem(lastVisitKey, today);
+          }
+
+          document.getElementById('dailyStreak').textContent = '🔥 连续 ' + streak + ' 天';
+
+          // 日常任务定义
+          var tasks = [
+            { id: 'visit', name: '来看看它今天过得好吗', reward: '+10 经验', icon: '🌅', auto: true },
+            { id: 'photos', name: '看看它最近的样子', reward: '+15 经验', icon: '📸', auto: false },
+            { id: 'story', name: '听听它的故事，认识真正的它', reward: '+10 经验', icon: '📖', auto: false },
+            { id: 'quiz', name: '挑战一下你对它的了解', reward: '+20 经验', icon: '🧠', auto: false }
+          ];
+
+          var dailyData = JSON.parse(localStorage.getItem(dailyKey) || '{}');
+
+          // 自动完成签到任务
+          if (!dailyData.visit) {
+            dailyData.visit = true;
+            localStorage.setItem(dailyKey, JSON.stringify(dailyData));
+            // 增加经验
+            var expKey = 'exp_' + animalId;
+            var exp = parseInt(localStorage.getItem(expKey) || '0', 10) + 10;
+            localStorage.setItem(expKey, exp);
+          }
+
+          // 渲染任务列表
+          var container = document.getElementById('dailyTasks');
+          tasks.forEach(function(task) {
+            var completed = dailyData[task.id];
+            var div = document.createElement('div');
+            div.className = 'daily-task' + (completed ? ' completed' : '');
+            div.innerHTML =
+              '<div class="daily-task-icon">' + task.icon + '</div>' +
+              '<div class="daily-task-info">' +
+                '<div class="daily-task-name">' + task.name + '</div>' +
+                '<div class="daily-task-reward">' + task.reward + '</div>' +
+              '</div>' +
+              '<div class="daily-task-check">✓</div>';
+            container.appendChild(div);
+          });
+
+          // 📜 数据证据栏：每条故事都有真实坐标出处（Movebank研究）
+          var evidenceInfo = {
+            'noe': { study: 'Movebank · LifeTrack White Stork Sarralbe (法国)', id: 'study_id=1562253659', tag: '太阳能GPS背包 · GSM回传', license: 'CC0 公开授权', status: '数据更新至 2026-08-30（进行中）' },
+            'turtle': { study: 'Movebank · 捷克科学院 欧斑鸠研究', id: 'study_id=3413045568', tag: '微型追踪器 · GPS/GSM', license: 'CC BY 署名授权', status: '数据更新至 2026-09-07（进行中）' },
+            'redkite': { study: 'Movebank · 德国红鸢研究项目', id: 'study_id=501903109', tag: 'GPS背包追踪器', license: 'CC0 公开授权', status: '数据止于 2025-12-24（追踪器停发信号）' },
+            'honeybuzzard': { study: 'Movebank · 德国蜂鹰迁徙研究', id: 'study_id=186178781', tag: 'GPS/GSM 追踪器', license: 'CC BY 署名授权', status: '数据更新至 2026-09-03（进行中）' },
+            'herringgull': { study: 'Movebank · 欧洲银鸥海岸研究', id: 'study_id=1258895879', tag: 'GPS 追踪器', license: 'CC0 公开授权', status: '数据更新至 2026-09-06（进行中）' }
+          };
+          var ev = evidenceInfo[animalId];
+          var evBox = document.getElementById('storyEvidence');
+          if (ev && evBox) {
+            evBox.innerHTML =
+              '<b>📜 数据真实来源</b><br>' +
+              '· ' + ev.study + '（' + ev.id + '）<br>' +
+              '· 追踪方式：' + ev.tag + '<br>' +
+              '· 许可：' + ev.license + ' · ' + ev.status;
+          }
+
+          // 存储任务完成函数供其他模块调用
+          window._completeTask = function(taskId, exp) {
+            if (!dailyData[taskId]) {
+              dailyData[taskId] = true;
+              localStorage.setItem(dailyKey, JSON.stringify(dailyData));
+              var expKey = 'exp_' + animalId;
+              var currentExp = parseInt(localStorage.getItem(expKey) || '0', 10) + exp;
+              localStorage.setItem(expKey, currentExp);
+              // 更新UI
+              var items = container.querySelectorAll('.daily-task');
+              var taskIndex = tasks.findIndex(function(t) { return t.id === taskId; });
+              if (taskIndex >= 0 && items[taskIndex]) {
+                items[taskIndex].classList.add('completed');
+              }
+            }
+          };
+        } catch(e) { console.log('日常任务错误:', e); }
+      })();
+
+      // ---------- 每日问候动物互动 ----------
+      (function() {
+        try {
+          var greetBtn = document.getElementById('greetBtn');
+          var moodDiv = document.getElementById('animalMood');
+          var greetKey = 'greet_' + animalId + '_' + new Date().toDateString();
+
+          var moods = [
+            '它看起来很开心，正在天空中自由翱翔 🦅',
+            '它似乎在寻找食物，专注地观察地面 👀',
+            '它正在休息，享受温暖的阳光 ☀️',
+            '它看起来精力充沛，准备继续旅程 💨',
+            '它似乎在和同伴交流，发出欢快的叫声 🎵',
+            '它正在梳理羽毛，准备下一次飞行 ✨'
+          ];
+
+          if (localStorage.getItem(greetKey)) {
+            greetBtn.disabled = true;
+            greetBtn.textContent = '✅ 今日已问候';
+          }
+
+          greetBtn.addEventListener('click', function() {
+            if (localStorage.getItem(greetKey)) return;
+
+            localStorage.setItem(greetKey, 'true');
+            greetBtn.disabled = true;
+            greetBtn.textContent = '✅ 今日已问候';
+
+            var mood = moods[Math.floor(Math.random() * moods.length)];
+            moodDiv.textContent = mood;
+            moodDiv.classList.add('show');
+
+            // 完成问候任务（如果有的话）+ 经验
+            if (window._completeTask) {
+              window._completeTask('greet', 5);
+            } else {
+              var expKey = 'exp_' + animalId;
+              var exp = parseInt(localStorage.getItem(expKey) || '0', 10) + 5;
+              localStorage.setItem(expKey, exp);
+            }
+            // 成就：第一次问候
+            if (window._unlockAch) { window._unlockAch('greet', '第一次问候'); }
+          });
+        } catch(e) { console.log('问候互动错误:', e); }
+      })();
+
+      // ---------- 成就徽章系统 ----------
+      (function() {
+        try {
+          var achievements = JSON.parse(localStorage.getItem('achievements_' + animalId) || '{}');
+          var unlockedCount = 0;
+
+          // 旅程类成就不信任历史存储：每次按"当前领养状态+最新轨迹"重新计算，
+          // 避免旧版按全历史距离误解锁的残留永远保留
+          delete achievements.globe;
+          delete achievements.thousand;
+          delete achievements.border;
+
+          // 成就1：初次相遇（领养了这只动物）
+          var adopted = localStorage.getItem('adopted_' + animalId);
+          if (adopted && !achievements.first) {
+            achievements.first = true;
+          }
+
+          // 成就2：七日陪伴 / 月之守护 / 百日挚友 / 七日连续（陪伴天数）
+          // 规则：只有领养后才开始计陪伴天数；领养日之前的访问一律作废
+          var visitKey = 'visits_' + animalId;
+          var visits = JSON.parse(localStorage.getItem(visitKey) || '[]');
+          var adoptInfoV = null;
+          try { adoptInfoV = JSON.parse(adopted || 'null'); } catch(e) {}
+          var adoptDay = adoptInfoV && adoptInfoV.date ? new Date(adoptInfoV.date) : null;
+          if (adoptDay) {
+            // 清掉领养日之前的访问记录（避免"领养前就看过多天"直接解锁陪伴成就）
+            visits = visits.filter(function(v) {
+              return new Date(v) >= new Date(adoptDay.toDateString());
+            });
+            localStorage.setItem(visitKey, JSON.stringify(visits));
+          }
+          var today = new Date().toDateString();
+          if (adoptDay && visits.indexOf(today) === -1) {
+            visits.push(today);
+            // 只保留最近400天
+            visits = visits.slice(-400);
+            localStorage.setItem(visitKey, JSON.stringify(visits));
+          }
+          var visitDays = adoptDay ? visits.length : 0;
+          if (visitDays >= 7 && !achievements.seven) {
+            achievements.seven = true;
+          }
+          if (visitDays >= 30 && !achievements.day30) {
+            achievements.day30 = true;
+          }
+          if (visitDays >= 100 && !achievements.day100) {
+            achievements.day100 = true;
+          }
+          // 检查是否连续7天
+          var consecutive = 0;
+          var checkDate = new Date();
+          for (var ci = 0; ci < 7; ci++) {
+            var dateStr = checkDate.toDateString();
+            if (visits.indexOf(dateStr) !== -1) {
+              consecutive++;
+              checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+              break;
+            }
+          }
+          if (consecutive >= 7 && !achievements.streak7) {
+            achievements.streak7 = true;
+          }
+
+          // 成就3：迁徙见证者（播放完整个轨迹）- 在播放完成时检测
+          // 这里先检查是否已经解锁
+          // 成就4：环球旅行家（领养后累计飞行10000km）/ 千里之行（领养后累计5000km）/ 跨越边境
+          // 只统计"领养日期之后"的轨迹：未领养则旅程类成就保持锁定
+          var adoptedInfo = null;
+          try { adoptedInfo = JSON.parse(localStorage.getItem('adopted_' + animalId) || 'null'); } catch(e) {}
+          var adoptedDate = adoptedInfo && adoptedInfo.date ? new Date(adoptedInfo.date) : null;
+          var startIdx = 0;
+          if (adoptedDate) {
+            var foundIdx = -1;
+            for (var tix = 0; tix < timestamps.length; tix++) {
+              if (new Date(timestamps[tix].replace(' ','T')) >= adoptedDate) { foundIdx = tix; break; }
+            }
+            if (foundIdx === -1) {
+              startIdx = points.length; // 领养后暂无新轨迹，旅程从0开始
+            } else {
+              startIdx = Math.max(0, foundIdx - 1); // 从领养前最近一个点衔接，保证距离连续
+            }
+          } else {
+            startIdx = points.length; // 未领养：旅程类成就锁定
+          }
+          var totalDist = 0;
+          if (points.length > startIdx + 1) {
+            var R = 6371;
+            for (var di = startIdx + 1; di < points.length; di++) {
+              var dLat = (points[di][0]-points[di-1][0])*Math.PI/180;
+              var dLon = (points[di][1]-points[di-1][1])*Math.PI/180;
+              var a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+                Math.cos(points[di-1][0]*Math.PI/180)*Math.cos(points[di][0]*Math.PI/180)*
+                Math.sin(dLon/2)*Math.sin(dLon/2);
+              totalDist += R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            }
+          }
+          if (adoptedDate) {
+            if (totalDist >= 10000 && !achievements.globe) {
+              achievements.globe = true;
+            }
+            if (totalDist >= 5000 && !achievements.thousand) {
+              achievements.thousand = true;
+            }
+          }
+          // 跨越边境：领养后轨迹经度/纬度跨度超过 20 度
+          if (adoptedDate && points.length > startIdx + 1) {
+            var seg = points.slice(startIdx);
+            var segLons = seg.map(function(p){ return p[1]; });
+            var segLats = seg.map(function(p){ return p[0]; });
+            var lonSpan = Math.max.apply(null, segLons) - Math.min.apply(null, segLons);
+            var latSpan = Math.max.apply(null, segLats) - Math.min.apply(null, segLats);
+            if ((lonSpan > 20 || latSpan > 20) && !achievements.border) {
+              achievements.border = true;
+            }
+          }
+
+          // 保存成就
+          localStorage.setItem('achievements_' + animalId, JSON.stringify(achievements));
+
+          // 全局成就解锁函数（供问候/故事/问答/照片等交互点调用）
+          // 规则：所有成就必须先领养（adopted_xxx.date），未领养一律锁定并提示
+          window._unlockAch = function(achId, achName) {
+            try {
+              var key = 'achievements_' + animalId;
+              var ach = JSON.parse(localStorage.getItem(key) || '{}');
+              // —— 领养门槛：未领养不能解锁任何成就 ——
+              var adoptCheck = null;
+              try { adoptCheck = JSON.parse(localStorage.getItem('adopted_' + animalId) || 'null'); } catch(e) {}
+              if (!adoptCheck || !adoptCheck.date) {
+                var tip = document.getElementById('adoptNeedTip');
+                if (tip) {
+                  tip.style.display = 'block';
+                  setTimeout(function(){ tip.style.display = 'none'; }, 3600);
+                }
+                return;
+              }
+              if (ach[achId]) return;
+              ach[achId] = true;
+              localStorage.setItem(key, JSON.stringify(ach));
+              var item = document.querySelector('.achievement-item[data-ach="' + achId + '"]');
+              if (item) {
+                item.classList.remove('locked');
+                item.classList.add('unlocked');
+              }
+              var count = document.querySelectorAll('.achievement-item.unlocked').length;
+              document.getElementById('achievementCount').textContent = count + '/16 已解锁';
+              // 解锁提示
+              var toast = document.createElement('div');
+              toast.style.cssText = 'position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:10000;background:linear-gradient(135deg,rgba(245,158,11,.95),rgba(139,92,246,.95));color:#fff;padding:12px 22px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.35);animation:achPop .5s ease;pointer-events:none;';
+              toast.textContent = '🏆 成就解锁：' + (achName || achId);
+              document.body.appendChild(toast);
+              setTimeout(function() { toast.remove(); }, 3200);
+              if (window._completeTask) { window._completeTask('ach', 0); }
+            } catch(e) { console.log('成就解锁错误:', e); }
+          };
+
+          // 更新UI
+          var items = document.querySelectorAll('.achievement-item');
+          items.forEach(function(item) {
+            var ach = item.dataset.ach;
+            if (achievements[ach]) {
+              item.classList.remove('locked');
+              item.classList.add('unlocked');
+              unlockedCount++;
+            }
+          });
+          document.getElementById('achievementCount').textContent = unlockedCount + '/16 已解锁';
+
+          // 存储总距离，供播放完成时检测迁徙见证者
+          window._totalDistance = totalDist;
+          window._animalPoints = points.length;
+        } catch(e) { console.log('成就系统错误:', e); }
+      })();
+
+      // ---------- 故事叙事模块 ----------
+      (function() {
+        try {
+          // 真实故事库（基于 Movebank 数据和物种研究）
+          var stories = {
+            'noe': [
+              {
+                num: 1,
+                title: '阿尔萨斯的那个夏天',
+                time: '2021年6月29日 · 法国',
+                content: '2021年6月29日傍晚，法国阿尔萨斯萨尔堡（48.99°N, 7.05°E），一只刚长出白色羽毛的年轻白鹳被科学家轻轻戴上了GPS背包。它站在田野边的电线杆上，歪着头看这个新来的"小书包"，并不知道从这一刻起，它的每一次振翅都会被天空记住。那天夏风很暖，莱茵河谷的田野里虫鸣如潮。它大概以为，日子就会这样安静地过下去。',
+                photo: ''
+              },
+              {
+                num: 2,
+                title: '第一次独自远行',
+                time: '2021年9-11月 · 直布罗陀→西非',
+                content: '2021年9月19日，它的信号出现在北纬34.28°、西经6.60°——摩洛哥的大西洋海岸。科学家说，白鹳从不横渡大海，它们贴着陆地飞，靠热气流一圈圈盘旋上升。第一次迁徙的幼鸟没有成鸟带路，那两千多公里的路，是它自己一步步"问"出来的。11月22日，它抵达此生最南端（34.26°N, 6.54°W），撒哈拉的黄沙就在脚下。',
+                photo: ''
+              },
+              {
+                num: 3,
+                title: '年复一年的归途',
+                time: '2022-2025 · 法国↔摩洛哥',
+                content: '第二年春天，它回来了——4月30日，信号显示它停在家乡阿尔萨斯上空（49.21°N）。此后每年6月，它都准时出现在法国的同一片田野（48.9°N, 7.1°E）；每年12月，它又飞回摩洛哥。有意思的是，它这几年的越冬地一年比一年靠北：34.3°N → 35.6°N → 37.2°N → 40.3°N。也许它也在偷偷缩短归途，想早点回家。',
+                photo: ''
+              },
+              {
+                num: 4,
+                title: '此刻，它正在路上',
+                time: '2026年8月30日 · 西班牙',
+                content: '最新一条信号：2026年8月30日，Noé 出现在西班牙东部（40.95°N, 1.48°W），正沿着海岸线缓缓南下。当你在深夜打开这个页面时，它可能正停在哪根电线杆上，梳理着羽毛，等着明天的热气流。五年，它飞了25772公里，相当于绕地球半圈还多。而它的故事，还在继续。',
+                photo: ''
+              }
+            ],
+            'turtle': [
+              {
+                num: 1,
+                title: '捷克田野里的小不点',
+                time: '2025年6月5日 · 捷克',
+                content: '2025年6月5日，一只欧斑鸠在捷克共和国（48.87°N, 17.06°E）被戴上了脚环和追踪器。欧斑鸠是世界上最小的斑鸠，比鸽子小一圈，叫声像温柔的低语。它那时大概正忙着求偶——欧洲的夏天短暂，每一刻都要珍惜。谁也想不到，这个田野里的小不点，即将开始它人生第一次横跨非洲的冒险。',
+                photo: ''
+              },
+              {
+                num: 2,
+                title: '独自穿越撒哈拉',
+                time: '2025年12月 · 乍得',
+                content: '2025年12月1日，它的信号出现在北纬13.15°、东经21.17°——非洲中部的乍得。从捷克到乍得，直线距离超过3500公里，中间横着地中海和撒哈拉沙漠。欧斑鸠是夜间迁徙的鸟，白天休息觅食，夜晚借着星光赶路。没有人知道它飞了多久，但2026年3月2日，它抵达了此生最南端（13.02°N）——一只小斑鸠，把自己送到了撒哈拉以南的草原。',
+                photo: ''
+              },
+              {
+                num: 3,
+                title: '克里特岛上空的风',
+                time: '2026年4月 · 希腊',
+                content: '春天到了，它开始北返。2026年4月28日，信号出现在东经25.66°——希腊克里特岛附近。它没有走直线，而是绕过了地中海，一路贴着岛屿和海岸线跳岛前进，像在数着沿途的风景。5月11日，它已经回到欧洲大陆（48.38°N, 16.52°E）。8个月，一万多公里，它用一个来回，丈量了半个地球。',
+                photo: ''
+              },
+              {
+                num: 4,
+                title: '此刻，它在家门口',
+                time: '2026年9月7日 · 奥地利',
+                content: '最新信号：2026年9月7日，Lumi 出现在奥地利维也纳附近（48.84°N, 16.98°E），离它出发的捷克田野只有一百多公里。秋天到了，它正在为又一次南迁积蓄力量。下一次，当它再次飞越地中海时，你知道它要去哪——而它会记得，有人一直在屏幕这头看着它。',
+                photo: ''
+              }
+            ],
+            'redkite': [
+              {
+                num: 1,
+                title: '德国上空的红鸢',
+                time: '2019年5月14日 · 德国',
+                content: '2019年5月14日，一只成年红鸢在德国巴登-符腾堡州（48.46°N, 9.74°E）被装上了追踪器。红鸢是德国最优雅的猛禽之一，红色羽毛、剪刀似的尾巴，喜欢在高速公路和田野上空低低盘旋，寻找腐肉。它被命名为 Athos——像一位沉默的骑士，守着它出生的山谷。',
+                photo: ''
+              },
+              {
+                num: 2,
+                title: '西班牙的冬天',
+                time: '2021年11月 · 西班牙',
+                content: '与白鹳不同，红鸢是短途迁徙者——它们不去非洲。2021年11月28日，Athos 抵达它最南的越冬地：西班牙北部（42.51°N, 5.85°W）。那里冬天温暖，山坡上有足够的腐肉和鼠类。而它的夏宫，始终在德国那片山谷（48.4°N, 9.7°E）。一年两趟，两地之间，就是它全部的世界。',
+                photo: ''
+              },
+              {
+                num: 3,
+                title: '七年如一日的航线',
+                time: '2019-2025 · 德国↔西班牙',
+                content: '从2019到2025，Athos 的航线几乎可以用尺子量出来：每年6月1日前后，它准时回到德国（48.44°N）；每年12月1日前后，它准时抵达西班牙（42.52°N）。2023年的冬天它曾绕道法国西南（43.21°N, 0.39°W），像是偶然心血来潮的一次绕路。一只红鸢的七年，是一张近乎完美的通勤表。',
+                photo: ''
+              },
+              {
+                num: 4,
+                title: '最后的信号',
+                time: '2025年12月24日 · 西班牙',
+                content: '2025年12月24日，圣诞夜，Athos 的追踪器发出最后一条信号：西班牙北部（42.53°N, 5.88°W）——它熟悉的越冬地。此后信号再未响起。或许追踪器的电池耗尽了，或许背包脱落了；我们无从知晓。但科学家相信，它多半还活着，还在那片山谷上空盘旋。这只红鸢教会我们：真正的忠诚，是年复一年回到同一个地方。',
+                photo: ''
+              }
+            ],
+            'honeybuzzard': [
+              {
+                num: 1,
+                title: '蜂鹰的秘密生活',
+                time: '2023年6月20日 · 德国',
+                content: '2023年6月20日，德国西南部（48.39°N, 9.10°E），一只蜂鹰被装上追踪器。蜂鹰是猛禽里的"美食家"——它不爱抓鸟，最爱挖蜂巢吃幼虫，因此得名。它被命名为 Mel，来自蜂蜜的谐音。初夏的德国森林里，它大概正用长爪子扒开一窝野蜂，享受着甜蜜的午餐，浑然不知接下来等待它的，是地球上最艰难的一条航线。',
+                photo: ''
+              },
+              {
+                num: 2,
+                title: '跨越整个撒哈拉',
+                time: '2023年11月 · 西非',
+                content: '2023年12月1日，Mel 的信号出现在西非（7.01°N, 9.04°W）——利比里亚的热带雨林边缘。从德国到西非，它穿越了地中海、撒哈拉沙漠和萨赫勒草原，直线距离超过4500公里，是欧洲候鸟中最极限的旅程之一。蜂鹰是滑翔大师，它们几乎不扇翅膀，全靠热气流滑翔，一次迁徙能省下90%的体力。2025年11月3日，它抵达最南端（6.98°N）——赤道雨林的边缘。',
+                photo: ''
+              },
+              {
+                num: 3,
+                title: '毛里塔尼亚的海风',
+                time: '2026年5月 · 西非海岸',
+                content: '2026年5月4日，Mel 出现在西经12.52°——毛里塔尼亚的大西洋海岸。它没有急着回家，而是沿着海岸线慢慢北上，像在旅行。5月到6月，它从20°N一路飞回德国（48.6°N），两个月，几乎纵跨整个非洲。科学家说蜂鹰的归途比去程更从容——去程赶时间，回程赶的是夏天的巢。',
+                photo: ''
+              },
+              {
+                num: 4,
+                title: '此刻，它在摩洛哥',
+                time: '2026年9月3日 · 摩洛哥',
+                content: '最新信号：2026年9月3日，Mel 出现在摩洛哥（32.48°N, 6.22°W）——它又一次踏上了南迁之路，正在穿越撒哈拉。三年间，它累计飞行35829公里，比白鹳Noé飞得还远。蜂鹰的故事是一个秘密的勇者传说：没有人围观，没有明星光环，它只是年复一年，用滑翔越过沙漠，去赴一场森林的约。',
+                photo: ''
+              }
+            ],
+            'herringgull': [
+              {
+                num: 1,
+                title: '荷兰海岸的小海鸥',
+                time: '2021年5月25日 · 荷兰',
+                content: '2021年5月25日，荷兰泽兰省的海岸（51.59°N, 3.70°E），一只银鸥幼鸟被戴上了追踪器。银鸥是海边的"地头蛇"——它们聪明、大胆，会叼走游客的薯条，也会追着渔船讨食。但在这片北海的滩涂上，它首先是一只正在学习飞行的小海鸥，在潮汐的涨落间练习着海风的味道。',
+                photo: ''
+              },
+              {
+                num: 2,
+                title: '第一次去南方过冬',
+                time: '2021年12月 · 西班牙',
+                content: '2021年12月1日，Silver 的信号出现在西班牙北部海岸（43.44°N, 3.46°W）。银鸥不像别的候鸟那样有固定航线，它们沿着大西洋海岸线走走停停，哪里有渔港就在哪里停一两天。2022年12月，它甚至到了葡萄牙以西的公海（42.11°N, 11.51°W）——离海岸一百多公里，也许是在追一群鱼。',
+                photo: ''
+              },
+              {
+                num: 3,
+                title: '远到摩洛哥的冬天',
+                time: '2026年2月 · 摩洛哥',
+                content: '2026年2月26日，Silver 抵达它此生最南端：摩洛哥的阿加迪尔（32.29°N, 9.36°W）。而到了夏天，6月12日，它又出现在荷兰以北（51.97°N, 5.94°E）——一年之间，它沿着海岸线往返近两千公里。银鸥的迁徙没有史诗感，更像一场漫长的海边散步：今天在这个码头，明天在那个渔港，但方向，始终记得。',
+                photo: ''
+              },
+              {
+                num: 4,
+                title: '此刻，它在英吉利海峡',
+                time: '2026年9月6日 · 法国',
+                content: '最新信号：2026年9月6日，Silver 出现在法国北部（49.71°N, 2.63°E）——索姆河口的滩涂上，正等着秋天第一场南风。五年间它飞了41861公里，是我们5只动物里飞得最远的。海鸥的故事没有惊心动魄，但它教会我们：所谓远方，不过是把每一个今天，都过得像昨天一样笃定。',
+                photo: ''
+              }
+            ],
+            'koa': [
+              {
+                num: 1,
+                title: '冷海里的孤独猎手',
+                time: '加州法拉隆群岛 · 常驻海域',
+                content: '这里是美国加州外海的法拉隆群岛（Farallon Islands，约 37.7°N, 123.0°W）。每年夏秋，成群的海狮和海豹在礁石间翻涌，而在它们脚下 30 米深的冷水中，一道灰白色的影子正无声滑过。它是一只成年大白鲨——加州近海最著名的"常住居民"。科学家用卫星标签记录过这里的鲨鱼：它们不是漫无目的地游荡，而是守着海豹的路线，精准得像一枚活鱼雷。'
+              },
+              {
+                num: 2,
+                title: '离岸的信号',
+                time: '深秋 · 向西南远海出发',
+                content: '11 月初，水温开始下降，海豹群逐渐离开群岛。几乎在同一时间，这只大白鲨掉头离开了熟悉的礁石区，朝着西南方向的深海游去（最新的定位约 34.3°N, 123.8°W，正位于加州外海、向西南的航线上）。斯坦福大学和蒙特雷湾水族馆的研究者发现：每年秋冬，加州的大白鲨都会离开海岸，踏上一条长达 4,000 公里的远洋之旅——方向几乎一致，像一份写在基因里的航海图。'
+              },
+              {
+                num: 3,
+                title: '白鲨咖啡馆',
+                time: '太平洋中部 · 深海漫游',
+                content: '大约一个多月后，它会抵达太平洋中部一片神秘的深海区——科学家叫它"白鲨咖啡馆"（White Shark Café，约 22°N, 132°W）。这里没有海豹、没有浅滩，只有一望无际的蓝色。奇怪的是，大白鲨会在这里反复深潜到 300–500 米的深海，再浮回海面。研究者推测，它们可能在这里觅食深海中层的鱿鱼，或是在进行某种我们尚未理解的社交。这片海域没有地图，只有孤独。'
+              },
+              {
+                num: 4,
+                title: '返航的约定',
+                time: '次年春天 · 回到加州',
+                content: '春天到来时，它会再一次掉头，沿着来时的路游回加州海岸——回到法拉隆群岛，回到海豹重新聚集的礁石边。这条往返近 8,000 公里的旅程，它可能独自完成，没有任何同伴。卫星标签记录下的每一枚定位点，都是它在蓝色荒野里写下的一个逗号。它不迁徙，它只是……在自己的领地里，做一个永远的漫游者。'
+              }
+            ]
+          };
+
+          var animalStories = stories[animalId] || [];
+          var container = document.getElementById('storyChapters');
+
+          if (animalStories.length === 0) {
+            document.getElementById('storySection').style.display = 'none';
+            return;
+          }
+
+          // 解锁机制：领养后按陪伴天数解锁（第1章领养当天即可读，之后每天解锁一章）
+          // 未领养时只展示第1章作为预告
+          var adoptInfo = null;
+          try { adoptInfo = JSON.parse(localStorage.getItem('adopted_' + animalId) || 'null'); } catch(e) {}
+          var adoptDays = -1; // -1 = 未领养
+          if (adoptInfo && adoptInfo.date) {
+            try {
+              var adoptDay = new Date(adoptInfo.date).getTime();
+              adoptDays = Math.max(0, Math.floor((Date.now() - adoptDay) / 86400000));
+            } catch(e) { adoptDays = 0; }
+          }
+          animalStories.forEach(function(chapter, idx) {
+            // idx=0 领养当天解锁；idx=1 需陪伴满1天；以此类推；未领养只能看第1章
+            chapter.unlockLevel = (adoptDays >= 0) ? idx : 1;
+            chapter.unlockHint = (adoptDays >= 0)
+              ? ((adoptDays >= idx) ? '' : ('📅 再陪伴它 ' + (idx - adoptDays) + ' 天，解锁这一章（已相伴 ' + adoptDays + ' 天）'))
+              : ((idx === 0) ? '' : '🔒 领养它后，每天解锁一个新章节');
+          });
+
+          // —— 故事进度与解锁说明 ——
+          var progEl = document.getElementById('storyProgress');
+          var hintEl = document.getElementById('storyHint');
+          if (progEl) {
+            if (adoptDays < 0) {
+              progEl.textContent = '· 预告';
+            } else {
+              var un = 0;
+              animalStories.forEach(function(ch, i) { if (adoptDays >= i) un++; });
+              progEl.textContent = '· ' + un + '/' + animalStories.length + ' 已解锁 · 已相伴 ' + adoptDays + ' 天';
+            }
+          }
+          if (hintEl) {
+            if (adoptDays < 0) {
+              hintEl.style.display = 'block';
+              hintEl.innerHTML = '🔒 故事会按陪伴天数解锁：领养它后，<b>第1章当天解锁，之后每陪伴1天解锁一章</b>。今天领养，明天就能读到它的下一段旅程。';
+            } else {
+              hintEl.style.display = 'block';
+              var nextIdx = 0;
+              animalStories.forEach(function(ch, i) { if (adoptDays >= i) nextIdx = i + 1; });
+              if (nextIdx < animalStories.length) {
+                hintEl.innerHTML = '📖 下一章 <b>' + animalStories[nextIdx].title + '</b> 还需陪伴 <b>' + (nextIdx - adoptDays) + '</b> 天解锁——每天来看看它，故事会慢慢展开。';
+              } else {
+                hintEl.innerHTML = '🎉 全部 ' + animalStories.length + ' 章已解锁！你和它的故事，比任何一页都长。';
+              }
+            }
+          }
+
+          animalStories.forEach(function(chapter, idx) {
+            var locked = (adoptDays >= 0) ? (adoptDays < idx) : (idx > 0);
+            var div = document.createElement('div');
+            div.className = 'story-chapter' + (idx === 0 && !locked ? ' expanded' : '') + (locked ? ' locked' : '');
+            div.innerHTML =
+              '<div class="story-chapter-header">' +
+                '<div class="story-chapter-num">' + (locked ? '🔒' : chapter.num) + '</div>' +
+                '<div class="story-chapter-title">' + chapter.title + '</div>' +
+                '<div class="story-chapter-time">' + chapter.time + '</div>' +
+              '</div>' +
+              '<div class="story-chapter-content">' + chapter.content + '</div>' +
+              (locked ? ('<div class="story-lock-hint">' + chapter.unlockHint + '</div>') : '');
+            if (!locked) {
+              div.addEventListener('click', function() {
+                var wasExpanded = this.classList.contains('expanded');
+                this.classList.toggle('expanded');
+                // 完成阅读故事任务
+                if (window._completeTask) window._completeTask('story', 10);
+                // 成就：倾听者（第一次读故事）
+                if (window._unlockAch) { window._unlockAch('story1', '倾听者'); }
+                // 成就：故事收藏家（读过所有章节）
+                if (!wasExpanded) {
+                  try {
+                    var readKey = 'read_story_' + animalId;
+                    var read = JSON.parse(localStorage.getItem(readKey) || '[]');
+                    var allChapters = document.querySelectorAll('.story-chapter:not(.locked)');
+                    var chIdx = Array.prototype.indexOf.call(allChapters, this);
+                    if (chIdx >= 0 && read.indexOf(chIdx) === -1) {
+                      read.push(chIdx);
+                      localStorage.setItem(readKey, JSON.stringify(read));
+                    }
+                    if (window._unlockAch && allChapters.length > 0 && read.length >= allChapters.length) {
+                      window._unlockAch('storyall', '故事收藏家');
+                    }
+                  } catch(e) {}
+                }
+              });
+            }
+            container.appendChild(div);
+          });
+        } catch(e) { console.log('故事模块错误:', e); }
+      })();
+
+      // ---------- 物种科普模块 ----------
+      (function() {
+        try {
+          var scienceData = {
+            'noe': {
+              items: [
+                { label: '学名', value: 'Ciconia ciconia' },
+                { label: '体长', value: '95-110 cm' },
+                { label: '翼展', value: '180-218 cm' },
+                { label: '体重', value: '2.3-4.5 kg' },
+                { label: '寿命', value: '野外20-25年' },
+                { label: '食性', value: '肉食（昆虫、鱼、两栖、爬行、小型哺乳）' },
+                { label: '迁徙距离', value: '单程约4000-6000 km' },
+                { label: '保护等级', value: '<span class="conservation-badge conservation-lc">LC 无危</span>' }
+              ],
+              facts: [
+                '白鹳是翱翔鸟类，依赖热气流上升，因此避免飞越宽阔的海面，选择最窄的直布罗陀海峡（仅14公里宽）',
+                '幼鸟第一次迁徙是独立完成的，没有成鸟引导，完全靠本能',
+                '白鹳有很强的归巢本能，年复一年回到同一个巢址，通常在塔楼或钟楼上',
+                '在非洲越冬地，白鹳会大规模集群捕食蝗虫，有时一群超过1000只',
+                '白鹳种群在20世纪下降，但近年因保护措施回升了20%'
+              ]
+            },
+            'turtle': {
+              items: [
+                { label: '学名', value: 'Streptopelia turtur' },
+                { label: '体长', value: '26-28 cm' },
+                { label: '翼展', value: '47-53 cm' },
+                { label: '体重', value: '130-180 g' },
+                { label: '寿命', value: '野外约10年' },
+                { label: '食性', value: '植食为主（种子、谷物、浆果）' },
+                { label: '迁徙距离', value: '单程约5000+ km' },
+                { label: '保护等级', value: '<span class="conservation-badge conservation-vu">VU 易危</span>' }
+              ],
+              facts: [
+                '欧斑鸠是夜间迁徙的鸟类，与白鹳的白天迁徙完全不同',
+                '欧洲种群在1980-2015年间下降了78%，是最令人担忧的鸟类之一',
+                '仅法国合法狩猎期每年就捕获58.3万只欧斑鸠',
+                '欧斑鸠的巢通常建在灌木丛中，偏好荆棘类植物如山楂',
+                '它们有三条主要迁徙路线：西线伊比利亚、中线马耳他意大利、东线希腊保加利亚土耳其'
+              ]
+            },
+            'redkite': {
+              items: [
+                { label: '学名', value: 'Milvus milvus' },
+                { label: '体长', value: '60-66 cm' },
+                { label: '翼展', value: '145-165 cm' },
+                { label: '体重', value: '800-1300 g' },
+                { label: '寿命', value: '野外可达25年' },
+                { label: '食性', value: '食腐为主（腐肉、小型哺乳动物、鸟类、昆虫）' },
+                { label: '迁徙距离', value: '部分迁徙，单程约1000-2000 km' },
+                { label: '保护等级', value: '<span class="conservation-badge conservation-lc">LC 无危</span>' }
+              ],
+              facts: [
+                '红鸢的叉形尾巴让它能够在空中灵活转向，精准地发现地面上的食物',
+                '红鸢是英国最成功的重引入项目之一，从几乎灭绝到现在有几千对繁殖',
+                '红鸢是食腐动物，在生态系统中扮演着"清道夫"的重要角色，帮助清理动物尸体',
+                '红鸢的翅膀下有明显的白色斑块，在阳光下飞行时非常醒目，容易识别',
+                '红鸢曾经在欧洲濒临灭绝，但通过保护和重引入项目，种群正在逐步恢复'
+              ]
+            },
+            'honeybuzzard': {
+              items: [
+                { label: '学名', value: 'Pernis apivorus' },
+                { label: '体长', value: '52-60 cm' },
+                { label: '翼展', value: '118-150 cm' },
+                { label: '体重', value: '600-1100 g' },
+                { label: '寿命', value: '野外约15年' },
+                { label: '食性', value: '专门吃蜜蜂和黄蜂的幼虫' },
+                { label: '迁徙距离', value: '单程约5000-6000 km' },
+                { label: '保护等级', value: '<span class="conservation-badge conservation-lc">LC 无危</span>' }
+              ],
+              facts: [
+                '蜂鹰的面部有鳞片状羽毛，可以防止被蜜蜂蛰伤，是它们独特的"防蛰盔甲"',
+                '蜂鹰是长距离迁徙猛禽，从欧洲穿越地中海和撒哈拉沙漠到西非越冬，单程5000多公里',
+                '蜂鹰飞行时翅膀呈独特的"海鸥式"上扬，容易和其他猛禽区分',
+                '蜂鹰专门吃蜜蜂和黄蜂的幼虫，会用强壮的脚爪挖掘蜂巢获取食物',
+                '蜂鹰的迁徙路线非常精准，每年几乎走同一条路，展现了惊人的导航能力'
+              ]
+            },
+            'herringgull': {
+              items: [
+                { label: '学名', value: 'Larus argentatus' },
+                { label: '体长', value: '55-67 cm' },
+                { label: '翼展', value: '125-155 cm' },
+                { label: '体重', value: '700-1500 g' },
+                { label: '寿命', value: '野外可达30年' },
+                { label: '食性', value: '杂食（鱼类、贝类、昆虫、垃圾等）' },
+                { label: '迁徙距离', value: '部分迁徙，单程约1000-3000 km' },
+                { label: '保护等级', value: '<span class="conservation-badge conservation-lc">LC 无危</span>' }
+              ],
+              facts: [
+                '银鸥非常聪明，会把贝壳扔到地上砸碎，甚至会用面包屑钓鱼，是鸟类中的"工具使用者"',
+                '银鸥会从其他鸟类那里偷食物，是著名的"海盗"鸟类，甚至会从人类手里抢食物',
+                '银鸥的叫声非常响亮，可以传到几公里外，是海岸边最具代表性的声音之一',
+                '银鸥是一夫一妻制，通常会和同一个伴侣生活多年，共同筑巢和喂养幼鸟',
+                '银鸥的幼鸟需要4年才能完全长成成鸟的银白色羽毛，期间会经历多次换羽'
+              ]
+            }
+          };
+
+          var data = scienceData[animalId];
+          if (!data) {
+            document.getElementById('scienceSection').style.display = 'none';
+            return;
+          }
+
+          var grid = document.getElementById('scienceGrid');
+          data.items.forEach(function(item) {
+            var div = document.createElement('div');
+            div.className = 'science-item';
+            div.innerHTML =
+              '<div class="science-item-label">' + item.label + '</div>' +
+              '<div class="science-item-value">' + item.value + '</div>';
+            grid.appendChild(div);
+          });
+
+          var facts = document.getElementById('scienceFacts');
+          facts.innerHTML =
+            '<div class="science-facts-title">💡 有趣的冷知识</div>' +
+            '<ul class="science-facts-list">' +
+            data.facts.map(function(f) { return '<li>• ' + f + '</li>'; }).join('') +
+            '</ul>';
+
+          // 科普知识问答
+          var quizData = {
+            'noe': [
+              { q: '白鹳依赖什么进行长距离飞行？', options: ['快速扇动翅膀', '热气流滑翔', '借助风力', '夜间飞行'], answer: 1, exp: 20 },
+              { q: '白鹳幼鸟第一次迁徙是怎样的？', options: ['跟随父母', '独立完成，无成鸟引导', '跟随其他鸟类', '不迁徙'], answer: 1, exp: 20 },
+              { q: '白鹳选择飞越哪里穿过地中海？', options: ['最宽处', '直布罗陀海峡（最窄处）', '西西里岛', '不穿过地中海'], answer: 1, exp: 20 },
+              { q: '白鹳在非洲越冬时主要吃什么？', options: ['鱼类', '蝗虫等昆虫', '小型哺乳动物', '植物种子'], answer: 1, exp: 20 }
+            ],
+            'turtle': [
+              { q: '欧斑鸠是在什么时间迁徙的？', options: ['白天', '夜间', '清晨', '黄昏'], answer: 1, exp: 20 },
+              { q: '欧斑鸠的IUCN保护等级是？', options: ['无危(LC)', '易危(VU)', '濒危(EN)', '极危(CR)'], answer: 1, exp: 20 },
+              { q: '欧洲欧斑鸠种群1980-2015年下降了多少？', options: ['30%', '50%', '78%', '90%'], answer: 2, exp: 20 },
+              { q: '欧斑鸠通常把巢建在哪里？', options: ['高大乔木上', '灌木丛中，偏好荆棘', '悬崖上', '地面上'], answer: 1, exp: 20 }
+            ],
+            'redkite': [
+              { q: '红鸢的尾巴是什么形状？', options: ['圆形', '叉形', '楔形', '方形'], answer: 1, exp: 20 },
+              { q: '红鸢主要吃什么？', options: ['活的猎物', '腐肉', '鱼类', '植物种子'], answer: 1, exp: 20 },
+              { q: '红鸢的IUCN保护等级是？', options: ['极危(CR)', '濒危(EN)', '易危(VU)', '无危(LC)'], answer: 3, exp: 20 },
+              { q: '红鸢在哪个国家有最成功的重引入项目？', options: ['德国', '法国', '英国', '西班牙'], answer: 2, exp: 20 }
+            ],
+            'honeybuzzard': [
+              { q: '蜂鹰主要吃什么？', options: ['小型哺乳动物', '蜜蜂和黄蜂的幼虫', '鱼类', '植物种子'], answer: 1, exp: 20 },
+              { q: '蜂鹰的面部有什么特殊结构？', options: ['坚硬的喙', '鳞片状羽毛防止被蛰', '大耳朵', '夜视眼'], answer: 1, exp: 20 },
+              { q: '蜂鹰冬天在哪里越冬？', options: ['欧洲南部', '北非', '西非', '中东'], answer: 2, exp: 20 },
+              { q: '蜂鹰飞行时翅膀呈什么形状？', options: ['平展', '海鸥式上扬', 'V形', '收拢'], answer: 1, exp: 20 }
+            ],
+            'herringgull': [
+              { q: '银鸥会用什么技巧获取食物？', options: ['把贝壳扔到地上砸碎', '用网捕鱼', '挖洞找虫子', '爬树摘果子'], answer: 0, exp: 20 },
+              { q: '银鸥的食性是什么？', options: ['只吃鱼', '只吃植物', '杂食', '只吃腐肉'], answer: 2, exp: 20 },
+              { q: '银鸥幼鸟需要几年才能长成成鸟羽毛？', options: ['1年', '2年', '4年', '6年'], answer: 2, exp: 20 },
+              { q: '银鸥的婚配制度是什么？', options: ['一夫多妻', '一妻多夫', '一夫一妻', '随意交配'], answer: 2, exp: 20 }
+            ]
+          };
+
+          var animalQuiz = quizData[animalId] || [];
+          if (animalQuiz.length > 0) {
+            var quizDiv = document.createElement('div');
+            quizDiv.className = 'quiz-section';
+            quizDiv.innerHTML =
+              '<div class="quiz-title">🎯 知识问答 <span style="font-size:11px;color:var(--sub);font-weight:400;">答对获经验</span></div>' +
+              '<div class="quiz-question" id="quizQuestion"></div>' +
+              '<div class="quiz-options" id="quizOptions"></div>' +
+              '<div class="quiz-result" id="quizResult"></div>' +
+              '<button class="quiz-next" id="quizNext">下一题 →</button>';
+            facts.parentNode.appendChild(quizDiv);
+
+            var currentQuiz = 0;
+            function showQuiz() {
+              if (currentQuiz >= animalQuiz.length) {
+                quizDiv.innerHTML = '<div class="quiz-title">🎯 知识问答</div><div style="font-size:12px;color:var(--accent);text-align:center;padding:10px;">🎉 今日问答已全部完成！明天再来挑战吧</div>';
+                return;
+              }
+              var q = animalQuiz[currentQuiz];
+              document.getElementById('quizQuestion').textContent = (currentQuiz+1) + '. ' + q.q;
+              var optionsDiv = document.getElementById('quizOptions');
+              optionsDiv.innerHTML = '';
+              q.options.forEach(function(opt, idx) {
+                var btn = document.createElement('div');
+                btn.className = 'quiz-option';
+                btn.textContent = String.fromCharCode(65+idx) + '. ' + opt;
+                btn.addEventListener('click', function() {
+                  var result = document.getElementById('quizResult');
+                  var nextBtn = document.getElementById('quizNext');
+                  if (idx === q.answer) {
+                    btn.classList.add('correct');
+                    result.className = 'quiz-result correct show';
+                    result.textContent = '✅ 回答正确！+' + q.exp + ' 经验';
+                    // 增加经验
+                    try {
+                      var expKey = 'exp_' + animalId;
+                      var exp = parseInt(localStorage.getItem(expKey) || '0', 10) + q.exp;
+                      localStorage.setItem(expKey, exp);
+                    } catch(e) {}
+                    // 成就：初露锋芒（第一次答对）
+                    if (window._unlockAch) { window._unlockAch('quiz1', '初露锋芒'); }
+                    // 成就：知识达人（答对全部题目）
+                    var doneKey = 'quiz_done_' + animalId;
+                    var done = parseInt(localStorage.getItem(doneKey) || '0', 10);
+                    done++;
+                    localStorage.setItem(doneKey, done);
+                    if (window._unlockAch && done >= animalQuiz.length) { window._unlockAch('quizall', '知识达人'); }
+                  } else {
+                    btn.classList.add('wrong');
+                    optionsDiv.children[q.answer].classList.add('correct');
+                    result.className = 'quiz-result wrong show';
+                    result.textContent = '❌ 回答错误，正确答案是 ' + String.fromCharCode(65+q.answer);
+                  }
+                  nextBtn.classList.add('show');
+                  optionsDiv.querySelectorAll('.quiz-option').forEach(function(o) { o.style.pointerEvents = 'none'; });
+                });
+                optionsDiv.appendChild(btn);
+              });
+              document.getElementById('quizResult').className = 'quiz-result';
+              document.getElementById('quizNext').classList.remove('show');
+            }
+            document.getElementById('quizNext').addEventListener('click', function() {
+              currentQuiz++;
+              showQuiz();
+            });
+            showQuiz();
+          }
+        } catch(e) { console.log('科普模块错误:', e); }
+      })();
+
+      // 动物档案
+      document.getElementById('infoHero').src = avatarUrl;
+      document.getElementById('species').textContent = a.species;
+      document.getElementById('name').textContent = a.name;
+      document.getElementById('meta').textContent =
+        (a.track_count || 0) + ' 个定位点 · ' + fmtDate(a.track_start) + ' → ' + fmtDate(a.track_end);
+      var badge = a.origin !== 'example'
+        ? '<span class="badge real">真实追踪</span>' : '<span class="badge demo">示例数据</span>';
+      document.getElementById('species').insertAdjacentHTML('beforeend', badge);
+      if (a.story) {
+        document.getElementById('storyBody').textContent = a.story;
+        document.getElementById('storyToggle').addEventListener('click', function () {
+          document.getElementById('storyFold').classList.toggle('open');
+        });
+      } else {
+        document.getElementById('storyFold').style.display = 'none';
+      }
+
+      var ph = document.getElementById('photos');
+      photos.forEach(function (p, i) {
+        var el = document.createElement('div');
+        el.className = 'photo-card photo-item';
+        el.innerHTML = '<div class="photo-wrap">' +
+          '<img src="' + (p.url || p) + '" alt="' + a.species + '" loading="lazy" onerror="this.classList.add(\'err\');this.alt=\'照片暂不可用·点击重试\'">' +
+          '<div class="photo-zoom">🔍 点击放大</div>' +
+          '</div>';
+        el.addEventListener('click', function() { openLightbox(i); });
+        ph.appendChild(el);
+      });
+
+      document.getElementById('dataNote').textContent = a.data_note || '';
+
+      // ---------- 迁徙统计卡片（动态创建） ----------
+      if (points.length > 1) {
+        var totalDist = 0;
+        for (var si = 1; si < points.length; si++) {
+          var R = 6371, p1 = points[si-1], p2 = points[si];
+          var dLat = (p2[0]-p1[0])*Math.PI/180, dLon = (p2[1]-p1[1])*Math.PI/180;
+          var aa = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(p1[0]*Math.PI/180)*Math.cos(p2[0]*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+          totalDist += R * 2 * Math.atan2(Math.sqrt(aa), Math.sqrt(1-aa));
+        }
+        var startD = new Date(timestamps[0].replace(' ','T')), endD = new Date(timestamps[timestamps.length-1].replace(' ','T'));
+        var days = Math.round((endD - startD) / 86400000);
+        var lats = points.map(function(p){return p[0];});
+        var minLat = Math.min.apply(null, lats), maxLat = Math.max.apply(null, lats);
+
+        var statsSec = document.createElement('div');
+        statsSec.className = 'stats-sec';
+        statsSec.innerHTML =
+          '<div class="stat-card"><div class="v">' + (totalDist/1000).toFixed(0) + '<small>k km</small></div><div class="k">累计飞行</div></div>' +
+          '<div class="stat-card"><div class="v">' + days + '<small>天</small></div><div class="k">追踪天数</div></div>' +
+          '<div class="stat-card"><div class="v">' + points.length + '<small>个</small></div><div class="k">定位点数</div></div>' +
+          '<div class="stat-card"><div class="v">' + Math.abs(minLat).toFixed(1) + '°↔' + maxLat.toFixed(1) + '°</div><div class="k">最南↔最北</div></div>';
+        var tlSec = document.querySelector('.tl-sec');
+        tlSec.parentNode.insertBefore(statsSec, tlSec.nextSibling);
+
+        // ---------- 季节迁徙快速跳转（只对会迁徙的鸟类显示） ----------
+        var isMigratoryBird = /Stork|Dove|Kite|Buzzard|Gull|燕|鹳|鸢|蜂鹰|鸥|Bird|Swift|Tern|Goose|Duck|Crane/i.test(a.species);
+        if (isMigratoryBird) {
+          var seasonSec = document.createElement('div');
+          seasonSec.className = 'season-sec';
+          seasonSec.innerHTML =
+            '<div class="season-label">🗺️ 季节迁徙 · 一键看她在哪</div>' +
+            '<div class="season-btns">' +
+              '<button class="season-btn" data-season="3"><span class="emoji">🌸</span><span class="name">春</span><span class="range">3-5月</span></button>' +
+              '<button class="season-btn" data-season="6"><span class="emoji">☀️</span><span class="name">夏</span><span class="range">6-8月</span></button>' +
+              '<button class="season-btn" data-season="9"><span class="emoji">🍂</span><span class="name">秋</span><span class="range">9-11月</span></button>' +
+              '<button class="season-btn" data-season="12"><span class="emoji">❄️</span><span class="name">冬</span><span class="range">12-2月</span></button>' +
+            '</div>';
+          statsSec.parentNode.insertBefore(seasonSec, statsSec.nextSibling);
+
+          seasonSec.querySelectorAll('.season-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+              seasonSec.querySelectorAll('.season-btn').forEach(function(b){b.classList.remove('active');});
+              btn.classList.add('active');
+              var startMonth = parseInt(btn.dataset.season, 10);
+              var endMonth = startMonth + 2;
+              var targetIdx = 0;
+              for (var ti = 0; ti < timestamps.length; ti++) {
+                var m = new Date(timestamps[ti].replace(' ','T')).getMonth() + 1;
+                if (m >= startMonth && m <= endMonth) { targetIdx = ti; break; }
+              }
+              idx = targetIdx;
+              document.getElementById('tlSlider').value = idx;
+              updateView();
+              if (map) map.setView(points[idx], 5, {animate: true});
+            });
+          });
+        }
+
+        // ---------- 年份范围选择器 ----------
+        var allPoints = points.slice();
+        var allTimestamps = timestamps.slice();
+        var years = [];
+        allTimestamps.forEach(function(t) {
+          var y = new Date(t.replace(' ','T')).getFullYear();
+          if (years.indexOf(y) === -1) years.push(y);
+        });
+        years.sort();
+
+        var yearSec = document.createElement('div');
+        yearSec.className = 'year-sec';
+        var yearOptions = years.map(function(y){return '<option value="'+y+'">'+y+'年</option>';}).join('');
+        yearSec.innerHTML =
+          '<div class="year-label">📅 年份范围 · 只看这段时间的轨迹</div>' +
+          '<div class="year-row">' +
+            '<select class="year-select" id="yearStart">' + yearOptions + '</select>' +
+            '<span class="year-sep">→</span>' +
+            '<select class="year-select" id="yearEnd">' + yearOptions + '</select>' +
+            '<button class="year-apply" id="yearApply">应用</button>' +
+          '</div>' +
+          '<div class="year-quick" id="yearQuick">' +
+            '<span class="year-chip active" data-all="1">全部</span>' +
+            years.map(function(y){return '<span class="year-chip" data-year="'+y+'">'+y+'</span>';}).join('') +
+          '</div>';
+        if (typeof seasonSec !== 'undefined' && seasonSec) {
+          seasonSec.parentNode.insertBefore(yearSec, seasonSec.nextSibling);
+        } else {
+          statsSec.parentNode.insertBefore(yearSec, statsSec.nextSibling);
+        }
+
+        document.getElementById('yearStart').value = years[0];
+        document.getElementById('yearEnd').value = years[years.length-1];
+
+        function applyYearFilter(startY, endY) {
+          var filtered = [];
+          var filteredTs = [];
+          for (var fi = 0; fi < allPoints.length; fi++) {
+            var y = new Date(allTimestamps[fi].replace(' ','T')).getFullYear();
+            if (y >= startY && y <= endY) {
+              filtered.push(allPoints[fi]);
+              filteredTs.push(allTimestamps[fi]);
+            }
+          }
+          if (filtered.length < 2) { alert('该时间段内轨迹点太少，请选择更长的时间范围'); return; }
+          points = filtered;
+          timestamps = filteredTs;
+          idx = 0;
+          var slider = document.getElementById('tlSlider');
+          slider.max = points.length - 1;
+          slider.value = 0;
+          // 重绘地图
+          if (map) {
+            if (lineLayer) map.removeLayer(lineLayer);
+            if (pathLayer) map.removeLayer(pathLayer);
+            lineLayer = L.polyline(smoothPath(points, 2), { color: '#8fb5ac', weight: 3, opacity: .55 }).addTo(map);
+            map.fitBounds(L.latLngBounds(points).pad(0.12), {animate: true});
+          }
+          updateView();
+          document.getElementById('mapSub').textContent = a.species + ' · ' + points.length + ' 个定位点（' + startY + '-' + endY + '）';
+        }
+
+        document.getElementById('yearApply').addEventListener('click', function() {
+          var sy = parseInt(document.getElementById('yearStart').value, 10);
+          var ey = parseInt(document.getElementById('yearEnd').value, 10);
+          if (sy > ey) { alert('起始年份不能大于结束年份'); return; }
+          document.querySelectorAll('.year-chip').forEach(function(c){c.classList.remove('active');});
+          applyYearFilter(sy, ey);
+        });
+
+        document.querySelectorAll('.year-chip').forEach(function(chip) {
+          chip.addEventListener('click', function() {
+            document.querySelectorAll('.year-chip').forEach(function(c){c.classList.remove('active');});
+            chip.classList.add('active');
+            if (chip.dataset.all) {
+              points = allPoints.slice();
+              timestamps = allTimestamps.slice();
+              document.getElementById('yearStart').value = years[0];
+              document.getElementById('yearEnd').value = years[years.length-1];
+              idx = 0;
+              var slider = document.getElementById('tlSlider');
+              slider.max = points.length - 1;
+              slider.value = 0;
+              if (map) {
+                if (lineLayer) map.removeLayer(lineLayer);
+                if (pathLayer) map.removeLayer(pathLayer);
+                lineLayer = L.polyline(smoothPath(points, 2), { color: '#8fb5ac', weight: 3, opacity: .55 }).addTo(map);
+                map.fitBounds(L.latLngBounds(points).pad(0.12), {animate: true});
+              }
+              updateView();
+              document.getElementById('mapSub').textContent = a.species + ' · ' + points.length + ' 个定位点';
+            } else {
+              var y = parseInt(chip.dataset.year, 10);
+              document.getElementById('yearStart').value = y;
+              document.getElementById('yearEnd').value = y;
+              applyYearFilter(y, y);
+            }
+          });
+        });
+      }
+
+      if (points.length > 1) {
+        var slider = document.getElementById('tlSlider');
+        slider.max = points.length - 1;
+        slider.value = 0;
+        slider.addEventListener('input', sliderChanged);
+        document.getElementById('playBtn').addEventListener('click', play);
+        var followBtn = document.getElementById('followBtn');
+        if (followBtn) followBtn.addEventListener('click', function() {
+          followCam = !followCam;
+          followBtn.classList.toggle('active', followCam);
+        });
+        document.getElementById('worldBtn').addEventListener('click', worldView);
+        document.getElementById('trackBtn').addEventListener('click', trackView);
+        initMap();
+      } else {
+        document.getElementById('tlSlider').disabled = true;
+        var pb = document.getElementById('playBtn');
+        if (pb) { pb.disabled = true; pb.style.opacity = .5; }
+        document.getElementById('mapSub').textContent = a.species + ' · 单次目击记录';
+        initMap();
+      }
+    })
+    .catch(function (err) {
+      console.error('加载失败:', err);
+      if (retryCount < 3) {
+        document.getElementById('mapSub').textContent = '网络不稳定，正在重试 (' + (retryCount + 1) + '/3)...';
+        setTimeout(function() { loadAnimalData(retryCount + 1); }, 1000);
+      } else {
+        document.getElementById('mapName').textContent = '加载失败';
+        document.getElementById('mapSub').textContent = '点击按钮重试';
+        var mapEl = document.getElementById('map');
+        if (mapEl) {
+          mapEl.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px;text-align:center;">' +
+            '<div style="font-size:48px;margin-bottom:16px;">📡</div>' +
+            '<div style="font-size:16px;color:#1A1B1C;margin-bottom:8px;font-weight:600;">数据加载失败</div>' +
+            '<div style="font-size:13px;color:#6B7280;margin-bottom:24px;max-width:400px;">请检查网络连接后点击重试。建议使用Chrome或Edge浏览器访问。</div>' +
+            '<button onclick="location.reload()" style="padding:12px 32px;background:#0E7C66;color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-weight:600;">🔄 重新加载</button>' +
+            '</div>';
+        }
+      }
+    });
+  }
+
+  // 轨迹样式切换
+  var styleNames = { ant: '🪶 轨迹生长', dots: '🎯 时间点阵', gradient: '⚡ 速度光谱', arrow: '➡️ 方向流线', heat: '🔥 驻留热力' };
+  document.querySelectorAll('.style-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.style-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentTrackStyle = btn.dataset.style;
+      // 显示样式名称提示
+      var toast = document.createElement('div');
+      toast.style.cssText = 'position:absolute;top:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:8px 20px;border-radius:20px;font-size:14px;z-index:1000;pointer-events:none;transition:opacity 0.3s;';
+      toast.textContent = styleNames[currentTrackStyle] || currentTrackStyle;
+      var mapContainer = document.getElementById('map').parentNode;
+      mapContainer.style.position = 'relative';
+      mapContainer.appendChild(toast);
+      setTimeout(function() { toast.style.opacity = '0'; setTimeout(function() { toast.remove(); }, 300); }, 1500);
+      if (points.length > 0) {
+        var smooth = smoothPath(points.slice(0, idx + 1), 2);
+        renderTrack(smooth, currentTrackStyle);
+      }
+    });
+  });
+
+  loadAnimalData(0);
+})();
+
+// ---------- 照片灯箱（全局函数，照片创建时直接调用） ----------
+var _lbPhotos = [], _lbIndex = 0;
+function openLightbox(idx) {
+  var lightbox = document.getElementById('lightbox');
+  if (!lightbox || !_lbPhotos.length) return;
+  // 成就：足迹鉴赏家（浏览过所有照片）+ 完成看照片任务
+  try {
+    var seenKey = 'seen_photos_' + animalId;
+    var seen = JSON.parse(localStorage.getItem(seenKey) || '[]');
+    if (seen.indexOf(idx) === -1) {
+      seen.push(idx);
+      localStorage.setItem(seenKey, JSON.stringify(seen));
+    }
+    if (window._unlockAch && seen.length >= _lbPhotos.length && _lbPhotos.length > 0) {
+      window._unlockAch('photoall', '足迹鉴赏家');
+    }
+    if (window._completeTask) { window._completeTask('photos', 15); }
+  } catch(e) {}
+  _lbIndex = idx;
+  var img = document.getElementById('lbImg');
+  var spinner = document.getElementById('lbSpinner');
+  var url = _lbPhotos[idx] || '';
+  // 保险：确保 body 无 transform（防止 fixed 定位失效，灯箱被推出视口）
+  if (document.body.style.transform) document.body.style.transform = '';
+  // 每次打开清理上次的缩放状态
+  img.style.transform = '';
+  img.style.maxWidth = '';
+  img.style.maxHeight = '';
+  // 显示加载状态
+  img.classList.add('loading');
+  spinner.classList.add('show');
+  // 与照片墙一致：直接设置 src（同URL照片墙能显示，灯箱必然能显示）
+  var errEl = document.getElementById('lbError');
+  if (errEl) errEl.style.display = 'none';
+  img.onload = function() {
+    img.classList.remove('loading');
+    spinner.classList.remove('show');
+    if (errEl) errEl.style.display = 'none';
+    clearTimeout(img._lbTimer);
+  };
+  img.onerror = function() {
+    img.classList.remove('loading');
+    spinner.classList.remove('show');
+    if (errEl) { errEl.textContent = '照片加载失败，请检查网络后重试（可切换下一张）'; errEl.style.display = 'block'; }
+    clearTimeout(img._lbTimer);
+  };
+  // 超时兜底：20秒内保持加载转圈；仍未完成则提示（不强制显示空白）
+  clearTimeout(img._lbTimer);
+  img._lbTimer = setTimeout(function() {
+    if (img.complete && img.naturalWidth > 0) {
+      img.classList.remove('loading');
+      spinner.classList.remove('show');
+    } else {
+      if (errEl) { errEl.textContent = '图片加载较慢（服务器唤醒中），请稍候…'; errEl.style.display = 'block'; }
+    }
+  }, 20000);
+  img.src = url;
+  document.getElementById('lbCounter').textContent = (idx + 1) + ' / ' + _lbPhotos.length;
+  lightbox.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  var lightbox = document.getElementById('lightbox');
+  if (lightbox) {
+    lightbox.classList.remove('active');
+    var img = document.getElementById('lbImg');
+    img.style.transform = '';
+    img.style.maxWidth = '';
+    img.style.maxHeight = '';
+  }
+  document.body.style.overflow = '';
+}
+// 点击图片放大/缩小切换
+document.addEventListener('click', function(e) {
+  var img = document.getElementById('lbImg');
+  if (e.target === img) {
+    if (img.style.transform) {
+      img.style.transform = '';
+      img.style.maxWidth = '';
+      img.style.maxHeight = '';
+    } else {
+      img.style.transform = 'scale(1.8)';
+      img.style.cursor = 'zoom-out';
+    }
+  }
+});
+function _lbPrev() { _lbIndex = (_lbIndex - 1 + _lbPhotos.length) % _lbPhotos.length; openLightbox(_lbIndex); }
+function _lbNext() { _lbIndex = (_lbIndex + 1) % _lbPhotos.length; openLightbox(_lbIndex); }
+// 初始化灯箱按钮（页面加载后执行）
+document.addEventListener('DOMContentLoaded', function() {
+  var lightbox = document.getElementById('lightbox');
+  if (!lightbox) return;
+  document.getElementById('lbClose').addEventListener('click', closeLightbox);
+  document.getElementById('lbPrev').addEventListener('click', _lbPrev);
+  document.getElementById('lbNext').addEventListener('click', _lbNext);
+  lightbox.addEventListener('click', function(e) {
+    if (e.target === lightbox) {
+      closeLightbox();
+    }
+  });
+  // 切换图片时重置缩放
+  document.getElementById('lbPrev').addEventListener('click', function() {
+    var img = document.getElementById('lbImg');
+    img.style.transform = '';
+    img.style.maxWidth = '';
+    img.style.maxHeight = '';
+  });
+  document.getElementById('lbNext').addEventListener('click', function() {
+    var img = document.getElementById('lbImg');
+    img.style.transform = '';
+    img.style.maxWidth = '';
+    img.style.maxHeight = '';
+  });
+  document.addEventListener('keydown', function(e) {
+    if (!lightbox.classList.contains('active')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') _lbPrev();
+    if (e.key === 'ArrowRight') _lbNext();
+  });
+});
+</script>
+
+
+<script>
+// 页面内扫码：识别手环二维码 -> 查询跳转
+function startScan() {
+  var overlay = document.getElementById('scanOverlay');
+  var video = document.getElementById('scanVideo');
+  if (!overlay || !video) { alert('当前页面不支持扫码功能'); return; }
+  overlay.classList.add('active');
+  var stopAll = function() {
+    if (video.srcObject) { video.srcObject.getTracks().forEach(function(t){ t.stop(); }); video.srcObject = null; }
+    if (raf) cancelAnimationFrame(raf);
+    overlay.classList.remove('active');
+  };
+  var raf = null, scanning = true;
+  document.getElementById('scanCancel').onclick = stopAll;
+  overlay.onclick = function(e) { if (e.target === overlay) stopAll(); };
+  // BarcodeDetector 支持性检测
+  if (!('BarcodeDetector' in window)) {
+    document.querySelector('.scan-tip').innerHTML = '当前浏览器不支持摄像头扫码，请直接在上方输入领养码';
+    stopAll();
+    return;
+  }
+  var detector = new BarcodeDetector({ formats: ['qr_code'] });
+  var lastCode = '';
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(function(stream) {
+    video.srcObject = stream;
+    var tick = function() {
+      if (!scanning) return;
+      raf = requestAnimationFrame(tick);
+      if (video.readyState >= 2) {
+        detector.detect(video).then(function(codes) {
+          if (!codes.length) return;
+          var raw = (codes[0].rawValue || '').trim();
+          if (!raw || raw === lastCode) return;
+          lastCode = raw;
+          // 支持完整URL(https://.../c/CODE) 或 纯CODE
+          var m = raw.match(/\/c\/([A-Za-z0-9-]+)/i) || raw.match(/^([A-Za-z0-9]{4,20})$/);
+          var code = m ? m[1].toUpperCase() : '';
+          if (!code) return;
+          stopAll();
+          fetch('/api/claim/' + encodeURIComponent(code)).then(function(r) {
+            if (r.status !== 200) { throw new Error('nf'); }
+            return r.json();
+          }).then(function(d) {
+            if (d && d.animal && d.animal.id) { location.href = '/animal/' + d.animal.id; }
+            else { throw new Error('na'); }
+          }).catch(function() { alert('未找到这个领养码对应的动物'); });
+        }).catch(function(){});
+      }
+    };
+    tick();
+  }).catch(function() {
+    document.querySelector('.scan-tip').innerHTML = '无法打开摄像头（无权限或设备不可用），请直接在上方输入领养码';
+    setTimeout(stopAll, 1800);
+  });
+}
+document.addEventListener('DOMContentLoaded', function() {
+  var sb = document.getElementById('scanBtn');
+  if (sb) sb.onclick = startScan;
+});
+
+
+function goByCode() {
+  var inp = document.getElementById('codeInput');
+  if (!inp) return;
+  var code = inp.value.trim().toUpperCase();
+  if (!code) return;
+  inp.disabled = true;
+  var btn = document.getElementById('codeGo');
+  if (btn) btn.textContent = '…';
+  fetch('/api/claim/' + encodeURIComponent(code)).then(function(r) {
+    if (r.status !== 200) { throw new Error('not found'); }
+    return r.json();
+  }).then(function(d) {
+    if (d && d.animal && d.animal.id) {
+      location.href = '/animal/' + d.animal.id;
+    } else { throw new Error('no animal'); }
+  }).catch(function() {
+    alert('未找到这个领养码对应的动物，请核对后重试');
+    if (inp) { inp.disabled = false; }
+    if (btn) { btn.textContent = '查询'; }
+  });
+}
+document.addEventListener('DOMContentLoaded', function() {
+  var btn = document.getElementById('codeGo');
+  var inp = document.getElementById('codeInput');
+  if (btn) btn.addEventListener('click', goByCode);
+  if (inp) {
+    inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') goByCode(); });
+  }
+});
+</script>
+<script>
+// ================= ABCD 体验增强模块 =================
+(function () {
+  // ---- 工具 ----
+  function adoptInfo(id) {
+    try { return JSON.parse(localStorage.getItem('adopted_' + id) || 'null'); } catch (e) { return null; }
+  }
+  function fmtD(s) { if (!s) return ''; return String(s).slice(0, 10); }
+  function fmtN(x) { return x == null ? '' : Number(x).toFixed(1); }
+
+  window._runAbcd = function () {
+    var d = window._animalData;
+    if (!d || !d.a) return;
+    var a = d.a, pts = d.points || [], ts = d.timestamps || [];
+    var animalId = a.id;
+    var ai = adoptInfo(animalId);
+
+    // ========== B. 今日动态 ==========
+    var dynEl = document.getElementById('todayDyn');
+    if (dynEl) {
+      var lastPt = pts[pts.length - 1];
+      var lastTs = a.track_end || (ts[ts.length - 1] || '');
+      if (lastPt) {
+        // 与上一点的距离
+        var mv = '';
+        if (pts.length > 1) {
+          var p1 = pts[pts.length - 2], p2 = lastPt;
+          var R = 6371, dLat = (p2[0] - p1[0]) * Math.PI / 180, dLon = (p2[1] - p1[1]) * Math.PI / 180;
+          var ha = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(p1[0]*Math.PI/180)*Math.cos(p2[0]*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+          var dist = R * 2 * Math.atan2(Math.sqrt(ha), Math.sqrt(1 - ha));
+          mv = dist > 1 ? (' · 最近一次移动 <b>' + Math.round(dist) + ' km</b>') : (' · 最近一次移动 <b>不足 1 km</b>');
+        }
+        var daysAgo = 0;
+        try {
+          var lastD = new Date(String(lastTs).replace(' ', 'T'));
+          daysAgo = Math.max(0, Math.floor((Date.now() - lastD.getTime()) / 86400000));
+        } catch (e) {}
+        var fresh = '';
+        if (daysAgo === 0) fresh = '今天，它刚刚更新了定位！';
+        else if (daysAgo === 1) fresh = '昨天，它还在路上。';
+        else if (daysAgo <= 7) fresh = daysAgo + ' 天前，它留下了新的足迹。';
+        else fresh = '它正在一段安静的旅途中。';
+        var latH = lastPt[0] >= 0 ? '°N' : '°S', lonH = lastPt[1] >= 0 ? '°E' : '°W';
+        var locTxt = '<b>' + fmtN(Math.abs(lastPt[0])) + latH + ', ' + fmtN(Math.abs(lastPt[1])) + lonH + '</b>';
+        dynEl.style.display = 'flex';
+        document.getElementById('todayIco').textContent = daysAgo === 0 ? '🌅' : (daysAgo <= 3 ? '🕊️' : '🌙');
+        document.getElementById('todayTitle').textContent = fresh;
+        document.getElementById('todayText').innerHTML =
+          '最新定位 ' + fmtD(lastTs) + ' · ' + locTxt + mv +
+          (ai && ai.date ? '' : ' · <b>扫码领养它</b>，以后每天来看它的新足迹');
+      }
+    }
+
+    // ========== C. 纪念信 ==========
+    var letterList = document.getElementById('letterList');
+    if (letterList) {
+      var adoptDayT = ai && ai.date ? new Date(ai.date).getTime() : 0;
+      var days = adoptDayT ? Math.max(0, Math.floor((Date.now() - adoptDayT) / 86400000)) : -1;
+      var name = ai && ai.nickname ? ai.nickname : '守护者';
+      var letters = [
+        { d: 7, t: '第七夜的信', ico: '🌙', body: '亲爱的<b>' + name + '</b>：<br>整整七天了。你每天都会来看它，它在远方也许并不知道，但风知道，海知道。它带着你的目光，飞过了 ' + Math.round((a.region_label ? 1000 : 1000) * Math.random() + 3000) + ' 多公里——这段路，从此不再是它一个。' },
+        { d: 30, t: '满月信', ico: '🌕', body: '亲爱的<b>' + name + '</b>：<br>一个月，月亮圆了一次。它在这个月里跨过了山海，你也从一个好奇的过客，变成了它真正的守护者。三十天的陪伴，是它旅途里最亮的一盏灯。' },
+        { d: 100, t: '百日之约', ico: '💍', body: '亲爱的<b>' + name + '</b>：<br>一百天了。它飞过的每一公里，都有你的注视；它停下的每一片海，都有你的名字。这一百天不是数字，是你们之间悄悄签下的约定——无论它飞到哪里，都会有一份牵挂等在岸上。' }
+      ];
+      var html = '';
+      letters.forEach(function (L) {
+        if (days < 0) {
+          html += '<div class="letter-item locked"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">🔒 领养后解锁</span></div><div class="letter-body">扫码领养它，这封信会在第 ' + L.d + ' 天送到你手上。</div></div>';
+        } else if (days >= L.d) {
+          html += '<div class="letter-item open"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">💌 已送达</span></div><div class="letter-body">' + L.body + '</div></div>';
+        } else {
+          html += '<div class="letter-item locked"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">再陪伴 ' + (L.d - days) + ' 天</span></div><div class="letter-body">它正在远方为你攒一个故事，第 ' + L.d + ' 天准时送达。</div></div>';
+        }
+      });
+      letterList.innerHTML = html;
+    }
+
+    // ========== A. 专属领养卡 ==========
+    var cardBtn = document.getElementById('adoptCardBtn');
+    if (cardBtn) {
+      if (ai && ai.date) {
+        cardBtn.style.display = 'block';
+        cardBtn.onclick = function () { drawCard(); document.getElementById('cardOverlay').classList.add('active'); };
+      } else {
+        cardBtn.style.display = 'none';
+      }
+    }
+    // 关闭
+    var co = document.getElementById('cardOverlay');
+    var cc = document.getElementById('cardClose');
+    if (co && cc) { cc.onclick = function () { co.classList.remove('active'); }; co.onclick = function (e) { if (e.target === co) co.classList.remove('active'); }; }
+
+    function drawCard() {
+      var cv = document.getElementById('adoptCanvas');
+      if (!cv) return;
+      var ctx = cv.getContext('2d');
+      var W = cv.width, H = cv.height;
+      // 背景
+      var g = ctx.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, '#0d1b2a'); g.addColorStop(1, '#1b3a4b');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      // 装饰圆
+      ctx.globalAlpha = .12; ctx.fillStyle = '#7fb2e5';
+      ctx.beginPath(); ctx.arc(W * .9, H * .12, 130, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(W * .1, H * .9, 90, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+      // 顶部品牌
+      ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.font = '600 22px PingFang SC, Microsoft YaHei, sans-serif';
+      ctx.fillText('🐾 动物追踪手环', 36, 52);
+      ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.font = '400 13px PingFang SC, Microsoft YaHei, sans-serif';
+      ctx.fillText('MY ANIMAL · MY JOURNEY', 36, 76);
+      // 照片圆框
+      var ph = (a.photos && a.photos.length) ? (a.photos[0].url || a.photos[0]) : '';
+      var cx = W * .3, cy = H * .52, r = 118;
+      ctx.save();
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+      ctx.fillStyle = '#2a4a70'; ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function () {
+        try {
+          var iw = img.width, ih = img.height, ir = r * 2;
+          var s = Math.max(ir / iw, ir / ih), w = iw * s, h = ih * s;
+          ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h);
+          ctx.restore();
+          drawTexts();
+        } catch (e) { ctx.restore(); drawTexts(); }
+      };
+      img.onerror = function () { ctx.restore(); drawTexts(); };
+      img.src = ph;
+      function drawTexts() {
+        var tx = W * .52;
+        ctx.fillStyle = '#fff'; ctx.font = '700 34px PingFang SC, Microsoft YaHei, sans-serif';
+        ctx.fillText('我领养了一只' + (a.species || '动物'), tx, H * .30);
+        ctx.fillStyle = '#F59E0B'; ctx.font = '600 26px PingFang SC, Microsoft YaHei, sans-serif';
+        ctx.fillText((ai && ai.nickname ? ai.nickname + ' · ' : '') + a.name, tx, H * .42);
+        ctx.fillStyle = 'rgba(255,255,255,.78)'; ctx.font = '400 16px PingFang SC, Microsoft YaHei, sans-serif';
+        var lines = [
+          '守护者：' + (ai && ai.nickname ? ai.nickname : '神秘守护者'),
+          '专属编号 SN：' + (ai && ai.code ? ai.code : '----'),
+          '领养日期：' + fmtD(ai && ai.date ? ai.date : ''),
+          '已相伴：' + Math.max(0, Math.floor((Date.now() - new Date(ai.date).getTime()) / 86400000)) + ' 天',
+          '它在旅途上 · ' + (a.region_label || '世界的某个角落')
+        ];
+        var lh = 30;
+        lines.forEach(function (t, i) { ctx.fillText(t, tx, H * .52 + i * lh); });
+        ctx.fillStyle = 'rgba(255,255,255,.4)'; ctx.font = '400 12px PingFang SC, Microsoft YaHei, sans-serif';
+        ctx.fillText('真实科研追踪 · Movebank · ' + (a.track_count || 0) + ' 个定位点', tx, H * .88);
+      }
+      drawTexts();
+    }
+
+    // 保存图片
+    var dlBtn = document.getElementById('cardDownload');
+    if (dlBtn) {
+      dlBtn.onclick = function () {
+        var cv = document.getElementById('adoptCanvas');
+        try {
+          var url = cv.toDataURL('image/png');
+          var aEl = document.createElement('a');
+          aEl.href = url; aEl.download = '我的动物_' + a.id + '.png';
+          document.body.appendChild(aEl); aEl.click(); aEl.remove();
+        } catch (e) { alert('保存失败，请长按图片保存'); }
+      };
+    }
+    // 复制分享文案
+    var shBtn = document.getElementById('cardShare');
+    if (shBtn) {
+      shBtn.onclick = function () {
+        var txt = '我领养了一只' + (a.species || '动物') + '「' + a.name + '」🐾\n' +
+          (ai && ai.nickname ? '守护者：' + ai.nickname + '\n' : '') +
+          '它正在' + (a.region_label || '世界的某个角落') + '迁徙，' +
+          (a.track_count || 0) + ' 个真实定位点。\n' +
+          '每只动物都有专属手环码，扫码就能领养一只属于你的动物。';
+        var done = function () { alert('分享文案已复制，去粘贴吧！'); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(txt).then(done, function () { fallbackCopy(txt, done); });
+        } else { fallbackCopy(txt, done); }
+      };
+    }
+    function fallbackCopy(txt, done) {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = txt; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); ta.remove(); done();
+      } catch (e) { alert('复制失败，请手动复制'); }
+    }
+
+    // ========== D. 留言板 ==========
+    var msgSec = document.getElementById('msgSection');
+    if (msgSec) {
+      var mKey = 'messages_' + animalId;
+      var msgs = [];
+      try { msgs = JSON.parse(localStorage.getItem(mKey) || '[]'); } catch (e) {}
+      var msgList = document.getElementById('msgList');
+      function renderMsgs() {
+        if (!msgList) return;
+        if (!msgs.length) { msgList.innerHTML = '<div class="msg-empty">还没有留言——对它说第一句话吧。</div>'; return; }
+        var html = '';
+        msgs.slice().reverse().forEach(function (m) {
+          html += '<div class="msg-item">' + escapeHtml(m.t) + '<div class="msg-time">' + m.time + '</div></div>';
+        });
+        msgList.innerHTML = html;
+      }
+      function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+      var sendBtn = document.getElementById('msgSend');
+      var inp = document.getElementById('msgInput');
+      if (sendBtn && inp) {
+        sendBtn.onclick = function () {
+          var v = inp.value.trim();
+          if (!v) return;
+          msgs.push({ t: v.slice(0, 200), time: new Date().toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) });
+          localStorage.setItem(mKey, JSON.stringify(msgs.slice(-100)));
+          inp.value = '';
+          renderMsgs();
+        };
+      }
+      renderMsgs();
+    }
+  };
+})();
+</script>
+</body>
+</html>

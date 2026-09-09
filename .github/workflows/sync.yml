@@ -1,0 +1,19 @@
+name: daily-data-sync
+
+on:
+  schedule:
+    - cron: "0 2 * * *"   # 每天 UTC 02:00（北京时间 10:00）自动同步
+  workflow_dispatch:      # 支持手动触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Movebank data sync on Render
+        run: |
+          echo "触发 Noé 白鹳数据同步..."
+          curl -s -X POST https://animal-bracelet.onrender.com/api/sync \
+            --max-time 180 \
+            -H "Content-Type: application/json"
+          echo ""
+          echo "同步请求已发送"
