@@ -3454,15 +3454,30 @@ document.addEventListener('DOMContentLoaded', function() {
       var adoptDayT = ai && ai.date ? new Date(ai.date).getTime() : 0;
       var days = adoptDayT ? Math.max(0, Math.floor((Date.now() - adoptDayT) / 86400000)) : -1;
       var name = ai && ai.nickname ? ai.nickname : '守护者';
+      // 真实累计飞行距离（haversine）
+      var totalKm = 0;
+      if (pts && pts.length > 1) {
+        var R_ = 6371;
+        for (var pi_ = 1; pi_ < pts.length; pi_++) {
+          var p1_ = pts[pi_ - 1], p2_ = pts[pi_];
+          var dLat_ = (p2_[1] - p1_[1]) * Math.PI / 180;
+          var dLon_ = (p2_[0] - p1_[0]) * Math.PI / 180;
+          var a_ = Math.sin(dLat_ / 2) * Math.sin(dLat_ / 2) +
+                   Math.cos(p1_[1] * Math.PI / 180) * Math.cos(p2_[1] * Math.PI / 180) *
+                   Math.sin(dLon_ / 2) * Math.sin(dLon_ / 2);
+          totalKm += R_ * 2 * Math.atan2(Math.sqrt(a_), Math.sqrt(1 - a_));
+        }
+      }
       var letters = [
-        { d: 7, t: '第七夜的信', ico: '🌙', body: '亲爱的<b>' + name + '</b>：<br>整整七天了。你每天都会来看它，它在远方也许并不知道，但风知道，海知道。它带着你的目光，飞过了 ' + Math.round((a.region_label ? 1000 : 1000) * Math.random() + 3000) + ' 多公里——这段路，从此不再是它一个。' },
+        { d: 0, t: '初遇之信', ico: '💌', body: '亲爱的<b>' + name + '</b>：<br>从今天起，你就是它的守护者了。它此刻在<b>' + (a.region_label || '远方') + '</b>，已经为你飞过了 <b>' + Math.round(totalKm) + ' 公里</b>。从今天起，每一公里都有你的目光。' },
+        { d: 7, t: '第七夜的信', ico: '🌙', body: '亲爱的<b>' + name + '</b>：<br>整整七天了。你每天都会来看它，它在远方也许并不知道，但风知道，海知道。它带着你的目光，飞过了 ' + Math.round(totalKm) + ' 多公里——这段路，从此不再是它一个。' },
         { d: 30, t: '满月信', ico: '🌕', body: '亲爱的<b>' + name + '</b>：<br>一个月，月亮圆了一次。它在这个月里跨过了山海，你也从一个好奇的过客，变成了它真正的守护者。三十天的陪伴，是它旅途里最亮的一盏灯。' },
         { d: 100, t: '百日之约', ico: '💍', body: '亲爱的<b>' + name + '</b>：<br>一百天了。它飞过的每一公里，都有你的注视；它停下的每一片海，都有你的名字。这一百天不是数字，是你们之间悄悄签下的约定——无论它飞到哪里，都会有一份牵挂等在岸上。' }
       ];
       var html = '';
       letters.forEach(function (L) {
         if (days < 0) {
-          html += '<div class="letter-item locked"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">🔒 领养后解锁</span></div><div class="letter-body">扫码领养它，这封信会在第 ' + L.d + ' 天送到你手上。</div></div>';
+          html += '<div class="letter-item locked"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">🔒 领养后解锁</span></div><div class="letter-body">' + (L.d === 0 ? '扫码领养它，这封信会立刻送到你手上。' : '扫码领养它，这封信会在第 ' + L.d + ' 天送到你手上。') + '</div></div>';
         } else if (days >= L.d) {
           html += '<div class="letter-item open"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">💌 已送达</span></div><div class="letter-body">' + L.body + '</div></div>';
         } else {
