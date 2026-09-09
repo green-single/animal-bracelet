@@ -304,6 +304,108 @@
     to { transform: rotate(360deg); }
   }
 
+    /* ---------- 领养证书 · 升级版 ---------- */
+    .certificate {
+      width: 100%; max-width: 380px;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.08), transparent 60%),
+        linear-gradient(160deg, #1C2230 0%, #141920 60%, #12161D 100%);
+      border: 2px solid rgba(245,158,11,0.6);
+      border-radius: 26px; padding: 36px 26px 30px;
+      position: relative; overflow: hidden; margin-top: 28px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.55), 0 0 60px rgba(245,158,11,0.12),
+                  inset 0 0 60px rgba(245,158,11,0.03);
+      opacity: 0; transform: scale(0.6) translateY(30px);
+      transition: opacity .5s ease, transform .6s cubic-bezier(.34,1.56,.64,1);
+    }
+    .certificate.show { opacity: 1; transform: scale(1) translateY(0); }
+    .certificate::before {
+      content: ''; position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px;
+      border: 1px solid rgba(245,158,11,0.25); border-radius: 20px;
+      pointer-events: none;
+    }
+    .certificate::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background:
+        linear-gradient(90deg, transparent 48%, rgba(255,255,255,0.03) 50%, transparent 52%),
+        linear-gradient(0deg, transparent 48%, rgba(255,255,255,0.02) 50%, transparent 52%);
+      background-size: 24px 24px;
+    }
+    .cert-vow {
+      font-size: 12px; color: var(--gold); letter-spacing: .5em;
+      text-align: center; text-transform: uppercase;
+      font-weight: 600; position: relative; z-index: 1;
+    }
+    .cert-vow-en {
+      font-size: 9px; color: rgba(245,158,11,0.5); letter-spacing: .3em;
+      text-align: center; text-transform: uppercase; margin-top: 4px;
+      position: relative; z-index: 1;
+    }
+    .cert-avatar {
+      width: 92px; height: 92px; border-radius: 50%; margin: 22px auto 0;
+      border: 3px solid rgba(245,158,11,0.7); overflow: hidden;
+      box-shadow: 0 0 30px rgba(245,158,11,0.25), 0 8px 24px rgba(0,0,0,0.4);
+      position: relative; z-index: 1;
+      background: linear-gradient(145deg, #2A3242, #1A2030);
+    }
+    .cert-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cert-avatar-ring {
+      position: absolute; width: 108px; height: 108px; border-radius: 50%;
+      border: 1px dashed rgba(245,158,11,0.35);
+      left: 50%; transform: translateX(-50%);
+      margin-top: 14px; z-index: 0;
+      animation: certRingSpin 24s linear infinite;
+    }
+    @keyframes certRingSpin { from { transform: translateX(-50%) rotate(0); } to { transform: translateX(-50%) rotate(360deg); } }
+    .cert-animal {
+      font-size: 28px; font-weight: 800; text-align: center;
+      margin-top: 18px; color: var(--ink); position: relative; z-index: 1;
+      letter-spacing: .04em;
+    }
+    .cert-nickname {
+      font-size: 14px; color: var(--accent); text-align: center;
+      margin-top: 8px; font-weight: 600; position: relative; z-index: 1;
+    }
+    .cert-track {
+      display: block; width: 220px; height: 56px; margin: 16px auto 0;
+      position: relative; z-index: 1;
+    }
+    .cert-track .track-bg { stroke: rgba(255,255,255,0.08); stroke-width: 2; fill: none; stroke-dasharray: 3 5; }
+    .cert-track .track-main { stroke: var(--accent); stroke-width: 2.5; fill: none; stroke-linecap: round; }
+    .cert-track .track-start { fill: var(--accent2); }
+    .cert-track .track-end { fill: var(--gold); }
+    .cert-divider {
+      width: 70px; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 18px auto; position: relative; z-index: 1;
+    }
+    .cert-info { position: relative; z-index: 1; }
+    .cert-seal {
+      width: 70px; height: 70px; border-radius: 50%;
+      border: 3px solid rgba(245,158,11,0.8);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; margin: 22px auto 0;
+      background: radial-gradient(circle, rgba(245,158,11,0.18), rgba(245,158,11,0.05));
+      box-shadow: 0 0 24px rgba(245,158,11,0.25);
+      position: relative; z-index: 1;
+      transform: scale(0) rotate(-40deg);
+      transition: transform .5s cubic-bezier(.34,1.56,.64,1);
+    }
+    .certificate.show .cert-seal { transform: scale(1) rotate(0); transition-delay: .5s; }
+    .cert-seal::after {
+      content: ''; position: absolute; inset: 5px; border-radius: 50%;
+      border: 1px dashed rgba(245,158,11,0.4);
+      animation: sealSpin 12s linear infinite;
+    }
+    @keyframes sealSpin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+    .cert-glow {
+      position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+      border-radius: 50%; transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(245,158,11,0.5), transparent 65%);
+      transition: width 1.2s ease, height 1.2s ease, opacity 1.2s ease;
+      opacity: 0; z-index: 0;
+    }
+    .certificate.show .cert-glow { width: 480px; height: 480px; opacity: .5; }
   /* ---------- 已领养状态 ---------- */
   .already-claimed { text-align: center; }
   .already-claimed .icon { font-size: 64px; margin-bottom: 20px; }
@@ -365,15 +467,28 @@
   <div class="celebrate-sub" id="celebrateSub">你现在是它的主人了<br>它的每一次迁徙，都有你在陪伴</div>
   <div class="level-badge">⭐ Lv.1 新手守护者 · 经验 0/100</div>
   <div class="certificate" id="certificate">
-    <div class="cert-title">Adoption Certificate</div>
+    <div class="cert-glow" id="certGlow"></div>
+    <div class="cert-vow">守护契约</div>
+    <div class="cert-vow-en">Guardianship Vow</div>
+    <div class="cert-avatar-ring"></div>
+    <div class="cert-avatar"><img id="certAvatar" alt="" src=""></div>
     <div class="cert-animal" id="certAnimal">—</div>
     <div class="cert-nickname" id="certNickname"></div>
+    <svg class="cert-track" viewBox="0 0 220 56" id="certTrack">
+      <path class="track-bg" d="M12 44 Q 55 8, 100 30 T 208 18" />
+      <path class="track-main" d="M12 44 Q 55 8, 100 30 T 208 18" />
+      <circle class="track-start" cx="12" cy="44" r="4" />
+      <circle class="track-end" cx="208" cy="18" r="4" />
+    </svg>
     <div class="cert-divider"></div>
     <div class="cert-info">
       <div>领养日期：<b id="certDate">—</b></div>
       <div>追踪编号：<b id="certCode">—</b></div>
+      <div>守护者：<b id="certGuardian">—</b></div>
       <div>数据来源：<b>Movebank 公开科研数据</b></div>
     </div>
+    <div class="cert-seal">🐾</div>
+  </div>
     <div class="cert-seal">🐾</div>
   </div>
   <button class="btn" id="trackBtn">开始追踪它的旅程 →</button>
@@ -497,17 +612,25 @@
           .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
           .then(function (res) {
             if (res.ok) {
-              // 填充证书
+              // 填充证书（升级版）
               document.getElementById('certAnimal').textContent = animalData.name;
               document.getElementById('certNickname').textContent = nickname ? ('昵称：' + nickname) : '';
+              document.getElementById('certGuardian').textContent = nickname ? (nickname + ' 的守护者') : '无名守护者';
               document.getElementById('certDate').textContent = new Date().toLocaleDateString('zh-CN');
               document.getElementById('certCode').textContent = code;
+              var certImg = document.getElementById('certAvatar');
+              if (firstPhoto && certImg) { certImg.src = firstPhoto; }
               document.getElementById('celebrateSub').innerHTML =
                 '你现在是 <b style="color:var(--accent)">' + animalData.name + '</b> 的主人了<br>' +
                 '它的每一次迁徙，都有你在陪伴';
 
               createConfetti();
               showStage('stageCelebrate');
+              // 证书展开动画：先光芒，再证书，最后印章
+              setTimeout(function () {
+                var cert = document.getElementById('certificate');
+                if (cert) cert.classList.add('show');
+              }, 600);
 
               // 保存昵称和领养信息到 localStorage
               if (nickname) {
