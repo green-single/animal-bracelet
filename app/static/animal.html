@@ -46,9 +46,8 @@ animation: pageIn .4s ease both;
 100% { transform: scale(1.9); opacity: 0; }
 }
 header {
-display: flex; align-items: center; gap: 10px; padding: 14px 18px;
-position: sticky; top: 0; background: rgba(244,243,238,0.9); backdrop-filter: blur(8px);
-z-index: 1000; border-bottom: 1px solid var(--line);
+display: flex; align-items: center; gap: 10px; padding: 14px 18px 6px;
+background: transparent; border-bottom: none;
 }
 .logo {
 width: 34px; height: 34px; border-radius: 11px;
@@ -742,6 +741,9 @@ header { padding: 10px 12px; gap: 8px; }
 .brand { font-size: 14px; }
 .brand small { font-size: 10px; }
 .code-search button { padding: 8px 11px; font-size: 12px; border-radius: 10px; }
+.code-search #codeGo { display: none; }
+.brand { font-size: 13px; }
+.brand small { display: none; }
 /* 地图头部信息更大更透气 */
 .map-head { padding: 14px 14px 10px; gap: 10px; }
 .map-head .avatar { width: 50px; height: 50px; }
@@ -821,11 +823,13 @@ animation: pulseA 2.2s ease-in-out infinite;
 50% { opacity: .35; }
 }
 .tab-bar {
-position: sticky; top: 0; z-index: 9000;
-display: flex; background: rgba(255,255,255,.82);
+position: sticky; top: calc(env(safe-area-inset-top, 0px) + 8px); z-index: 9000;
+display: flex; margin: 8px 12px 4px;
+background: rgba(255,255,255,.82);
 backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
-border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 4px 20px rgba(0,0,0,.07);
-padding-top: env(safe-area-inset-top, 0px);
+border-radius: 26px; border: 1px solid rgba(255,255,255,.7);
+box-shadow: 0 6px 24px rgba(0,0,0,.10), inset 0 0 0 .5px rgba(0,0,0,.04);
+overflow: hidden;
 }
 .tab-item {
 flex: 1; min-width: 0; padding: 7px 2px 8px; text-align: center; cursor: pointer; position: relative;
