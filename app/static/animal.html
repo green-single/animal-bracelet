@@ -822,17 +822,26 @@ animation: pulseA 2.2s ease-in-out infinite;
 }
 .tab-bar {
 position: sticky; top: 0; z-index: 9000;
-display: flex; background: rgba(255,255,255,.97); backdrop-filter: blur(14px);
-border-bottom: 1px solid rgba(0,0,0,.08); box-shadow: 0 6px 24px rgba(0,0,0,.08);
+display: flex; background: rgba(255,255,255,.82);
+backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
+border-bottom: 1px solid rgba(0,0,0,.06); box-shadow: 0 4px 20px rgba(0,0,0,.07);
+padding-top: env(safe-area-inset-top, 0px);
 }
 .tab-item {
-flex: 1; min-width: 0; padding: 8px 2px 7px; text-align: center; cursor: pointer;
-color: #9ca3af; transition: color .2s ease; -webkit-tap-highlight-color: transparent;
+flex: 1; min-width: 0; padding: 7px 2px 8px; text-align: center; cursor: pointer; position: relative;
+color: #9aa1ab; transition: color .25s ease; -webkit-tap-highlight-color: transparent; user-select: none;
 }
-.tab-item .tab-ico { font-size: 21px; line-height: 1.2; display: block; }
+.tab-item:active { transform: scale(.9); }
+.tab-item .tab-ico { font-size: 20px; line-height: 1.2; display: block; transition: transform .35s cubic-bezier(.34,1.56,.64,1); filter: grayscale(.35); opacity: .8; }
+.tab-item .tab-glow { position: absolute; left: 50%; top: 4px; transform: translateX(-50%); width: 44px; height: 26px; border-radius: 999px; background: linear-gradient(135deg, rgba(14,124,102,.16), rgba(6,182,212,.10)); opacity: 0; transition: opacity .3s ease; pointer-events: none; }
 .tab-item .tab-lbl { font-size: 10.5px; margin-top: 2px; font-weight: 500; }
 .tab-item.active { color: var(--accent, #0E7C66); }
-.tab-item.active .tab-ico { transform: translateY(-1px); }
+.tab-item.active .tab-ico { transform: translateY(-1px) scale(1.1); filter: none; opacity: 1; }
+.tab-item.active .tab-lbl { font-weight: 700; }
+.tab-item.active .tab-glow { opacity: 1; }
+.tab-badge { position: absolute; top: 3px; right: calc(50% - 20px); min-width: 9px; height: 9px; border-radius: 999px; background: #ff4757; border: 2px solid #fff; display: none; box-shadow: 0 1px 5px rgba(255,71,87,.55); }
+.tab-badge.show { display: block; animation: badgePop .45s cubic-bezier(.34,1.56,.64,1); }
+@keyframes badgePop { from { transform: scale(0); } to { transform: scale(1); } }
 .tab-journey .today-dyn { margin: 12px 14px 0; }
 .tab-journey .map-sec { margin: 12px 14px; border-radius: 20px; overflow: hidden; }
 .tab-journey .stats-sec { padding: 0 14px 10px; }
@@ -1087,6 +1096,7 @@ function showTab(name) {
     document.querySelectorAll('.tab-item').forEach(function(t) {
       t.classList.toggle('active', t.getAttribute('data-tab') === name);
     });
+    if (name === 'mine') { var _mb = document.getElementById('mineBadge'); if (_mb) _mb.classList.remove('show'); }
     window.scrollTo(0, 0);
     if (window.map && typeof window.map.invalidateSize === 'function') {
       setTimeout(function() { window.map.invalidateSize(); }, 120);
@@ -1142,12 +1152,12 @@ if ('serviceWorker' in navigator) {
 <main>
 <!-- Tab 底部导航 -->
   <div class="tab-bar" id="tabBar">
-    <div class="tab-item active" data-tab="journey"><span class="tab-ico">🗺️</span><span class="tab-lbl">旅程</span></div>
-    <div class="tab-item" data-tab="photos"><span class="tab-ico">📷</span><span class="tab-lbl">照片</span></div>
-    <div class="tab-item" data-tab="story"><span class="tab-ico">📖</span><span class="tab-lbl">故事</span></div>
-    <div class="tab-item" data-tab="quiz"><span class="tab-ico">📚</span><span class="tab-lbl">知识</span></div>
-    <div class="tab-item" data-tab="ach"><span class="tab-ico">🏆</span><span class="tab-lbl">成就</span></div>
-    <div class="tab-item" data-tab="mine"><span class="tab-ico">💬</span><span class="tab-lbl">我的</span></div>
+    <div class="tab-item active" data-tab="journey"><span class="tab-glow"></span><span class="tab-ico">🗺️</span><span class="tab-lbl">旅程</span></div>
+    <div class="tab-item" data-tab="photos"><span class="tab-glow"></span><span class="tab-ico">📷</span><span class="tab-lbl">照片</span></div>
+    <div class="tab-item" data-tab="story"><span class="tab-glow"></span><span class="tab-ico">📖</span><span class="tab-lbl">故事</span></div>
+    <div class="tab-item" data-tab="quiz"><span class="tab-glow"></span><span class="tab-ico">📚</span><span class="tab-lbl">知识</span></div>
+    <div class="tab-item" data-tab="ach"><span class="tab-glow"></span><span class="tab-ico">🏆</span><span class="tab-lbl">成就</span></div>
+    <div class="tab-item" data-tab="mine"><span class="tab-glow"></span><span class="tab-badge" id="mineBadge"></span><span class="tab-ico">💬</span><span class="tab-lbl">我的</span></div>
   </div>
   <div class="tab-main">
     <div class="tab-view tab-journey" id="tabJourney"></div>
@@ -3741,6 +3751,7 @@ document.addEventListener('DOMContentLoaded', function() {
               lv2 = genLiveLetter(liveS2);
             }
           }
+          if (lv2) { try { window._hasNewLetter = true; } catch(e) {} }
           if (lv2) liveHtml = '<div class="letter-item live"><div class="letter-head"><span>' + lv2.ico + ' ' + lv2.t + '</span><span class="letter-st">📬 今日来信</span></div><div class="letter-body">' + lv2.body + '</div></div>';
         } catch (e) { console.log('liveLetter err:', e); }
       }
@@ -3755,6 +3766,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
       letterList.innerHTML = html;
+      try {
+        if (window._hasNewLetter) { var mb = document.getElementById('mineBadge'); if (mb) mb.classList.add('show'); }
+      } catch(e) {}
     }
 
     // ========== A. 专属领养卡 ==========
