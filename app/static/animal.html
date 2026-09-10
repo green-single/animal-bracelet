@@ -3115,7 +3115,7 @@ if ('serviceWorker' in navigator) {
               byMon[mon].count++;
             }
             var mons = Object.keys(byMon).sort().reverse();
-            var html = '';
+
             mons.forEach(function(mon) {
               var info = byMon[mon];
               var last = pts[info.last];
@@ -3508,6 +3508,99 @@ document.addEventListener('DOMContentLoaded', function() {
         { d: 30, t: '满月信', ico: '🌕', body: '亲爱的<b>' + name + '</b>：<br>一个月，月亮圆了一次。它在这个月里跨过了山海，你也从一个好奇的过客，变成了它真正的守护者。三十天的陪伴，是它旅途里最亮的一盏灯。' },
         { d: 100, t: '百日之约', ico: '💍', body: '亲爱的<b>' + name + '</b>：<br>一百天了。它飞过的每一公里，都有你的注视；它停下的每一片海，都有你的名字。这一百天不是数字，是你们之间悄悄签下的约定——无论它飞到哪里，都会有一份牵挂等在岸上。' }
       ];
+      // ===== 📬 动态来信（真实数据 + 随机模板，每次打开都可能不同）=====
+      var _rnd = function (arr) { return arr[Math.floor(Math.random() * arr.length)]; };
+      var _mon = new Date().getMonth() + 1;
+      var _sea = (_mon >= 3 && _mon <= 5) ? 0 : (_mon >= 6 && _mon <= 8) ? 1 : (_mon >= 9 && _mon <= 11) ? 2 : 3;
+      var _seaTxt = ['春天', '夏天', '秋天', '冬天'][_sea];
+      function _sfmt(n) { return Math.abs(n).toFixed(1); }
+      // ===== 🗺️ 区域触发（真实轨迹提炼的真实地标）=====
+      var geoRefs = {
+        noe: [
+          { name: '法国阿尔萨斯', lat: 48.9, lon: 7.1, txt: '它回到了阿尔萨斯的屋顶——烟囱上的大巢还在，邻居家的白鹳也回来了。夏天的阿尔萨斯，麦田金黄，葡萄园飘着新叶的味道。' },
+          { name: '西班牙', lat: 40.5, lon: -2.5, txt: '它正在西班牙上空赶路——秋天到了，白鹳们跟着热气流一段一段向南，准备翻过直布罗陀去非洲。' },
+          { name: '直布罗陀海峡', lat: 36.1, lon: -5.5, txt: '它盘旋在直布罗陀海峡上空——欧洲和非洲只隔着一道海，它等着一股好风，一鼓作气滑翔过去。' },
+          { name: '摩洛哥', lat: 34.3, lon: -6.3, txt: '它落在了摩洛哥的田野里——这里的冬天没有雪，只有暖阳、麦田和吃不完的昆虫。' }
+        ],
+        turtle: [
+          { name: '捷克摩拉维亚', lat: 48.85, lon: 17.0, txt: '它回到了摩拉维亚的麦田——那里有灌浆的小麦、葡萄园的新叶，和它最熟悉的那根电线。' },
+          { name: '地中海', lat: 35.5, lon: 20.0, txt: '它正在地中海上空赶路——海面上没有树枝、没有电线，它只能一直扇动翅膀，直到非洲的影子出现在海平线。' },
+          { name: '非洲萨赫勒', lat: 13.7, lon: 23.0, txt: '它到了非洲的萨赫勒——金色稀树草原一望无际，金合欢树下是它接下来半年的家。' },
+          { name: '爱琴海', lat: 38.2, lon: 24.2, txt: '它飞过了爱琴海——海风从岛屿间穿过来，托着它的翅膀，像有人在后面推着它走。' }
+        ],
+        herringgull: [
+          { name: '荷兰北海海岸', lat: 51.4, lon: 3.6, txt: '它回到了北海海岸——港口、码头和渔市，是银鸥最热闹的食堂。海风一吹，它就知道该往哪飞。' },
+          { name: '法国北部', lat: 49.5, lon: 1.5, txt: '它在法国北部的沿海游荡——银鸥沿着海岸找鱼、找风、找一片可以晒太阳的礁石。' },
+          { name: '伊比利亚西海岸', lat: 42.5, lon: -8.5, txt: '它正在伊比利亚的西海岸——大西洋的风从这里吹向陆地，浪花里总藏着吃的。' },
+          { name: '摩洛哥海岸', lat: 33.4, lon: -7.6, txt: '它到了摩洛哥海岸——冬天这里的海水更暖，鱼群也更密集，银鸥们成群结队来过冬。' }
+        ],
+        redkite: [
+          { name: '德国南部', lat: 48.45, lon: 9.75, txt: '它回到了德国南部的森林——高大树顶上的巢还在，那是它每年夏天都回来的地方。' },
+          { name: '法国中部', lat: 45.5, lon: 3.4, txt: '它正在法国中部的天空滑翔——分叉的尾巴像剪刀，轻轻一偏就能转向。' },
+          { name: '西班牙西北', lat: 42.53, lon: -5.87, txt: '它到了西班牙西北——那里的冬天比德国温暖，河谷和牧场里总有食物。' }
+        ],
+        honeybuzzard: [
+          { name: '德国南部', lat: 48.6, lon: 9.55, txt: '它回到了德国南部的森林——树冠下的蜂巢里，藏着它的午餐。蜂鹰的羽毛厚得能挡住蜂刺。' },
+          { name: '西班牙', lat: 40.5, lon: -1.5, txt: '它正在西班牙上空赶路——蜂鹰要赶在黄蜂停止活动前，飞到温暖的非洲。' },
+          { name: '西非几内亚', lat: 7.0, lon: -9.0, txt: '它到了西非的几内亚——热带雨季的森林里，蜜蜂和蜂蛹一年四季都有，是蜂鹰的天堂。' }
+        ],
+        koa: [
+          { name: '加利福尼亚外海', lat: 35.0, lon: -122.5, txt: '它在加州外海的深蓝里巡游——这里是太平洋东岸著名的"白鲨咖啡厅"，海狮和海豹经常出没。' }
+        ]
+      };
+      function nearestRegion(lat, lon) {
+        var refs = geoRefs[animalId] || [];
+        var best = null, bestD = 1e9;
+        for (var gi = 0; gi < refs.length; gi++) {
+          var d = Math.pow(refs[gi].lat - lat, 2) + Math.pow(refs[gi].lon - lon, 2);
+          if (d < bestD) { bestD = d; best = refs[gi]; }
+        }
+        if (bestD < 12) return best;  // 约3度内视为该区域
+        return null;
+      }
+      var liveLetters = {
+        noe: [
+          { ico: '🪶', t: '来信：它在天上', body: function (s) { return 'Noé 的最新足迹在 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b>（' + s.freshTxt + '）。' + (_sea === 0 ? '春天正把白鹳们从非洲唤回欧洲，它们沿着古老的路线向北，靠着一路的热气流滑翔，几乎不用扇翅膀。' : _sea === 1 ? '夏天是白鹳在法国阿尔萨斯屋顶上养家的季节——大巢里伸出几颗毛茸茸的小脑袋，等着爸爸妈妈带鱼回来。' : _sea === 2 ? '秋风一起，欧洲的白鹳就开始集结了——它们要在直布罗陀上空汇合，然后跟着热气流翻过撒哈拉。Noé 已经在路上。' : '此刻的 Noé 应该在西非的湿地或田野里过冬，那里有吃不完的蛙和昆虫，太阳也比欧洲慷慨得多。') + '它已累计飞了 <b>' + s.totalKm + ' 公里</b>，与你相伴 ' + s.days + ' 天。'; } },
+          { ico: '💌', t: '来信：屋顶上的家', body: function (s) { return '白鹳不鸣叫，它们用喙说话——上下喙快速敲击，发出哒哒哒的声响，邻居一听就知道：这家人回来了。Noé 每年夏天都会回到阿尔萨斯的屋顶，修补同一个巢。它最新一次现身：' + s.fmtD + '，在 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b>。'; } },
+          { ico: '🧭', t: '来信：五年的路', body: function (s) { return '从 2021 年夏天戴上追踪器算起，Noé 已经在欧洲与非洲之间往返了 <b>' + s.totalKm + ' 公里</b>——足够绕地球半圈还多。白鹳认得路，靠地磁、太阳，也靠记忆里那片熟悉的田野。它最近一次定位：' + s.fmtD + '，' + s.freshTxt + '。'; } },
+          { ico: '🌍', t: '来信：此刻的它', body: function (s) { return '此刻的 Noé 在 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b> 附近' + (_sea === 2 ? '——秋天了，它正跟着热气流一段一段向南，今晚也许会停在一根高压线塔上过夜。' : _sea === 0 ? '——春天了，它正一路向北，赶回阿尔萨斯的屋顶。' : _sea === 1 ? '——夏天了，它正站在巢边看护幼鸟，红嘴红腿在阳光下特别显眼。' : '——冬天了，它正在西非的田野里散步，长喙一探一探地找吃的。') + '它已经为你飞了 <b>' + s.totalKm + ' 公里</b>。'; } },
+          { ico: '🕊️', t: '来信：守护者的目光', body: function (s) { return '今天是你守护 Noé 的第 <b>' + s.days + '</b> 天。它不知道你的名字，但它飞过的每一段路，都有一道目光在云端跟着。' + s.freshTxt + '它最新足迹：<b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b>。'; } }
+        ],
+        herringgull: [
+          { ico: '🌊', t: '来信：海风里的它', body: function (s) { return 'Silver 最新足迹在 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b>（' + s.freshTxt + '）。银鸥最懂海风——它顺着风滑翔，贴着浪尖飞，饿了就俯冲下去叼一条鱼。它已累计移动 <b>' + s.totalKm + ' 公里</b>，与你相伴 ' + s.days + ' 天。'; } },
+          { ico: '🦐', t: '来信：什么都吃', body: function (s) { return '银鸥是海边的杂食家：小鱼、螃蟹、海胆，甚至是面包和薯条，它都来者不拒。它最新一次定位：' + s.fmtD + '，在 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b> 附近。港口、码头、渔市——跟着银鸥，就能找到最热闹的海岸。'; } },
+          { ico: '📣', t: '来信：海港的声音', body: function (s) { return '你听过银鸥的叫声吗？一声拖长的 kyow——那是海港的背景音乐。Silver 最近现身于 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b>，' + s.freshTxt + '。它已经陪你走过 <b>' + s.totalKm + ' 公里</b> 的海岸线。'; } },
+          { ico: '💌', t: '来信：守护者的第' + 'N' + '天', body: function (s) { return '相伴第 <b>' + s.days + '</b> 天。海鸥的一生很长，能活三十多年——它们记得每一片港口，也记得谁对它好。Silver 现在在 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b>，' + s.freshTxt + '。'; } }
+        ],
+        redkite: [
+          { ico: '🪁', t: '来信：天空的滑翔家', body: function (s) { return 'Athos 最新足迹在 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b>（' + s.freshTxt + '）。红鸢是滑翔大师——翅膀几乎不动，只靠气流就能在天上盘旋半天。它分叉的尾巴像一把剪刀，调头时轻轻一偏，姿态优雅得像一场飞行表演。累计 <b>' + s.totalKm + ' 公里</b>。'; } },
+          { ico: '🍖', t: '来信：不挑食的猛禽', body: function (s) { return '红鸢不挑食：腐肉、蚯蚓、小鼠、甚至人类留下的食物残渣，它都乐于清理。它最新一次定位：' + s.fmtD + '，在 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b> 上空盘旋。大自然最尽责的清道夫，就是它。'; } },
+          { ico: '🌬️', t: '来信：气流之上', body: function (s) { return (_sea === 0 ? '春天，红鸢开始筑巢——它们喜欢高大的树，巢搭在高高的树杈上。' : _sea === 1 ? '夏天，小红鸢在巢里练习扇翅膀，父母轮流带食物回来。' : _sea === 2 ? '秋天，北方来的红鸢会向南游荡，寻找食物更充足的地方。' : '冬天，红鸢聚在河谷和牧场边，靠腐肉和小动物过冬。') + 'Athos 现在在 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b>，' + s.freshTxt + '。'; } },
+          { ico: '💌', t: '来信：守护者的第' + 'N' + '天', body: function (s) { return '你守护 Athos 已经 <b>' + s.days + '</b> 天。它的翅膀掠过 <b>' + s.totalKm + ' 公里</b>——风知道，你也知道。最新足迹：<b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b>。'; } }
+        ],
+        honeybuzzard: [
+          { ico: '🐝', t: '来信：蜂巢美食家', body: function (s) { return 'Mel 最新足迹在 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b>（' + s.freshTxt + '）。蜂鹰有个独门绝技——吃黄蜂：厚实的羽毛挡住蜂刺，利爪刨开蜂巢，专挑蜂蛹吃。它是猛禽里最特别的美食家。累计 <b>' + s.totalKm + ' 公里</b>。'; } },
+          { ico: '✈️', t: '来信：撒哈拉的跨越者', body: function (s) { return '蜂鹰是真正的长距离迁徙专家——每年从欧洲飞到非洲，跨过撒哈拉沙漠。它们会在海峡上空盘旋，等风，也等热气流。Mel 已累计飞了 <b>' + s.totalKm + ' 公里</b>，最近一次定位：' + s.fmtD + '。'; } },
+          { ico: '🍂', t: '来信：秋天出发', body: function (s) { return (_sea === 2 ? '夏末秋初，欧洲的蜂鹰会成群结队出发——它们要赶在黄蜂停止活动之前，飞到温暖的非洲。' : _sea === 0 ? '春天，蜂鹰从非洲返回欧洲，一路跟着花开的节奏。' : '此刻的 Mel 在 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b>，' + s.freshTxt + '。') + '它的小爪子里，藏着一个关于蜂巢的秘密。'; } },
+          { ico: '💌', t: '来信：守护者的第' + 'N' + '天', body: function (s) { return '相伴第 <b>' + s.days + '</b> 天。Mel 飞过的 <b>' + s.totalKm + ' 公里</b> 里，有蜂巢的甜，也有沙漠的风——现在，还有你的目光。'; } }
+        ],
+        koa: [
+          { ico: '🦈', t: '来信：海洋巡游者', body: function (s) { return 'Koa 最新定位在 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b>（' + s.freshTxt + '）。大白鲨是海洋里不知疲倦的巡游者——它沿着水温适宜的海域移动，捕食海豹、金枪鱼和海鸟。它已巡游 <b>' + s.totalKm + ' 公里</b>，与你相伴 ' + s.days + ' 天。'; } },
+          { ico: '🌡️', t: '来信：它喜欢的水温', body: function (s) { return '大白鲨偏爱 12–24°C 的海水——太冷就去热带，太热就向高纬走。它最新一次定位：' + s.fmtD + '，在 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b> 附近。它可以下潜上千米，再回到海面晒太阳。'; } },
+          { ico: '🌊', t: '来信：深蓝里的它', body: function (s) { return '此刻的 Koa 在 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b> 附近的深蓝里巡游。它已经陪你走了 <b>' + s.totalKm + ' 公里</b> 的海洋。大海辽阔，但它的旅途里，始终有一道目光跟着。'; } },
+          { ico: '💌', t: '来信：守护者的第' + 'N' + '天', body: function (s) { return '你守护 Koa 第 <b>' + s.days + '</b> 天了。它不会上岸，不会鸣叫，但每一次浮出水面，都是它在跟你打招呼。'; } }
+        ],
+        _default: [
+          { ico: '📬', t: '来信：它还在路上', body: function (s) { return '它最新足迹在 <b>' + s.lat + s.latH + ', ' + s.lon + s.lonH + '</b>（' + s.freshTxt + '）。已累计移动 <b>' + s.totalKm + ' 公里</b>，与你相伴 ' + s.days + ' 天。'; } }
+        ]
+      };
+      function genLiveLetter(s) {
+        var pool = liveLetters[animalId] || liveLetters._default;
+        if (!pool || !pool.length) return null;
+        var tpl = _rnd(pool);
+        try { return { ico: tpl.ico, t: tpl.t.replace(/'N'/, ''), body: tpl.body(s) }; }
+        catch (e) { return null; }
+      }
       var customLetters = {
         turtle: [
           { d: 0, t: '初遇之信', ico: '💌', body: '亲爱的<b>' + name + '</b>：<br>从今天起，你就是 Lumi 的守护者了。此刻它正在<b>捷克摩拉维亚</b>（48.8°N, 17.0°E）的麦田边——那里是它夏天的家。为了和你相遇，它已经独自飞过 <b>' + Math.round(totalKm) + ' 公里</b>，跨越了地中海与撒哈拉。从今天起，每一公里都有你的目光。' },
@@ -3522,11 +3615,63 @@ document.addEventListener('DOMContentLoaded', function() {
           { d: 60, t: '爱琴海的风', ico: '🌬️', body: '2026年4月28日，Lumi 飞过希腊的爱琴海（38.2°N, 24.2°E）。海风从岛屿之间穿过来，托着它的翅膀，像有人在后面推着它走。下面的岛屿像散落的翡翠，蓝色海水碎成细浪。它没有停下来——因为它闻到了北方的味道，家的味道。' },
           { d: 90, t: '回家', ico: '🏡', body: '2026年5月，Lumi 降落在摩拉维亚的麦田里。离它去年离开的地方，只有几十公里。它认得每一棵杨树、每一条田埂——这里没有变，麦子刚刚返青，葡萄园刚冒出嫩芽。它绕着自己的领地飞了一圈，然后落下来，开始整理一个冬天的疲惫。回家了。' },
           { d: 100, t: '麦田的约定', ico: '💞', body: '2026年的夏天，Lumi 在南摩拉维亚的布热茨拉夫附近安了家（48.84°N, 16.98°E）。这里有洪泛平原、有葡萄园、有吃不完的草籽。它开始筑巢，开始准备属于自己的小家庭。这一年的 ' + Math.round(totalKm) + ' 公里，它都讲给了风听——而风，讲给了路过的人。现在，轮到你了。' }
+        ],
+        noe: [
+          { d: 0, t: '初遇之信', ico: '💌', body: '亲爱的<b>' + name + '</b>：<br>从今天起，你就是 Noé 的守护者了。此刻它正在<b>西班牙东部</b>（40.9°N, 1.5°W）上空——秋天到了，它正沿着古老的路线向南，跟着热气流一段一段地飞向西非。为了和你相遇，它已经独自飞了 <b>' + Math.round(totalKm) + ' 公里</b>，往返欧洲与非洲整整五年。从今天起，每一公里都有你的目光。' },
+          { d: 1, t: '萨尔堡的夏天', ico: '🌾', body: '2021年6月29日，法国东北部的萨尔堡（48.99°N, 7.05°E），科学家给一只年轻的白鹳戴上了GPS追踪器——它叫 Noé。它当时正站在麦田边的电线上，红嘴红腿，翅膀尖是黑色的。它不知道这个小小的背包会记录下它此后五年的每一次飞翔。' },
+          { d: 3, t: '屋顶上的家', ico: '🏠', body: '白鹳喜欢住在屋顶上。Noé 在法国阿尔萨斯找到了一户人家的烟囱顶，把巢搭在那里——大得像个草垛。每年夏天它都回来修补：叼来树枝、麦秆、碎布，一点点添上去。当地人看到白鹳在屋顶筑巢，会当作好运气。' },
+          { d: 7, t: '哒哒哒', ico: '🗣️', body: '白鹳几乎不叫——它们用喙说话。Noé 把上下喙快速敲击，发出哒哒哒哒的声响，像有人在敲木鱼。这是它在说：我回来了；这也是它在说：这片屋顶是我的。你永远不会忘记第一次听到白鹳敲喙的声音。' },
+          { d: 10, t: '第一次远行', ico: '✈️', body: '2021年9月，秋天的风从北方吹来。Noé 站在巢边，朝着南方看了很久。然后它张开两米宽的翅膀，顺着第一股上升热气流盘旋升高——越来越高，直到变成天空里的一个小点。它就这样，开始了生命里第一次跨国迁徙。' },
+          { d: 14, t: '直布罗陀海峡', ico: '🌊', body: '白鹳的迁徙路线要经过直布罗陀海峡——那里是欧洲与非洲最近的地方。Noé 在海峡上空盘旋，等待热气流把它托到足够高的地方，然后一鼓作气滑翔过海。海面上没有可以停歇的地方，它只能相信自己的翅膀。' },
+          { d: 21, t: '摩洛哥的冬天', ico: '🌴', body: '翻过地中海，Noé 来到了摩洛哥（34.3°N, 6.6°W）。那里的冬天没有雪，只有暖阳和田野。它和成群的同伴在农田里散步，长喙一探一探地啄食昆虫和蛙。这是它第一次知道：原来冬天也可以这么暖和。' },
+          { d: 30, t: '撒哈拉的边缘', ico: '🏜️', body: 'Noé 最南到过北纬 34.2°——西非撒哈拉沙漠的南缘。那里有绿洲、有湿地，是许多白鹳的越冬地。五年的追踪里，它在这片土地上来回往返，累计飞过 <b>' + Math.round(totalKm) + ' 公里</b>，最北回到法国阿尔萨斯，最南抵达西非。' },
+          { d: 45, t: '春天向北', ico: '🌸', body: '每年2到4月，白鹳体内的生物钟开始倒数。Noé 在摩洛哥的田野里梳好羽毛，然后展开翅膀——向北。它认得回家的路：先沿海岸线飞，再翻过直布罗陀，最后沿着河谷一路回到阿尔萨斯。' },
+          { d: 60, t: '热气流学校', ico: '🌬️', body: '白鹳是滑翔冠军——它们几乎不扇翅膀。Noé 找到一股上升热气流，就绕着圈盘旋，像坐电梯一样升到几百米高，然后平展翅膀向南方滑翔几公里，再找下一股。一天能这样飞几百公里，却几乎不费力气。' },
+          { d: 90, t: '五年的路', ico: '🧭', body: '从2021年到今天，Noé 往返欧洲与非洲，累计飞行超过 <b>' + Math.round(totalKm) + ' 公里</b>——足够绕地球半圈还多。它见过直布罗陀的海雾、摩洛哥的麦田、撒哈拉的落日，也记得阿尔萨斯屋顶上的每一根树枝。' },
+          { d: 100, t: '与你的约定', ico: '💞', body: '亲爱的<b>' + name + '</b>：<br>一百天了。Noé 在天空里的每一公里，都有你的注视；它停下的每一片田野，都有你的名字。五年的迁徙，它把故事讲给了风——而风，讲给了路过的人。现在，轮到你了。' }
         ]
       };
       var letters = customLetters[animalId] || defaultLetters;
 
-      var html = '';
+      // 📬 今日来信（领养后显示：到新地方→特殊信；平时→偶尔随机来信，40%概率+每天最多一封）
+      var liveHtml = '';
+      if (days >= 0 && pts && pts.length) {
+        try {
+          var lpt = pts[pts.length - 1];
+          var lts = ts[ts.length - 1];
+          var _da2 = 0;
+          try { _da2 = Math.max(0, Math.floor((Date.now() - new Date(lts.replace(' ', 'T')).getTime()) / 86400000)); } catch (e) {}
+          var _fresh2 = _da2 === 0 ? '今天，它刚刚更新了定位' : _da2 === 1 ? '昨天，它还在路上' : _da2 <= 7 ? _da2 + ' 天前，它留下了新的足迹' : '它正在一段安静的旅途中';
+          var liveS2 = {
+            lat: _sfmt(Math.abs(lpt[0])), latH: lpt[0] >= 0 ? '°N' : '°S',
+            lon: _sfmt(Math.abs(lpt[1])), lonH: lpt[1] >= 0 ? '°E' : '°W',
+            totalKm: Math.round(totalKm),
+            days: days,
+            freshTxt: _fresh2,
+            fmtD: fmtD(lts)
+          };
+          var curReg2 = null, lastReg2 = null;
+          try {
+            curReg2 = nearestRegion(lpt[0], lpt[1]);
+            lastReg2 = localStorage.getItem('lr_' + animalId);
+          } catch (e) {}
+          var lv2 = null;
+          if (curReg2 && curReg2 !== lastReg2) {
+            try { localStorage.setItem('lr_' + animalId, curReg2.name); } catch (e) {}
+            lv2 = { ico: '📍', t: '来信：它到了一个新地方', body: '<b>' + (a.name || '它') + '</b>到了<b>' + curReg2.name + '</b>附近（' + liveS2.lat + liveS2.latH + ', ' + liveS2.lon + liveS2.lonH + '）！' + curReg2.txt + '（' + liveS2.freshTxt + '）它已累计' + (totalKm > 200 ? '飞了' : '移动了') + ' <b>' + liveS2.totalKm + ' 公里</b>，与你相伴 ' + liveS2.days + ' 天。' };
+          } else {
+            var _todayS = new Date().toDateString();
+            var _lastRand = null;
+            try { _lastRand = localStorage.getItem('lr_rand_' + animalId); } catch (e) {}
+            if (_lastRand !== _todayS && Math.random() < 0.4) {
+              try { localStorage.setItem('lr_rand_' + animalId, _todayS); } catch (e) {}
+              lv2 = genLiveLetter(liveS2);
+            }
+          }
+          if (lv2) liveHtml = '<div class="letter-item live"><div class="letter-head"><span>' + lv2.ico + ' ' + lv2.t + '</span><span class="letter-st">📬 今日来信</span></div><div class="letter-body">' + lv2.body + '</div></div>';
+        } catch (e) { console.log('liveLetter err:', e); }
+      }
+      var html = liveHtml;
       letters.forEach(function (L) {
         if (days < 0) {
           html += '<div class="letter-item locked"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">🔒 领养后解锁</span></div><div class="letter-body">' + (L.d === 0 ? '扫码领养它，这封信会立刻送到你手上。' : '扫码领养它，这封信会在第 ' + L.d + ' 天送到你手上。') + '</div></div>';
