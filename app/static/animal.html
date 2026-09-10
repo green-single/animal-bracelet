@@ -3827,7 +3827,7 @@ document.addEventListener('DOMContentLoaded', function() {
       };
       var letters = customLetters[animalId] || defaultLetters;
 
-      // 📬 今日来信（领养后显示：到新地方→特殊信；平时→偶尔随机来信，40%概率+每天最多一封）
+      // 📬 今日来信（领养后显示：到新地方→特殊信；平时→偶尔随机来信，10%概率+每天最多一封）
       var liveHtml = '';
       if (days >= 0 && pts && pts.length) {
         try {
