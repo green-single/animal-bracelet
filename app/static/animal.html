@@ -240,8 +240,8 @@
   }
   .photo-item { cursor: pointer; transition: transform .15s ease; }
   .photo-item:hover { transform: scale(1.02); }
-  .photo-wrap { position: relative; overflow: hidden; }
-  .photo-wrap img { width: 100%; height: 110px; object-fit: cover; display: block; background: #e8e6df; }
+  .photo-wrap { position: relative; overflow: hidden; height: 100%; }
+  .photo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; background: #e8e6df; }
   .photo-zoom {
     position: absolute; bottom: 0; left: 0; right: 0; padding: 6px 8px;
     background: linear-gradient(transparent, rgba(0,0,0,.65)); color: #fff;
@@ -300,7 +300,7 @@
     overflow: hidden; background: #faf9f6; transition: transform .18s ease;
   }
   .photo-card:hover { transform: translateY(-2px); }
-  .photo-card img { width: 100%; height: 110px; object-fit: cover; display: block; background: #e8e6df; }
+  .photo-card img { width: 100%; height: 100%; object-fit: cover; display: block; background: #e8e6df; }
 
   .note-block { font-size: 12px; color: var(--sub); line-height: 1.7; margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 12px; }
   .back { display: inline-block; margin-top: 14px; font-size: 13px; color: var(--accent); text-decoration: none; font-weight: 700; }
@@ -1861,7 +1861,7 @@ if ('caches' in window) {
       var s = tileSources[srcIdx % tileSources.length];
       var list = s.layers || [{ url: s.url, att: s.att }];
       list.forEach(function (cfg) {
-        var l = L.tileLayer(cfg.url, { maxZoom: 17, attribution: cfg.att, opacity: cfg.opacity || 1 });
+        var l = L.tileLayer(cfg.url, { maxZoom: 16, attribution: cfg.att, opacity: cfg.opacity || 1 });
         activeLayers.push(l);
         l.addTo(map);
       });
