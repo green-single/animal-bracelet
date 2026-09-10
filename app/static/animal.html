@@ -3663,7 +3663,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var _todayS = new Date().toDateString();
             var _lastRand = null;
             try { _lastRand = localStorage.getItem('lr_rand_' + animalId); } catch (e) {}
-            if (_lastRand !== _todayS && Math.random() < 0.4) {
+            if (_lastRand !== _todayS && Math.random() < 0.1) {
               try { localStorage.setItem('lr_rand_' + animalId, _todayS); } catch (e) {}
               lv2 = genLiveLetter(liveS2);
             }
