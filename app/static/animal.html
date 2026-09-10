@@ -731,7 +731,7 @@ background: rgba(0,0,0,.92); z-index: 9998; flex-direction: column; align-items:
 .scan-cancel { padding: 10px 30px; border: none; border-radius: 22px; background: rgba(255,255,255,.14); color: #fff; font-size: 15px; cursor: pointer; }
 @media (max-width: 560px) {
 /* 手机端：header 精简 */
-header { padding: 10px 12px; gap: 8px; }
+header { padding: 8px 12px; gap: 8px; justify-content: flex-end; }
 .code-search input { display: none; }
 .brand { font-size: 14px; }
 .brand small { font-size: 10px; }
@@ -1152,14 +1152,7 @@ if ('serviceWorker' in navigator) {
 </div>
 
 <header>
-  <div class="logo">爪</div>
-  <div class="brand">动物追踪手环<small>你领养的动物 · 实时旅程</small></div>
-  <div class="code-search">
-    <input id="codeInput" placeholder="输领养码查动物" maxlength="20">
-    <button id="codeGo" type="button">查询</button>
-    <button id="scanBtn" type="button" title="扫手环上的二维码">📷 扫码</button>
-    <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
-  </div>
+  <button id="pushBtn" type="button" title="有新足迹时通知我" style="margin-left:auto;">🔔</button>
 </header>
 <div id="pwaTip"><b>📲 把它装到桌面</b>，以后像 App 一样一键打开<br><span id="pwaTipHow"></span><button class="pwa-x" onclick="dismissPwaTip()">✕</button></div>
 <main>
