@@ -1019,6 +1019,24 @@ transition: transform .15s ease;
 #pwaTip b{color:#0E7C66}
 #pwaTip .pwa-x{position:absolute;top:8px;right:10px;border:none;background:transparent;font-size:14px;color:#0A5C4C;cursor:pointer;padding:4px}
 
+
+  /* ===== “我的”折叠/收藏/明信片下载 ===== */
+  .mine-section { margin: 12px 2px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); overflow: hidden; }
+  .sec-head { display: flex; justify-content: space-between; align-items: center; padding: 13px 15px; font-size: 14.5px; font-weight: 700; cursor: pointer; user-select: none; }
+  .sec-extra { display: flex; align-items: center; gap: 8px; }
+  .sec-arrow { font-size: 12px; color: var(--sub); transition: transform .25s; }
+  .sec-body { padding: 0 14px 14px; }
+  .sec-body.hide { display: none; }
+  .sec-fav-btn { font-size: 11px; color: var(--sub); background: none; border: 1px solid var(--line); border-radius: 20px; padding: 3px 10px; cursor: pointer; }
+  .sec-fav-btn.on { color: #B45309; border-color: #F59E0B; background: rgba(245,158,11,.12); }
+  .letter-item .letter-head { cursor: pointer; }
+  .letter-item .letter-body.hide { display: none; }
+  .letter-fav { margin-left: auto; padding: 0 4px; cursor: pointer; font-size: 14px; }
+  .letter-fav.on { color: #F59E0B; }
+  .pc-acts { position: absolute; right: 64px; top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .pc-fav, .pc-save { width: 27px; height: 27px; border-radius: 50%; background: rgba(255,255,255,.9); border: 1px solid #eee4cd; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .pc-fav.on { color: #F59E0B; }
+  .postcard.faved { border-color: rgba(245,158,11,.55); box-shadow: 0 2px 12px rgba(245,158,11,.15); }
 </style>
 <meta name="theme-color" content="#0E7C66">
 <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
@@ -1170,7 +1188,36 @@ if ('serviceWorker' in navigator) {
     <div class="tab-view tab-photos" id="tabPhotos"></div>
     <div class="tab-view tab-story" id="tabStory"></div>
     <div class="tab-view tab-ach" id="tabAch"></div>
-    <div class="tab-view tab-mine" id="tabMine"></div>
+    <div class="tab-view tab-mine" id="tabMine">
+  <div class="mine-section" id="pcSection">
+    <div class="sec-head" onclick="toggleSec('pc')">
+      <span>🎑 明信片收藏</span>
+      <span class="sec-extra"><button class="sec-fav-btn" id="pcFavBtn" onclick="event.stopPropagation();toggleFavOnly('pc')">☆ 全部</button><span class="sec-arrow" id="pcArrow">▾</span></span>
+    </div>
+    <div class="sec-body" id="pcBody"><div class="pc-wall" id="postcardWall"></div></div>
+  </div>
+  <div class="mine-section" id="letterSection">
+    <div class="sec-head" onclick="toggleSec('letter')">
+      <span>💌 写给守护者的信</span>
+      <span class="sec-extra"><button class="sec-fav-btn" id="letterFavBtn" onclick="event.stopPropagation();toggleFavOnly('letter')">☆ 全部</button><span class="sec-arrow" id="letterArrow">▸</span></span>
+    </div>
+    <div class="sec-body hide" id="letterBody"><div class="letter-list" id="letterList"></div></div>
+  </div>
+  <div class="mine-section" id="msgSection">
+    <div class="sec-head" onclick="toggleSec('msg')">
+      <span>💬 和它说句话</span>
+      <span class="sec-arrow" id="msgArrow">▾</span>
+    </div>
+    <div class="sec-body" id="msgBody">
+      <div class="msg-sub">只有你和它能看到 · 它会记住你说的每一句</div>
+      <div class="msg-input-row">
+        <textarea id="msgInput" placeholder="今天想对它说……" maxlength="200"></textarea>
+        <button id="msgSend">发送</button>
+      </div>
+      <div class="msg-list" id="msgList"></div>
+    </div>
+  </div>
+</div>
     <div class="tab-view tab-quiz" id="tabQuiz"></div>
   </div>
   <!-- 地图区（主角） -->
@@ -1375,26 +1422,6 @@ if ('serviceWorker' in navigator) {
       </div>
     </div>
 
-    <!-- 明信片收藏 -->
-    <div class="pc-sec" id="pcSection">
-      <div class="pc-title">🎑 明信片收藏 <span style="font-size:11px;color:var(--sub);font-weight:400;">它到过的地方，都寄给你</span></div>
-      <div class="pc-wall" id="postcardWall"></div>
-    </div>
-    <!-- 纪念信 -->
-    <div class="letter-sec" id="letterSection">
-      <div class="letter-title">💌 写给守护者的信</div>
-      <div class="letter-list" id="letterList"></div>
-    </div>
-
-    <!-- 留言板 -->
-    <div class="msg-sec" id="msgSection">
-      <div class="msg-title">💬 和它说句话</div>
-      <div class="msg-sub">只有你和它能看到 · 它会记住你说的每一句</div>
-      <div class="msg-input-row">
-        <textarea id="msgInput" placeholder="今天想对它说……" maxlength="200"></textarea>
-        <button id="msgSend">发送</button>
-      </div>
-      <div class="msg-list" id="msgList"></div>
     </div>
   </div>
 
@@ -3880,33 +3907,50 @@ document.addEventListener('DOMContentLoaded', function() {
           if (lv2) liveHtml = '<div class="letter-item live"><div class="letter-head"><span>' + lv2.ico + ' ' + lv2.t + '</span><span class="letter-st">📬 今日来信</span></div><div class="letter-body">' + lv2.body + '</div></div>';
         } catch (e) { console.log('liveLetter err:', e); }
       }
-      var html = liveHtml;
-      letters.forEach(function (L) {
-        if (days < 0) {
-          html += '<div class="letter-item locked"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">🔒 领养后解锁</span></div><div class="letter-body">' + (L.d === 0 ? '扫码领养它，这封信会立刻送到你手上。' : '扫码领养它，这封信会在第 ' + L.d + ' 天送到你手上。') + '</div></div>';
-        } else if (days >= L.d) {
-          html += '<div class="letter-item open"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">💌 已送达</span></div><div class="letter-body">' + L.body + '</div></div>';
-        } else {
-          html += '<div class="letter-item locked"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">再陪伴 ' + (L.d - days) + ' 天</span></div><div class="letter-body">它正在远方为你攒一个故事，第 ' + L.d + ' 天准时送达。</div></div>';
-        }
-      });
-      letterList.innerHTML = html;
+      window._favAnimalId = animalId;
+      window.renderMineLetters = function () {
+        var html = liveHtml;
+        var favL = {};
+        try { favL = JSON.parse(localStorage.getItem('fav_letters_' + animalId) || '{}'); } catch (e) {}
+        var favOnly = !!window._favOnlyLetter;
+        letters.forEach(function (L, Lidx) {
+          if (favOnly && !favL[Lidx]) return;
+          if (days < 0) {
+            html += '<div class="letter-item locked"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">🔒 领养后解锁</span></div><div class="letter-body">' + (L.d === 0 ? '扫码领养它，这封信会立刻送到你手上。' : '扫码领养它，这封信会在第 ' + L.d + ' 天送到你手上。') + '</div></div>';
+          } else if (days >= L.d) {
+            html += '<div class="letter-item open"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">💌 已送达</span></div><span class="letter-fav' + (favL[Lidx] ? ' on' : '') + '" onclick="event.stopPropagation();toggleFavLetter(' + Lidx + ')">' + (favL[Lidx] ? '⭐' : '☆') + '</span><div class="letter-body">' + L.body + '</div></div>';
+          } else {
+            html += '<div class="letter-item locked"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">再陪伴 ' + (L.d - days) + ' 天</span></div><div class="letter-body">它正在远方为你攒一个故事，第 ' + L.d + ' 天准时送达。</div></div>';
+          }
+        });
+        letterList.innerHTML = html;
+      };
+      window.renderMineLetters();
       try {
         var _pcSec = document.getElementById('pcSection');
         var _pcWall = document.getElementById('postcardWall');
         if (_pcSec && _pcWall) {
           var _pcKey3 = 'pc_' + animalId, _cards3 = [];
           try { _cards3 = JSON.parse(localStorage.getItem(_pcKey3)) || []; } catch(e) {}
-          var _pcHtml = '';
-          if (_cards3.length) {
-            _cards3.forEach(function(cd) {
-              _pcHtml += '<div class="postcard"><div class="pc-stamp">' + (cd.ico || '📍') + '<br>NEW<br>PLACE</div><div class="pc-place">' + (cd.place || '远方') + '</div><div class="pc-sub">' + (cd.date || '') + '</div><div class="pc-note">' + (cd.note || '') + '</div><div class="pc-foot">From the journey of ' + (a.name || '') + ' ✈️</div><div class="pc-lines"></div></div>';
-            });
-          } else {
-            _pcHtml = '<div style="font-size:12px;color:var(--sub);padding:12px 14px;border:1.5px dashed rgba(14,124,102,.3);border-radius:14px;line-height:1.7;">📮 还没有明信片。<br>当 <b>' + (a.name || '它') + '</b> 抵达一个新的地方，会自动给你寄来一张明信片，收藏在这里。最多 9 张。</div>';
-          }
-          _pcWall.innerHTML = _pcHtml;
-          _pcSec.style.display = 'block';
+          window._favAnimalName = a.name || 'it';
+          window.renderMinePC = function () {
+            var favPC = {};
+            try { favPC = JSON.parse(localStorage.getItem('fav_pc_' + animalId) || '{}'); } catch (e) {}
+            var favOnly = !!window._favOnlyPC;
+            var _pcHtml = '';
+            if (_cards3.length) {
+              _cards3.forEach(function(cd) {
+                var ck = (cd.d || 0) + '_' + (cd.place || '');
+                if (favOnly && !favPC[ck]) return;
+                _pcHtml += '<div class="postcard' + (favPC[ck] ? ' faved' : '') + '"><div class="pc-acts"><span class="pc-fav' + (favPC[ck] ? ' on' : '') + '" onclick="event.stopPropagation();toggleFavPC(\'' + ck + '\')">' + (favPC[ck] ? '⭐' : '☆') + '</span><span class="pc-save" onclick="event.stopPropagation();savePC(\'' + ck + '\')">💾</span></div><div class="pc-stamp">' + (cd.ico || '📍') + '<br>NEW<br>PLACE</div><div class="pc-place">' + (cd.place || '远方') + '</div><div class="pc-sub">' + (cd.date || '') + '</div><div class="pc-note">' + (cd.note || '') + '</div><div class="pc-foot">From the journey of ' + (a.name || '') + ' ✈️</div><div class="pc-lines"></div></div>';
+              });
+            } else {
+              _pcHtml = '<div style="font-size:12px;color:var(--sub);padding:12px 14px;border:1.5px dashed rgba(14,124,102,.3);border-radius:14px;line-height:1.7;">📮 还没有明信片。<br>当 <b>' + (a.name || '它') + '</b> 抵达一个新的地方，会自动给你寄来一张明信片，收藏在这里。最多 9 张。</div>';
+            }
+            _pcWall.innerHTML = _pcHtml;
+            _pcSec.style.display = 'block';
+          };
+          window.renderMinePC();
         }
       } catch(e) { console.log('postcard err', e); }
       try {
@@ -4222,5 +4266,100 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 
+
+<script>
+(function () {
+  // ===== “我的”折叠/收藏/明信片下载（全局） =====
+  window.toggleSec = function (nm) {
+    var b = document.getElementById(nm + 'Body');
+    var a = document.getElementById(nm + 'Arrow');
+    if (!b) return;
+    b.classList.toggle('hide');
+    if (a) a.textContent = b.classList.contains('hide') ? '▸' : '▾';
+  };
+  // 信：点击头部展开/收起单封
+  document.addEventListener('click', function (e) {
+    var h = e.target && e.target.closest ? e.target.closest('.letter-head') : null;
+    if (!h) return;
+    var b = h.parentElement ? h.parentElement.querySelector('.letter-body') : null;
+    if (b && b.classList) b.classList.toggle('hide');
+  });
+  // 收藏过滤切换
+  window.toggleFavOnly = function (kind) {
+    if (kind === 'pc') {
+      window._favOnlyPC = !window._favOnlyPC;
+      var b1 = document.getElementById('pcFavBtn');
+      if (b1) { b1.textContent = window._favOnlyPC ? '⭐ 收藏' : '☆ 全部'; b1.classList.toggle('on', !!window._favOnlyPC); }
+      if (window.renderMinePC) window.renderMinePC();
+    } else {
+      window._favOnlyLetter = !window._favOnlyLetter;
+      var b2 = document.getElementById('letterFavBtn');
+      if (b2) { b2.textContent = window._favOnlyLetter ? '⭐ 收藏' : '☆ 全部'; b2.classList.toggle('on', !!window._favOnlyLetter); }
+      if (window.renderMineLetters) window.renderMineLetters();
+    }
+  };
+  // 收藏一封信
+  window.toggleFavLetter = function (idx) {
+    var k = 'fav_letters_' + (window._favAnimalId || '');
+    var f = {}; try { f = JSON.parse(localStorage.getItem(k) || '{}'); } catch (e) {}
+    if (f[idx]) delete f[idx]; else f[idx] = 1;
+    localStorage.setItem(k, JSON.stringify(f));
+    if (window.renderMineLetters) window.renderMineLetters();
+  };
+  // 收藏一张明信片
+  window.toggleFavPC = function (ck) {
+    var k = 'fav_pc_' + (window._favAnimalId || '');
+    var f = {}; try { f = JSON.parse(localStorage.getItem(k) || '{}'); } catch (e) {}
+    if (f[ck]) delete f[ck]; else f[ck] = 1;
+    localStorage.setItem(k, JSON.stringify(f));
+    if (window.renderMinePC) window.renderMinePC();
+  };
+  // 明信片下载（canvas 生成 PNG）
+  window.savePC = function (ck) {
+    var cards = [];
+    try { cards = JSON.parse(localStorage.getItem('pc_' + (window._favAnimalId || '')) || '[]'); } catch (e) {}
+    var cd = null;
+    cards.forEach(function (x) { if ((x.d || 0) + '_' + (x.place || '') === ck) cd = x; });
+    if (!cd) return;
+    try {
+      var W = 500, H = 700;
+      var cvs = document.createElement('canvas');
+      cvs.width = W; cvs.height = H;
+      var x = cvs.getContext('2d');
+      x.fillStyle = '#FDF6E8'; x.fillRect(0, 0, W, H);
+      x.strokeStyle = '#E2D5B6'; x.lineWidth = 3; x.strokeRect(20, 20, W - 40, H - 40);
+      // 邮票
+      x.save();
+      x.strokeStyle = '#D9C9A6'; x.setLineDash([6, 4]); x.lineWidth = 2;
+      x.strokeRect(352, 44, 116, 116); x.restore();
+      x.textAlign = 'center';
+      x.font = '34px sans-serif'; x.fillText(cd.ico || '📍', 410, 88);
+      x.fillStyle = '#B45309'; x.font = 'bold 15px sans-serif'; x.fillText('NEW PLACE', 410, 118);
+      // 地点
+      x.fillStyle = '#1F2937'; x.textAlign = 'left';
+      x.font = 'bold 32px sans-serif'; x.fillText('📍 ' + (cd.place || '远方'), 46, 190);
+      // 日期
+      x.fillStyle = '#6B7280'; x.font = '17px sans-serif'; x.fillText(cd.date || '', 46, 226);
+      // 留言（按 17 字折行）
+      x.fillStyle = '#374151'; x.font = '19px sans-serif';
+      var txt = cd.note || '', lines = [], ln = '';
+      for (var i = 0; i < txt.length; i++) { ln += txt[i]; if (ln.length >= 17) { lines.push(ln); ln = ''; } }
+      if (ln) lines.push(ln);
+      if (!lines.length) lines.push('');
+      var yy = 292;
+      lines.forEach(function (w) { x.fillText(w, 46, yy); yy += 36; });
+      // 底部邮线 + 落款
+      x.strokeStyle = '#D9C9A6'; x.lineWidth = 2;
+      x.beginPath(); x.moveTo(46, 610); x.lineTo(W - 46, 610); x.stroke();
+      x.fillStyle = '#6B7280'; x.font = '14px sans-serif';
+      x.fillText('From the journey of ' + (window._favAnimalName || 'it') + ' ✈️', 46, 640);
+      var link = document.createElement('a');
+      link.download = 'postcard_' + (cd.place || 'place') + '.png';
+      link.href = cvs.toDataURL('image/png');
+      link.click();
+    } catch (e) { alert('下载失败，请稍后再试'); }
+  };
+})();
+</script>
 </body>
 </html>
