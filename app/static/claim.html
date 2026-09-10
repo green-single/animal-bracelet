@@ -617,6 +617,7 @@
       // 本设备已领养过 → 直接进入它的页面（不用再领养）
       try {
         if (localStorage.getItem('adopted_' + animalData.id)) {
+          try { document.cookie = 'my_animal=' + animalData.id + '; path=/; max-age=31536000; SameSite=Lax'; } catch(e) {}
           location.replace('/animal/' + animalData.id);
           return;
         }
@@ -643,6 +644,7 @@
               nickname: ''
             }));
           } catch(e) {}
+          try { document.cookie = 'my_animal=' + animalData.id + '; path=/; max-age=31536000; SameSite=Lax'; } catch(e) {}
           location.href = '/animal/' + animalData.id;
         });
         showStage('stageClaimed');
@@ -722,6 +724,7 @@
                   nickname: nickname
                 }));
               } catch(e) {}
+              try { document.cookie = 'my_animal=' + animalData.id + '; path=/; max-age=31536000; SameSite=Lax'; } catch(e) {}
             } else {
               btn.disabled = false;
               btn.textContent = '确认领养 🐾';

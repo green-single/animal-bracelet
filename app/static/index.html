@@ -319,7 +319,10 @@ if ('serviceWorker' in navigator) {
       var k = localStorage.key(i);
       if (k && k.indexOf('adopted_') === 0) {
         var id = k.slice(8);
-        if (id) { location.replace('/animal/' + id); return; }
+        if (id) {
+          try { document.cookie = 'my_animal=' + id + '; path=/; max-age=31536000; SameSite=Lax'; } catch(e) {}
+          location.replace('/animal/' + id); return;
+        }
       }
     }
   } catch(e) {}

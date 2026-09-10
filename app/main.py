@@ -20,7 +20,7 @@ import os
 import secrets
 
 from fastapi import FastAPI, Form, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
@@ -134,7 +134,17 @@ def _page(path: str):
 
 
 @app.get("/")
-def index():
+def index(request: Request):
+    my = request.cookies.get("my_animal")
+    if my:
+        try:
+            conn = database.get_conn()
+            row = conn.execute("SELECT id FROM animals WHERE id = ?", (my,)).fetchone()
+            conn.close()
+            if row:
+                return RedirectResponse("/animal/" + my, status_code=302)
+        except Exception:
+            pass
     return _page(os.path.join(STATIC_DIR, "index.html"))
 
 
@@ -296,7 +306,9 @@ def api_claim(code: str, claim_req: ClaimRequest = None):
     )
     conn.commit()
     conn.close()
-    return {"ok": True, "animal_id": row["animal_id"], "nickname": nickname}
+    resp = JSONResponse({"ok": True, "animal_id": row["animal_id"], "nickname": nickname})
+    resp.set_cookie("my_animal", row["animal_id"], path="/", max_age=31536000, samesite="lax")
+    return resp
 
 
 @app.get("/api/animal/{animal_id}/latest")
