@@ -1834,6 +1834,13 @@ if ('caches' in window) {
     // 瓦片源（国内可用优先）：高德卫星+地名（国内直连快）→ Esri → Carto 逐级兜底
     var tileSources = [
       {
+        name: '卫星图 · 全球',
+        layers: [
+          { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', att: '影像 © Esri' },
+          { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', att: '地名 © Esri', opacity: .85 }
+        ]
+      },
+      {
         name: '高德卫星+地名',
         layers: [
           { url: 'https://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}', att: '影像 © 高德地图' },
@@ -1841,13 +1848,6 @@ if ('caches' in window) {
         ]
       },
       { name: '高德街道', url: 'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', att: '© 高德地图' },
-      {
-        name: '卫星+地名',
-        layers: [
-          { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', att: '影像 © Esri' },
-          { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', att: '地名 © Esri', opacity: .85 }
-        ]
-      },
       { name: 'Esri 街道', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', att: '© Esri' },
       { name: 'Carto', url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', att: '© CARTO' },
     ];
@@ -1868,7 +1868,7 @@ if ('caches' in window) {
       // 兜底：6 秒内没有任何瓦片加载成功（请求挂起），强制换源
       var stuck = setTimeout(function () {
         if (srcIdx < tileSources.length - 1) { srcIdx++; addTiles(); }
-      }, 6000);
+      }, 15000);
       activeLayers[0].once('load', function () { clearTimeout(stuck); });
       activeLayers[0].on('tileerror', function () {
         tileErrors++;
