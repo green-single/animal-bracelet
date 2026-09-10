@@ -37,6 +37,16 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 PHOTOS_DIR = os.path.join(STATIC_DIR, "assets", "photos")
 
 
+@app.get("/manifest.json")
+def manifest():
+    return FileResponse(os.path.join(STATIC_DIR, "manifest.json"), headers=_NO_CACHE_HEADERS)
+
+
+@app.get("/icons/{name}")
+def icons(name: str):
+    return FileResponse(os.path.join(STATIC_DIR, "icons", name), headers=_NO_CACHE_HEADERS)
+
+
 @app.get("/sw.js")
 def sw_file():
     """Service Worker（根路径，scope=/ 全站推送）"""
