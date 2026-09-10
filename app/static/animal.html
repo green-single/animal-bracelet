@@ -1069,19 +1069,10 @@ document.addEventListener('click', function(e) {
   var item = e.target && e.target.closest ? e.target.closest('.tab-item') : null;
   if (item) showTab(item.getAttribute('data-tab'));
 });
-// 彻底清除Service Worker与缓存（防止旧版SW拦截照片请求）
+// 注册 Service Worker（推送通知用；纯网络模式，不缓存页面/照片）
 if ('serviceWorker' in navigator) {
   try {
-    navigator.serviceWorker.getRegistrations().then(function(regs) {
-      regs.forEach(function(r) { r.unregister(); });
-    });
-  } catch(e) {}
-}
-if ('caches' in window) {
-  try {
-    caches.keys().then(function(keys) {
-      keys.forEach(function(k) { caches.delete(k); });
-    });
+    navigator.serviceWorker.register('/sw.js').catch(function() {});
   } catch(e) {}
 }
 </script>
@@ -1114,6 +1105,7 @@ if ('caches' in window) {
     <input id="codeInput" placeholder="输领养码查动物" maxlength="20">
     <button id="codeGo" type="button">查询</button>
     <button id="scanBtn" type="button" title="扫手环上的二维码">📷 扫码</button>
+    <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
   </div>
 </header>
 
@@ -3510,12 +3502,30 @@ document.addEventListener('DOMContentLoaded', function() {
           totalKm += R_ * 2 * Math.atan2(Math.sqrt(a_), Math.sqrt(1 - a_));
         }
       }
-      var letters = [
+      var defaultLetters = [
         { d: 0, t: '初遇之信', ico: '💌', body: '亲爱的<b>' + name + '</b>：<br>从今天起，你就是它的守护者了。它此刻在<b>' + (a.region_label || '远方') + '</b>，已经为你飞过了 <b>' + Math.round(totalKm) + ' 公里</b>。从今天起，每一公里都有你的目光。' },
         { d: 7, t: '第七夜的信', ico: '🌙', body: '亲爱的<b>' + name + '</b>：<br>整整七天了。你每天都会来看它，它在远方也许并不知道，但风知道，海知道。它带着你的目光，飞过了 ' + Math.round(totalKm) + ' 多公里——这段路，从此不再是它一个。' },
         { d: 30, t: '满月信', ico: '🌕', body: '亲爱的<b>' + name + '</b>：<br>一个月，月亮圆了一次。它在这个月里跨过了山海，你也从一个好奇的过客，变成了它真正的守护者。三十天的陪伴，是它旅途里最亮的一盏灯。' },
         { d: 100, t: '百日之约', ico: '💍', body: '亲爱的<b>' + name + '</b>：<br>一百天了。它飞过的每一公里，都有你的注视；它停下的每一片海，都有你的名字。这一百天不是数字，是你们之间悄悄签下的约定——无论它飞到哪里，都会有一份牵挂等在岸上。' }
       ];
+      var customLetters = {
+        turtle: [
+          { d: 0, t: '初遇之信', ico: '💌', body: '亲爱的<b>' + name + '</b>：<br>从今天起，你就是 Lumi 的守护者了。此刻它正在<b>捷克摩拉维亚</b>（48.8°N, 17.0°E）的麦田边——那里是它夏天的家。为了和你相遇，它已经独自飞过 <b>' + Math.round(totalKm) + ' 公里</b>，跨越了地中海与撒哈拉。从今天起，每一公里都有你的目光。' },
+          { d: 1, t: '麦田里的名字', ico: '🌾', body: '2025年6月5日，捷克南部的摩拉维亚，晨雾刚散。人们第一次叫它 Lumi 时，它正站在麦田边的电线上整理羽毛。它不知道名字意味着什么——只知道那天的太阳很好，小麦正在灌浆，葡萄园飘着新叶的味道。它在这个夏天，有了家，也有了名字。' },
+          { d: 3, t: 'turr-turr，早安', ico: '🍃', body: '欧斑鸠的叫声是温柔的 turr-turr，像在说：你好呀。Lumi 的每一天从麦田早餐开始——草籽、谷物，偶尔一颗浆果。它在田埂上踱步的样子，像在检查自己的一亩三分地。吃饱了，就飞到电线上晒太阳，把羽毛一根根理得整整齐齐。' },
+          { d: 7, t: '九月的密信', ico: '🍂', body: '九月一到，摩拉维亚的风变了味道。北方的凉意像一封密信，悄悄传到 Lumi 心里。它开始在黄昏时朝着南方张望——那是刻在欧斑鸠血液里的古老日历。9月的某一天，它最后看了一眼熟悉的麦田，张开翅膀，向南飞去。它没有回头。' },
+          { d: 10, t: '海没有树枝', ico: '🌊', body: '跨越地中海的那个夜晚，Lumi 已经飞了很久。海面上没有树枝、没有电线、没有可以歇脚的地方，它只能不停地扇动翅膀。月亮倒映在水面上，像一条银色的路。它数着自己的心跳，一下、两下、三下——直到海平线尽头，出现非洲的影子。' },
+          { d: 14, t: '金合欢树下', ico: '🌳', body: '2025年9月28日，Lumi 第一次落在非洲的土地上（13.7°N, 23.0°E）。从捷克出发，它一口气飞了几千公里。它停在第一棵金合欢树上，翅膀酸得像要掉下来，却忍不住叫了一声——我到了。旱季的萨赫勒，金色稀树草原一望无际，那是它接下来半年的家。' },
+          { d: 21, t: '旱季的晨光', ico: '☀️', body: '非洲的冬天和捷克完全不同。白天很热，雨水很少，但 Lumi 学会了生活：晨光里在金合欢树林找草籽，午后躲进树荫打盹，黄昏和成群的欧斑鸠去河边饮水。它在这里遇见了许多同类，它们交换着各自家乡的故事——只有 Lumi 知道，它心里的那张地图，指向北方。' },
+          { d: 30, t: '非洲的满月', ico: '🌕', body: '那晚的月亮又大又圆，把萨赫勒照得发白。Lumi 站在枝头，朝着北方叫了三声。没有人知道它在说什么——也许是问：家还好吗？也许是说：我在这里很好，别担心。月光把它的影子拉得很长，长到像一条通往捷克的路。' },
+          { d: 45, t: '向北的信号', ico: '🧭', body: '2026年4月，体内的日历再次翻页。Lumi 在晨光里梳理羽毛，然后展开翅膀——向北。金合欢树在身后越来越小，萨赫勒的旱季被它抛在翅膀下。它记得来时的路：先找到地中海，再沿着海岸，就能回到那片麦田。' },
+          { d: 60, t: '爱琴海的风', ico: '🌬️', body: '2026年4月28日，Lumi 飞过希腊的爱琴海（38.2°N, 24.2°E）。海风从岛屿之间穿过来，托着它的翅膀，像有人在后面推着它走。下面的岛屿像散落的翡翠，蓝色海水碎成细浪。它没有停下来——因为它闻到了北方的味道，家的味道。' },
+          { d: 90, t: '回家', ico: '🏡', body: '2026年5月，Lumi 降落在摩拉维亚的麦田里。离它去年离开的地方，只有几十公里。它认得每一棵杨树、每一条田埂——这里没有变，麦子刚刚返青，葡萄园刚冒出嫩芽。它绕着自己的领地飞了一圈，然后落下来，开始整理一个冬天的疲惫。回家了。' },
+          { d: 100, t: '麦田的约定', ico: '💞', body: '2026年的夏天，Lumi 在南摩拉维亚的布热茨拉夫附近安了家（48.84°N, 16.98°E）。这里有洪泛平原、有葡萄园、有吃不完的草籽。它开始筑巢，开始准备属于自己的小家庭。这一年的 ' + Math.round(totalKm) + ' 公里，它都讲给了风听——而风，讲给了路过的人。现在，轮到你了。' }
+        ]
+      };
+      var letters = customLetters[animalId] || defaultLetters;
+
       var html = '';
       letters.forEach(function (L) {
         if (days < 0) {
@@ -3685,5 +3695,91 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 
-  </body>
+  
+<script>
+(function () {
+  // 🔔 推送提醒（订阅制：谁开启，新足迹就推给谁）
+  var btn = document.getElementById('pushBtn');
+  if (!btn) return;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+    btn.style.display = 'none';
+    return;
+  }
+  var animalId = decodeURIComponent((location.pathname.match(/\/animal\/([^\/]+)/) || [, ''])[1] || '');
+  function b64toU8(b64) {
+    var raw = atob(b64);
+    var u8 = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) u8[i] = raw.charCodeAt(i);
+    return u8;
+  }
+  function setOn(on) {
+    if (on) { btn.classList.add('on'); btn.title = '已开启提醒（点击关闭）'; }
+    else { btn.classList.remove('on'); btn.title = '有新足迹时通知我'; }
+  }
+  // 初始状态
+  try {
+    navigator.serviceWorker.getRegistration().then(function (reg) {
+      if (reg && reg.pushManager) return reg.pushManager.getSubscription();
+    }).then(function (sub) { setOn(!!sub); }).catch(function () {});
+  } catch (e) {}
+  btn.onclick = function () {
+    if (btn.classList.contains('on')) {
+      navigator.serviceWorker.getRegistration().then(function (reg) {
+        if (reg && reg.pushManager) return reg.pushManager.getSubscription();
+      }).then(function (sub) {
+        if (sub) return sub.unsubscribe();
+      }).then(function () { setOn(false); }).catch(function () {});
+      return;
+    }
+    Notification.requestPermission().then(function (perm) {
+      if (perm !== 'granted') { alert('请先允许通知权限，才能收到它的新足迹提醒'); return; }
+      var pubKey = null;
+      return fetch('/api/push/vapid-public-key').then(function (r) { return r.json(); }).then(function (d) { pubKey = d.public_key; })
+        .then(function () { return navigator.serviceWorker.register('/sw.js'); })
+        .then(function (reg) { return reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64toU8(pubKey) }); })
+        .then(function (sub) {
+          var p256dh = sub.getKey('p256dh') ? btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('p256dh')))) : '';
+          var auth = sub.getKey('auth') ? btoa(String.fromCharCode.apply(null, new Uint8Array(sub.getKey('auth')))) : '';
+          return fetch('/api/push/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ animal_id: animalId, endpoint: sub.endpoint, p256dh: p256dh, auth: auth }) });
+        })
+        .then(function () { setOn(true); })
+        .catch(function (e) { console.log('push err', e); });
+    });
+  };
+})();
+</script>
+
+
+<script>
+(function () {
+  // 页面内兜底提醒（国内直连可用，不依赖系统推送服务）：网页开着时每5分钟检查新足迹
+  if (!('Notification' in window)) return;
+  var animalId = decodeURIComponent((location.pathname.match(/\/animal\/([^\/]+)/) || [, ''])[1] || '');
+  if (!animalId) return;
+  var lastTs = null;
+  function checkUpdate() {
+    fetch('/api/animal/' + encodeURIComponent(animalId) + '/latest')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var ts = d.latest_ts;
+        if (ts && lastTs && ts !== lastTs && Notification.permission === 'granted') {
+          try {
+            var n = new Notification('🐾 ' + (d.name || '它') + ' 有了新足迹', {
+              body: '最新定位：' + (d.lat != null ? d.lat.toFixed(2) + '°N, ' + d.lon.toFixed(2) + '°E' : '新坐标') + '，点开看看',
+              icon: '/static/icons/icon-192.png',
+            });
+            n.onclick = function () { window.focus(); window.scrollTo(0, 0); };
+          } catch (e) {}
+        }
+        lastTs = ts || lastTs;
+      }).catch(function () {});
+  }
+  if (Notification.permission === 'granted') {
+    checkUpdate();
+    setInterval(checkUpdate, 300000);
+  }
+})();
+</script>
+
+</body>
 </html>

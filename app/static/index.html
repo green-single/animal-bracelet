@@ -285,12 +285,11 @@ window.initBlindWall = function initBlindWall() {
   } catch(e) {}
 };
 document.addEventListener('DOMContentLoaded', function() { window.initBlindWall(); });
-// 彻底清除Service Worker与缓存
+// 注册 Service Worker（推送通知用；纯网络模式）
 if ('serviceWorker' in navigator) {
-  try { navigator.serviceWorker.getRegistrations().then(function(regs) { regs.forEach(function(r) { r.unregister(); }); }); } catch(e) {}
-}
-if ('caches' in window) {
-  try { caches.keys().then(function(keys) { keys.forEach(function(k) { caches.delete(k); }); }); } catch(e) {}
+  try {
+    navigator.serviceWorker.register('/sw.js').catch(function() {});
+  } catch(e) {}
 }
 </script>
 </head>

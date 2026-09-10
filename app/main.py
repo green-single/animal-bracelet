@@ -37,6 +37,12 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 PHOTOS_DIR = os.path.join(STATIC_DIR, "assets", "photos")
 
 
+@app.get("/sw.js")
+def sw_file():
+    """Service Worker（根路径，scope=/ 全站推送）"""
+    return FileResponse(os.path.join(STATIC_DIR, "sw.js"), headers=_NO_CACHE_HEADERS)
+
+
 @app.get("/photos/{filename}")
 def photo_file(filename: str):
     """照片文件（独立路径，绕过Service Worker对/static/的拦截）"""
@@ -93,6 +99,13 @@ def api_sync():
         }
     except Exception as e:
         results["movebank_all"] = {"error": str(e)}
+
+    # 数据同步完成后，推送新足迹通知给已开启提醒的用户
+    try:
+        push_result = _push_updates_to_all()
+        results["push"] = push_result
+    except Exception as e:
+        results["push"] = {"error": str(e)}
 
     return {"ok": True, "results": results}
 
@@ -276,6 +289,21 @@ def api_claim(code: str, claim_req: ClaimRequest = None):
     return {"ok": True, "animal_id": row["animal_id"], "nickname": nickname}
 
 
+@app.get("/api/animal/{animal_id}/latest")
+def api_animal_latest(animal_id: str):
+    """轻量接口：只返回动物名 + 最新定位时间（页面轮询用，避免全量下载）"""
+    conn = database.get_conn()
+    row = conn.execute("SELECT name FROM animals WHERE id=?", (animal_id,)).fetchone()
+    if row is None:
+        conn.close()
+        raise HTTPException(status_code=404, detail="动物不存在")
+    p = conn.execute(
+        "SELECT ts, lat, lon FROM track_points WHERE animal_id=? ORDER BY ts DESC LIMIT 1", (animal_id,)
+    ).fetchone()
+    conn.close()
+    return {"name": row["name"], "latest_ts": p["ts"] if p else None, "lat": p["lat"] if p else None, "lon": p["lon"] if p else None}
+
+
 @app.get("/api/animal/{animal_id}")
 def api_animal(animal_id: str):
     conn = database.get_conn()
@@ -306,3 +334,112 @@ def api_animal(animal_id: str):
         "track": geojson,
         "times": [p["ts"] for p in points],
     }
+
+
+# ---------- PWA 推送 ----------
+
+def _load_vapid():
+    p = os.path.join(config.DATA_DIR, "vapid.json")
+    if not os.path.exists(p):
+        return None
+    with open(p, encoding="utf-8") as f:
+        return json.load(f)
+
+
+class PushSub(BaseModel):
+    animal_id: str = ""
+    endpoint: str
+    p256dh: str = ""
+    auth: str = ""
+
+
+@app.get("/api/push/vapid-public-key")
+def push_public_key():
+    v = _load_vapid()
+    if not v:
+        raise HTTPException(status_code=500, detail="VAPID 未配置")
+    return {"public_key": v["public_key"]}
+
+
+@app.post("/api/push/subscribe")
+def push_subscribe(sub: PushSub):
+    conn = database.get_conn()
+    conn.execute(
+        "INSERT OR REPLACE INTO push_subs (animal_id, endpoint, p256dh, auth) VALUES (?,?,?,?)",
+        (sub.animal_id, sub.endpoint, sub.p256dh, sub.auth),
+    )
+    conn.commit()
+    conn.close()
+    return {"ok": True}
+
+
+@app.post("/api/push/unsubscribe")
+def push_unsubscribe(sub: PushSub):
+    if not sub.endpoint or sub.endpoint == "local":
+        return {"ok": True}
+    conn = database.get_conn()
+    conn.execute("DELETE FROM push_subs WHERE endpoint=?", (sub.endpoint,))
+    conn.commit()
+    conn.close()
+    return {"ok": True}
+
+
+def _send_push_to_sub(sub, title, body, url):
+    v = _load_vapid()
+    if not v:
+        return None
+    try:
+        from pywebpush import webpush, WebPushException
+        info = {
+            "endpoint": sub["endpoint"],
+            "keys": {"p256dh": sub["p256dh"], "auth": sub["auth"]},
+        }
+        webpush(
+            subscription_info=info,
+            data=json.dumps({"title": title, "body": body, "url": url}, ensure_ascii=False),
+            vapid_private_key=v["private_key"],
+            vapid_claims={"sub": v["subject"]},
+            timeout=12,
+        )
+        return True
+    except WebPushException as e:
+        if e.response is not None and e.response.status_code in (404, 410):
+            return "gone"  # 订阅已失效
+        return False
+    except Exception:
+        return False
+
+
+def _push_updates_to_all():
+    """数据更新后，给所有开启提醒的用户推送。"""
+    try:
+        conn = database.get_conn()
+        subs = conn.execute("SELECT * FROM push_subs").fetchall()
+        conn.close()
+    except Exception:
+        return {"sent": 0, "total": 0}
+    sent = 0
+    gone = []
+    for s in subs:
+        r = _send_push_to_sub(s, "🐾 它有了新足迹", "追踪数据刚刚更新，快来看看它飞到哪里了", "/")
+        if r is True:
+            sent += 1
+        elif r == "gone":
+            gone.append(s["endpoint"])
+    if gone:
+        try:
+            conn = database.get_conn()
+            for ep in gone:
+                conn.execute("DELETE FROM push_subs WHERE endpoint=?", (ep,))
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+    return {"sent": sent, "total": len(subs)}
+
+
+@app.post("/api/push/send")
+def push_send():
+    """给所有订阅者推送（数据更新后自动调用，也可手动测试）。"""
+    r = _push_updates_to_all()
+    return {"ok": True, **r}

@@ -36,6 +36,15 @@ CREATE TABLE IF NOT EXISTS track_points (
 );
 
 CREATE INDEX IF NOT EXISTS idx_track_animal ON track_points(animal_id);
+CREATE TABLE IF NOT EXISTS push_subs (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    animal_id  TEXT NOT NULL DEFAULT '',
+    endpoint   TEXT NOT NULL UNIQUE,
+    p256dh     TEXT NOT NULL,
+    auth       TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now'))
+);
+
 """
 
 
