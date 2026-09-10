@@ -2,10 +2,23 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%231b4332%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2722%27%20fill%3D%27none%27%20stroke%3D%27%2340916c%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2713%27%20fill%3D%27none%27%20stroke%3D%27%2374c69d%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%275%27%20fill%3D%27%23d8f3dc%27%2F%3E%3Cpath%20d%3D%27M32%2032%20L45%2018%27%20stroke%3D%27%23d8f3dc%27%20stroke-width%3D%273%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fsvg%3E">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>动物追踪手环 · 扫码领养真实迁徙的动物</title>
 <meta name="description" content="扫描手环上的二维码，领养一只真实存在的动物，查看它的迁徙轨迹、照片和故事。数据来自公开科研数据库。">
 <style>
+  #pageLoader{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 38%,#14532d,#0b2e1d);transition:opacity .6s ease}
+  #pageLoader.pl-done{opacity:0;pointer-events:none}
+  .pl-radar{width:120px;height:120px;position:relative;display:flex;align-items:center;justify-content:center}
+  .pl-radar span{position:absolute;inset:0;border:2px solid rgba(116,198,157,.55);border-radius:50%;animation:plRipple 2s ease-out infinite}
+  .pl-radar span:nth-child(2){animation-delay:.7s}
+  .pl-radar span:nth-child(3){animation-delay:1.4s}
+  .pl-radar i{width:12px;height:12px;border-radius:50%;background:#d8f3dc;box-shadow:0 0 20px #74c69d;position:relative;z-index:2;animation:plPulse 1.2s ease-in-out infinite}
+  .pl-text{margin-top:24px;color:#a7d7c4;font-size:15px;letter-spacing:3px;animation:plText 1.6s ease-in-out infinite}
+  @keyframes plRipple{0%{transform:scale(.35);opacity:.9}100%{transform:scale(1);opacity:0}}
+  @keyframes plPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}
+  @keyframes plText{0%,100%{opacity:.55}50%{opacity:1}}
+
   :root {
     --bg: #F4F3EE; --card: #FFFFFF; --ink: #1A1B1C; --sub: #6B7280;
     --accent: #12796F; --accent-soft: rgba(18,121,111,0.10);
@@ -282,6 +295,7 @@ if ('caches' in window) {
 </script>
 </head>
 <body>
+  <div id="pageLoader"><div class="pl-radar"><span></span><span></span><span></span><i></i></div><div class="pl-text">正在追踪它的位置…</div></div>
 <header>
   <div class="logo">爪</div>
   <div class="brand">动物追踪手环<small>扫码领养一只真实迁徙的动物</small></div>
@@ -423,6 +437,11 @@ document.addEventListener('DOMContentLoaded', function() {
     inp.addEventListener('keydown', function(e) { if (e.key === 'Enter') goByCode(); });
   }
 });
+</script>
+<script>
+function hidePageLoader(){var el=document.getElementById('pageLoader');if(!el)return;el.classList.add('pl-done');setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},700);}
+window.addEventListener('load', function(){ setTimeout(hidePageLoader, 300); });
+setTimeout(hidePageLoader, 5000); // 兜底
 </script>
 </body>
 </html>
