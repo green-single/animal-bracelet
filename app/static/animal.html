@@ -3,17 +3,12 @@
 <head>
 <meta charset="UTF-8">
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%231b4332%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2722%27%20fill%3D%27none%27%20stroke%3D%27%2340916c%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2713%27%20fill%3D%27none%27%20stroke%3D%27%2374c69d%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%275%27%20fill%3D%27%23d8f3dc%27%2F%3E%3Cpath%20d%3D%27M32%2032%20L45%2018%27%20stroke%3D%27%23d8f3dc%27%20stroke-width%3D%273%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fsvg%3E">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <meta name="theme-color" content="#12796F">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-  <meta name="theme-color" content="#12796F">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> content="width=device-width, initial-scale=1.0">
 <title>她在哪 · 动物追踪手环</title>
 <link rel="stylesheet" href="/static/assets/lib/leaflet.css">
 <style>#pageLoader{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 38%,#14532d,#0b2e1d);transition:opacity .6s ease}
@@ -785,6 +780,20 @@ padding: 10px 22px; border: none; border-radius: 22px; font-size: 13.5px; font-w
 .card-close { background: rgba(255,255,255,.16); color: #fff; }
 .card-download { background: linear-gradient(135deg, #0E7C66, #0A5C4C); color: #fff; }
 .card-share { background: linear-gradient(135deg, #F59E0B, #D97706); color: #fff; }
+.live-strip { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 14px 2px; }
+.live-chip { display: flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 999px; background: linear-gradient(135deg, rgba(14,124,102,.12), rgba(6,182,212,.08)); border: 1px solid rgba(14,124,102,.18); font-size: 12px; font-weight: 600; color: #0E5C4B; }
+.live-chip .lc-ico { font-size: 14px; }
+.live-chip.lc-flame { background: linear-gradient(135deg, rgba(249,115,22,.14), rgba(245,158,11,.10)); border-color: rgba(249,115,22,.25); color: #B45309; }
+.pc-sec { margin-top: 16px; }
+.pc-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.pc-wall { display: flex; flex-direction: column; gap: 10px; }
+.postcard { background: linear-gradient(160deg, #fffdf7, #fdf6e8); border: 1px solid #eee4cd; border-radius: 14px; padding: 14px 16px 12px; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,.05); }
+.postcard .pc-stamp { position: absolute; right: 12px; top: 12px; width: 46px; height: 46px; border: 2px dashed rgba(14,124,102,.45); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 9.5px; color: #0E7C66; text-align: center; line-height: 1.35; transform: rotate(6deg); font-weight: 600; }
+.postcard .pc-place { font-size: 15px; font-weight: 800; color: #1A1B1C; padding-right: 56px; }
+.postcard .pc-sub { font-size: 11px; color: var(--sub); margin-top: 2px; }
+.postcard .pc-note { font-size: 12px; line-height: 1.7; margin-top: 8px; color: #374151; }
+.postcard .pc-foot { font-size: 10.5px; color: #a8946b; margin-top: 8px; text-align: right; font-style: italic; }
+.postcard .pc-lines { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: repeating-linear-gradient(90deg, rgba(14,124,102,.15) 0 8px, transparent 8px 16px); border-radius: 0 0 14px 14px; }
 .letter-sec { margin-top: 16px; }
 .letter-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
 .letter-list { display: flex; flex-direction: column; gap: 8px; }
@@ -1182,6 +1191,11 @@ if ('serviceWorker' in navigator) {
   </div>
 
   <div class="map-sec">
+    <div class="live-strip" id="liveStrip">
+      <span class="live-chip lc-flame" id="flameChip" style="display:none;"><span class="lc-ico">🔥</span><span id="flameNum"></span></span>
+      <span class="live-chip" id="stateChip" style="display:none;"><span class="lc-ico" id="stateIco">🕊️</span><span id="stateTxt"></span></span>
+      <span class="live-chip" id="weatherChip" style="display:none;"><span class="lc-ico">🌤️</span><span id="weatherTxt"></span></span>
+    </div>
     <div class="map-head">
       <div class="avatar" id="mapAvatar"></div>
       <div>
@@ -1364,6 +1378,11 @@ if ('serviceWorker' in navigator) {
       </div>
     </div>
 
+    <!-- 明信片收藏 -->
+    <div class="pc-sec" id="pcSection" style="display:none;">
+      <div class="pc-title">🎑 明信片收藏 <span style="font-size:11px;color:var(--sub);font-weight:400;">它到过的地方，都寄给你</span></div>
+      <div class="pc-wall" id="postcardWall"></div>
+    </div>
     <!-- 纪念信 -->
     <div class="letter-sec" id="letterSection">
       <div class="letter-title">💌 写给守护者的信</div>
@@ -3526,6 +3545,97 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
+    // ========== B2. Live 状态条（陪伴火苗 / 它现在的状态 / 头顶天气） ==========
+    try {
+      var lS = document.getElementById('liveStrip');
+      if (lS && pts.length) {
+        // 🔥 陪伴火苗
+        var flameN = 0;
+        try {
+          var _flKey = 'flame_' + animalId;
+          var _fl = { last: '', n: 0 };
+          try { _fl = JSON.parse(localStorage.getItem(_flKey)) || _fl; } catch(e) {}
+          var _today = new Date().toDateString();
+          var _yest = new Date(Date.now() - 86400000).toDateString();
+          if (_fl.last !== _today) {
+            if (_fl.last === _yest) { _fl.n += 1; } else { _fl.n = 1; }
+            _fl.last = _today;
+            try { localStorage.setItem(_flKey, JSON.stringify(_fl)); } catch(e) {}
+          }
+          flameN = _fl.n;
+        } catch(e) {}
+        if (flameN > 0) {
+          var fC = document.getElementById('flameChip'), fN = document.getElementById('flameNum');
+          if (fC && fN) {
+            fN.textContent = flameN === 1 ? '今天开始陪伴它' : ('连续陪伴 ' + flameN + ' 天');
+            fC.style.display = 'flex';
+          }
+        }
+        if (flameN >= 7 && ai && ai.date) {
+          setTimeout(function() { try { if (window._unlockAch) window._unlockAch('flame7', '七日之火'); } catch(e){} }, 3500);
+        }
+        // 🕊️ 它现在的状态（按最近移动 + 当地时间推断）
+        var lastPt2 = pts[pts.length - 1];
+        var ll = null;
+        try {
+          if (typeof lastPt2 === 'number') { ll = [lastPt2, lastPt2]; }
+          else if (Array.isArray(lastPt2) && typeof lastPt2[0] === 'number' && typeof lastPt2[1] === 'number') { ll = [lastPt2[0], lastPt2[1]]; }
+        } catch(e) {}
+        var _mvTxt = '';
+        try { var _dynEl = document.getElementById('todayDyn'); _mvTxt = _dynEl ? _dynEl.textContent : ''; } catch(e) {}
+        var _moving = null;
+        var _kmM = _mvTxt.match(/(\d+)\s*km/);
+        if (_kmM) { var _km = parseFloat(_kmM[1] || '0'); _moving = _km > 10 ? 2 : (_km > 1 ? 1 : 0); }
+        var _hour = new Date().getHours();
+        try {
+          if (ll && typeof ll[1] === 'number') {
+            var _utc = new Date();
+            _hour = (_utc.getUTCHours() + Math.round(ll[1] / 15) + 24) % 24;
+          }
+        } catch(e) {}
+        var _day = _hour >= 5 && _hour < 20;
+        var stTxt = '', stIco = '';
+        if (_moving === 2) { stTxt = '正乘着气流赶路'; stIco = '✈️'; }
+        else if (_moving === 1) { stTxt = '正在移动，寻找方向'; stIco = '🧭'; }
+        else if (_day) { stTxt = '正在休息，梳理羽毛'; stIco = '🕊️'; }
+        else { stTxt = '在夜色中安睡'; stIco = '🌙'; }
+        var sC = document.getElementById('stateChip'), sI = document.getElementById('stateIco'), sT = document.getElementById('stateTxt');
+        if (sC && sI && sT) { sI.textContent = stIco; sT.textContent = stTxt; sC.style.display = 'flex'; }
+        // 🌤️ 它头顶的天气（Open-Meteo 免费接口）
+        if (ll && typeof ll[0] === 'number' && typeof ll[1] === 'number') {
+          var wT = document.getElementById('weatherTxt'), wC = document.getElementById('weatherChip');
+          if (wT && wC) {
+            var wxTries = 0;
+            function wxDo(d) {
+              var w = d && d.current_weather;
+              if (!w || !wT || !wC) return;
+              var cd = w.weathercode || 0, wi = ['🌤️', '晴'];
+              if (cd === 0) wi = ['☀️', '晴'];
+              else if (cd <= 2) wi = ['⛅', '多云'];
+              else if (cd === 3) wi = ['☁️', '阴'];
+              else if (cd <= 48) wi = ['🌫️', '雾'];
+              else if (cd <= 57) wi = ['🌦️', '毛毛雨'];
+              else if (cd <= 67) wi = ['🌧️', '雨'];
+              else if (cd <= 77) wi = ['🌨️', '雪'];
+              else if (cd <= 82) wi = ['🌦️', '阵雨'];
+              else wi = ['⛈️', '雷雨'];
+              wT.textContent = Math.round(w.temperature) + '°C · ' + wi[1];
+              wC.querySelector('.lc-ico').textContent = wi[0];
+              wC.style.display = 'flex';
+            }
+            function wxGo() {
+              wxTries++;
+              fetch('https://api.open-meteo.com/v1/forecast?latitude=' + ll[0].toFixed(2) + '&longitude=' + ll[1].toFixed(2) + '&current_weather=true')
+                .then(function(r) { return r.json(); })
+                .then(wxDo)
+                .catch(function() { if (wxTries < 2) setTimeout(wxGo, 2500); });
+            }
+            wxGo();
+          }
+        }
+      }
+    } catch(e) { console.log('liveStrip err', e); }
+
     // ========== C. 纪念信 ==========
     var letterList = document.getElementById('letterList');
     if (letterList) {
@@ -3745,6 +3855,20 @@ document.addEventListener('DOMContentLoaded', function() {
           var lv2 = null;
           if (curReg2 && curReg2 !== lastReg2) {
             try { localStorage.setItem('lr_' + animalId, curReg2.name); } catch (e) {}
+            try {
+              var _pcKey2 = 'pc_' + animalId, _cards = [];
+              try { _cards = JSON.parse(localStorage.getItem(_pcKey2)) || []; } catch(e) {}
+              _cards.unshift({
+                place: curReg2.name,
+                date: liveS2.fmtD,
+                ico: '📍',
+                note: '<b>' + (a.name || '它') + '</b>寄来一张明信片：它到了<b>' + curReg2.name + '</b>附近（' + liveS2.lat + liveS2.lonH + '）。这是它旅程里一个新的坐标，新的故事。'
+              });
+              _cards = _cards.slice(0, 9);
+              try { localStorage.setItem(_pcKey2, JSON.stringify(_cards)); } catch(e) {}
+            } catch(e) {}
+
+            try { localStorage.setItem('lr_' + animalId, curReg2.name); } catch (e) {}
             lv2 = { ico: '📍', t: '来信：它到了一个新地方', body: '<b>' + (a.name || '它') + '</b>到了<b>' + curReg2.name + '</b>附近（' + liveS2.lat + liveS2.latH + ', ' + liveS2.lon + liveS2.lonH + '）！' + curReg2.txt + '（' + liveS2.freshTxt + '）它已累计' + (totalKm > 200 ? '飞了' : '移动了') + ' <b>' + liveS2.totalKm + ' 公里</b>，与你相伴 ' + liveS2.days + ' 天。' };
           } else {
             var _todayS = new Date().toDateString();
@@ -3770,6 +3894,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
       letterList.innerHTML = html;
+      try {
+        var _pcSec = document.getElementById('pcSection');
+        var _pcWall = document.getElementById('postcardWall');
+        if (_pcSec && _pcWall) {
+          var _pcKey3 = 'pc_' + animalId, _cards3 = [];
+          try { _cards3 = JSON.parse(localStorage.getItem(_pcKey3)) || []; } catch(e) {}
+          if (_cards3.length) {
+            var _pcHtml = '';
+            _cards3.forEach(function(cd) {
+              _pcHtml += '<div class="postcard"><div class="pc-stamp">' + (cd.ico || '📍') + '<br>NEW<br>PLACE</div><div class="pc-place">' + (cd.place || '远方') + '</div><div class="pc-sub">' + (cd.date || '') + '</div><div class="pc-note">' + (cd.note || '') + '</div><div class="pc-foot">From the journey of ' + (a.name || '') + ' ✈️</div><div class="pc-lines"></div></div>';
+            });
+            _pcWall.innerHTML = _pcHtml;
+            _pcSec.style.display = 'block';
+          }
+        }
+      } catch(e) { console.log('postcard err', e); }
       try {
         if (window._hasNewLetter) { var mb = document.getElementById('mineBadge'); if (mb) mb.classList.add('show'); }
       } catch(e) {}
