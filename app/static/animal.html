@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%231b4332%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2722%27%20fill%3D%27none%27%20stroke%3D%27%2340916c%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2713%27%20fill%3D%27none%27%20stroke%3D%27%2374c69d%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%275%27%20fill%3D%27%23d8f3dc%27%2F%3E%3Cpath%20d%3D%27M32%2032%20L45%2018%27%20stroke%3D%27%23d8f3dc%27%20stroke-width%3D%273%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fsvg%3E">
-<meta name="viewport"
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <meta name="theme-color" content="#12796F">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1376,7 +1376,7 @@ if ('serviceWorker' in navigator) {
     </div>
 
     <!-- 明信片收藏 -->
-    <div class="pc-sec" id="pcSection" style="display:none;">
+    <div class="pc-sec" id="pcSection">
       <div class="pc-title">🎑 明信片收藏 <span style="font-size:11px;color:var(--sub);font-weight:400;">它到过的地方，都寄给你</span></div>
       <div class="pc-wall" id="postcardWall"></div>
     </div>
@@ -3897,14 +3897,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (_pcSec && _pcWall) {
           var _pcKey3 = 'pc_' + animalId, _cards3 = [];
           try { _cards3 = JSON.parse(localStorage.getItem(_pcKey3)) || []; } catch(e) {}
+          var _pcHtml = '';
           if (_cards3.length) {
-            var _pcHtml = '';
             _cards3.forEach(function(cd) {
               _pcHtml += '<div class="postcard"><div class="pc-stamp">' + (cd.ico || '📍') + '<br>NEW<br>PLACE</div><div class="pc-place">' + (cd.place || '远方') + '</div><div class="pc-sub">' + (cd.date || '') + '</div><div class="pc-note">' + (cd.note || '') + '</div><div class="pc-foot">From the journey of ' + (a.name || '') + ' ✈️</div><div class="pc-lines"></div></div>';
             });
-            _pcWall.innerHTML = _pcHtml;
-            _pcSec.style.display = 'block';
+          } else {
+            _pcHtml = '<div style="font-size:12px;color:var(--sub);padding:12px 14px;border:1.5px dashed rgba(14,124,102,.3);border-radius:14px;line-height:1.7;">📮 还没有明信片。<br>当 <b>' + (a.name || '它') + '</b> 抵达一个新的地方，会自动给你寄来一张明信片，收藏在这里。最多 9 张。</div>';
           }
+          _pcWall.innerHTML = _pcHtml;
+          _pcSec.style.display = 'block';
         }
       } catch(e) { console.log('postcard err', e); }
       try {
