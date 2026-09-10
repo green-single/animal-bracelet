@@ -738,6 +738,21 @@ background: rgba(0,0,0,.92); z-index: 9998; flex-direction: column; align-items:
 .scan-tip { color: #fff; font-size: 14px; opacity: .9; text-align: center; padding: 0 24px; line-height: 1.7; }
 .scan-cancel { padding: 10px 30px; border: none; border-radius: 22px; background: rgba(255,255,255,.14); color: #fff; font-size: 15px; cursor: pointer; }
 @media (max-width: 560px) {
+/* 手机端：header 精简 */
+header { padding: 10px 12px; gap: 8px; }
+.code-search input { display: none; }
+.brand { font-size: 14px; }
+.brand small { font-size: 10px; }
+.code-search button { padding: 8px 11px; font-size: 12px; border-radius: 10px; }
+/* 地图头部信息更大更透气 */
+.map-head { padding: 14px 14px 10px; gap: 10px; }
+.map-head .avatar { width: 50px; height: 50px; }
+.map-head .t { font-size: 18px; }
+.map-head .s { font-size: 12px; }
+.view-btns { gap: 5px; }
+.view-btn { padding: 7px 11px; font-size: 11.5px; }
+#map { height: 380px; }
+
 .code-search input { width: 92px; }
 .code-search button { padding: 7px 9px; }
 }
@@ -978,7 +993,13 @@ transition: transform .15s ease;
 .diary-go { font-size: 11px; font-weight: 700; color: #12796F; }
 .diary-empty { padding: 30px; text-align: center; color: #9ca3af; font-size: 13px; }
 .tab-fade{animation:tabFade .45s ease}
-@keyframes tabFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}</style>
+@keyframes tabFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* PWA 添加到主屏幕引导 */
+#pwaTip{display:none;margin:10px 14px 0;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,rgba(18,121,111,.12),rgba(18,121,111,.2));border:1px solid rgba(18,121,111,.3);font-size:12.5px;color:#0A5C4C;line-height:1.6;position:relative}
+#pwaTip b{color:#0E7C66}
+#pwaTip .pwa-x{position:absolute;top:8px;right:10px;border:none;background:transparent;font-size:14px;color:#0A5C4C;cursor:pointer;padding:4px}
+
+</style>
 <link rel="manifest" href="/static/manifest.webmanifest">
 <meta name="theme-color" content="#0E7C66">
 <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
@@ -1120,7 +1141,7 @@ if ('serviceWorker' in navigator) {
     <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
   </div>
 </header>
-
+<div id="pwaTip"><b>📲 把它装到桌面</b>，以后像 App 一样一键打开<br><span id="pwaTipHow"></span><button class="pwa-x" onclick="dismissPwaTip()">✕</button></div>
 <main>
 <!-- Tab 底部导航 -->
   <div class="tab-bar" id="tabBar">
@@ -3981,5 +4002,28 @@ document.addEventListener('DOMContentLoaded', function() {
 })();
 </script>
 
+
+
+
+
+<script>
+(function(){
+  try{
+    if(localStorage.getItem('pwaTipDismissed')) return;
+    var ua = navigator.userAgent;
+    var isIOS = /iphone|ipad|ipod/i.test(ua);
+    var isAndroid = /android/i.test(ua);
+    if(!isIOS && !isAndroid) return;
+    var el = document.getElementById('pwaTip');
+    if(!el) return;
+    var how = document.getElementById('pwaTipHow');
+    if(how) how.innerHTML = isIOS
+      ? '点浏览器底部 <b>分享按钮</b> → <b>添加到主屏幕</b>'
+      : '点浏览器右上角 <b>⋮</b> → <b>安装应用 / 添加到主屏幕</b>';
+    el.style.display = 'block';
+    window.dismissPwaTip = function(){ el.style.display='none'; try{localStorage.setItem('pwaTipDismissed','1');}catch(e){} };
+  }catch(e){}
+})();
+</script>
 </body>
 </html>
