@@ -477,24 +477,35 @@ setTimeout(hidePageLoader, 5000); // 兜底
 
 
 
+
 <script>
 (function(){
   try{
-    if(localStorage.getItem('pwaTipDismissed')) return;
     var ua = navigator.userAgent;
+    var isWechat = /MicroMessenger/i.test(ua);
+    // 已经是"主屏幕App"模式 → 不再提示
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return;
+    if (localStorage.getItem('pwaTipDismissed')) return;
     var isIOS = /iphone|ipad|ipod/i.test(ua);
     var isAndroid = /android/i.test(ua);
     if(!isIOS && !isAndroid) return;
     var el = document.getElementById('pwaTip');
     if(!el) return;
     var how = document.getElementById('pwaTipHow');
-    if(how) how.innerHTML = isIOS
-      ? '点浏览器底部 <b>分享按钮</b> → <b>添加到主屏幕</b>'
-      : '点浏览器右上角 <b>⋮</b> → <b>安装应用 / 添加到主屏幕</b>';
+    if(how){
+      if(isWechat){
+        how.innerHTML = '微信里不能装到桌面：<b>点右上角 ⋯ → 在浏览器打开</b>，然后在浏览器里 <b>添加到主屏幕</b>（以后不用再扫码）';
+      } else if(isIOS){
+        how.innerHTML = '点浏览器底部 <b>分享按钮</b> → <b>添加到主屏幕</b>';
+      } else {
+        how.innerHTML = '点浏览器右上角 <b>⋮</b> → <b>安装应用 / 添加到主屏幕</b>';
+      }
+    }
     el.style.display = 'block';
     window.dismissPwaTip = function(){ el.style.display='none'; try{localStorage.setItem('pwaTipDismissed','1');}catch(e){} };
   }catch(e){}
 })();
 </script>
+
 </body>
 </html>

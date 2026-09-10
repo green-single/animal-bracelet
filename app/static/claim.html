@@ -534,6 +534,9 @@
     <div class="icon">🏠</div>
     <h2>这只动物已经有主人了</h2>
     <p>每一只动物只有一条领养码，一人领养后即失效，这是为了保护这份专属感。<br><br>你仍然可以去看看它的故事和旅程。</p>
+    <div id="wechatClaimTip" style="display:none;margin-top:18px;padding:12px 14px;border-radius:12px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);font-size:12.5px;color:#B45309;line-height:1.7;text-align:left;">
+      📲 想把它装到桌面随时看？<b>点右上角 ⋯ → 在浏览器打开</b>，再在浏览器里添加到主屏幕
+    </div>
     <button class="btn" id="viewBtn" style="margin-top:28px;">去看看它 →</button>
   </div>
 </div>
@@ -617,7 +620,12 @@
 
       // 已被领养
       if (res.d.status === 'claimed') {
-        document.getElementById('viewBtn').addEventListener('click', function() {
+              try {
+        if (/MicroMessenger/i.test(navigator.userAgent)) {
+          document.getElementById('wechatClaimTip').style.display = 'block';
+        }
+      } catch(e) {}
+      document.getElementById('viewBtn').addEventListener('click', function() {
           location.href = '/animal/' + animalData.id;
         });
         showStage('stageClaimed');
