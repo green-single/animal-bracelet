@@ -478,12 +478,26 @@ setTimeout(hidePageLoader, 5000); // 兜底
 
 
 
+
 <script>
 (function(){
+  function copyText(txt){
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        return navigator.clipboard.writeText(txt).then(function(){return true;}).catch(function(){return false;});
+      }
+      // 降级
+      var ta = document.createElement('textarea');
+      ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); }catch(e){}
+      document.body.removeChild(ta);
+      return Promise.resolve(true);
+    }catch(e){ return Promise.resolve(false); }
+  }
   try{
     var ua = navigator.userAgent;
     var isWechat = /MicroMessenger/i.test(ua);
-    // 已经是"主屏幕App"模式 → 不再提示
     if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return;
     if (localStorage.getItem('pwaTipDismissed')) return;
     var isIOS = /iphone|ipad|ipod/i.test(ua);
@@ -494,7 +508,7 @@ setTimeout(hidePageLoader, 5000); // 兜底
     var how = document.getElementById('pwaTipHow');
     if(how){
       if(isWechat){
-        how.innerHTML = '微信里不能装到桌面：<b>点右上角 ⋯ → 在浏览器打开</b>，然后在浏览器里 <b>添加到主屏幕</b>（以后不用再扫码）';
+        how.innerHTML = '微信里不能装到桌面：<b>点右上角 ⋯ → 在浏览器打开</b>，然后在浏览器里 <b>添加到主屏幕</b><br><span id="copyLinkTip" style="font-size:11px;color:#8a6d1d;">或点下面按钮复制链接，粘贴到浏览器打开</span>';
       } else if(isIOS){
         how.innerHTML = '点浏览器底部 <b>分享按钮</b> → <b>添加到主屏幕</b>';
       } else {
@@ -502,10 +516,28 @@ setTimeout(hidePageLoader, 5000); // 兜底
       }
     }
     el.style.display = 'block';
+    if(isWechat){
+      var cp = document.getElementById('copyLinkBtn');
+      if(!cp){
+        cp = document.createElement('button');
+        cp.id = 'copyLinkBtn';
+        cp.textContent = '📋 复制链接到浏览器打开';
+        cp.style.cssText = 'margin-top:8px;padding:8px 14px;border:none;border-radius:10px;background:#fff;color:#0E7C66;font-size:12px;font-weight:700;cursor:pointer;';
+        el.appendChild(cp);
+        cp.addEventListener('click', function(){
+          var url = location.href;
+          copyText(url).then(function(ok){
+            cp.textContent = ok ? '✅ 已复制，去浏览器粘贴打开' : '复制失败，请手动复制地址栏链接';
+            setTimeout(function(){ cp.textContent = '📋 复制链接到浏览器打开'; }, 3000);
+          });
+        });
+      }
+    }
     window.dismissPwaTip = function(){ el.style.display='none'; try{localStorage.setItem('pwaTipDismissed','1');}catch(e){} };
   }catch(e){}
 })();
 </script>
+
 
 </body>
 </html>
