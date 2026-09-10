@@ -513,7 +513,7 @@ setTimeout(hidePageLoader, 5000); // 兜底
       if(isWechat){
         how.innerHTML = '微信里不能装到桌面：<b>点右上角 ⋯ → 在浏览器打开</b>，然后在浏览器里 <b>添加到主屏幕</b><br><span id="copyLinkTip" style="font-size:11px;color:#8a6d1d;">或点下面按钮复制链接，粘贴到浏览器打开</span>';
       } else if(isIOS){
-        how.innerHTML = '点浏览器底部 <b>分享按钮</b> → <b>添加到主屏幕</b>';
+        how.innerHTML = '点浏览器底部 <b>分享按钮</b> → <b>添加到主屏幕</b><br><span style="font-size:11px;color:#8a6d1d;">如果没看到"添加到主屏幕"，点弹窗里的 <b>查看更多</b></span>';
       } else {
         how.innerHTML = '点浏览器右上角 <b>⋮</b> → <b>安装应用 / 添加到主屏幕</b>';
       }
