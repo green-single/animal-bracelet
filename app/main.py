@@ -169,7 +169,7 @@ if (hasErr) { document.getElementById('err').style.display = 'block'; }
 def admin_login(request: Request, password: str = Form("")):
     """校验管理密码，成功则种 cookie 并跳转后台"""
     secret = os.environ.get("ADMIN_SECRET", "ab2026-v2-9f3c7e1a")
-    admin_pwd = os.environ.get("ADMIN_PASSWORD", "Water1221")
+    admin_pwd = os.environ.get("ADMIN_PASSWORD", "AB2026@k8s#Xy")
     if password == admin_pwd:
         token = hashlib.sha256((secret + ":admin").encode()).hexdigest()
         resp = RedirectResponse(url="/admin", status_code=303)

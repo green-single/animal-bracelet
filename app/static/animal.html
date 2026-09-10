@@ -3091,10 +3091,10 @@ if ('caches' in window) {
           if (filtered.length < 2) { alert('该时间段内轨迹点太少，请选择更长的时间范围'); return; }
           points = filtered;
           timestamps = filteredTs;
-          idx = 0;
+          idx = points.length - 1;
           var slider = document.getElementById('tlSlider');
           slider.max = points.length - 1;
-          slider.value = 0;
+          slider.value = points.length - 1;
           // 重绘地图
           if (map) {
             if (lineLayer) map.removeLayer(lineLayer);
