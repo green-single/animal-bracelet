@@ -312,6 +312,19 @@ if ('serviceWorker' in navigator) {
 </script>
 </head>
 <body>
+<script>
+(function(){
+  try {
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && k.indexOf('adopted_') === 0) {
+        var id = k.slice(8);
+        if (id) { location.replace('/animal/' + id); return; }
+      }
+    }
+  } catch(e) {}
+})();
+</script>
   <div id="pageLoader"><div class="pl-radar"><span></span><span></span><span></span><i></i></div><div class="pl-text">正在追踪它的位置…</div></div>
 <header>
   <div class="logo">爪</div>

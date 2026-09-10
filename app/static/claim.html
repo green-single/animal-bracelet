@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%231b4332%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2722%27%20fill%3D%27none%27%20stroke%3D%27%2340916c%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2713%27%20fill%3D%27none%27%20stroke%3D%27%2374c69d%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%275%27%20fill%3D%27%23d8f3dc%27%2F%3E%3Cpath%20d%3D%27M32%2032%20L45%2018%27%20stroke%3D%27%23d8f3dc%27%20stroke-width%3D%273%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fsvg%3E">
-<meta name="viewport"
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <meta name="theme-color" content="#12796F">
@@ -432,6 +432,26 @@
   .error-state .icon { font-size: 64px; margin-bottom: 20px; }
   .error-state h2 { font-size: 22px; margin-bottom: 12px; }
   .error-state p { font-size: 14px; color: var(--sub); line-height: 1.7; max-width: 300px; }
+@media (max-width: 560px) {
+  /* 首屏紧凑：不用滚动就能领养 */
+  .stage { justify-content: flex-start; padding-top: 26px; min-height: auto; }
+  .reveal-avatar { width: 100px; height: 100px; }
+  .reveal-avatar-ring { width: 114px; height: 114px; }
+  .reveal-label { margin-top: 16px; font-size: 10px; }
+  .reveal-name { margin-top: 8px; font-size: 34px; }
+  .reveal-species { margin-top: 6px; font-size: 13px; }
+  .reveal-story { margin-top: 12px; font-size: 12.5px; max-height: 2.6em; overflow: hidden; position: relative; cursor: pointer; line-height: 1.7; }
+  .reveal-story.expanded { max-height: none; }
+  .reveal-story::after { content: '展开 ▾'; position: absolute; right: 0; bottom: 0; padding-left: 24px;
+    background: linear-gradient(90deg, transparent, #0A0E14 55%); color: var(--accent); font-size: 11px; font-style: normal; }
+  .reveal-story.expanded::after { content: ''; }
+  .nickname-section { margin-top: 14px; }
+  .nickname-label { font-size: 11.5px; margin-bottom: 6px; }
+  .nickname-input { padding: 11px; font-size: 15px; border-radius: 12px; }
+  .nickname-hint { font-size: 10px; }
+  .btn { font-size: 14px; padding: 13px 34px; }
+  }
+
 </style>
 <meta name="theme-color" content="#0A0E14">
 </head>
@@ -587,6 +607,14 @@
 
       animalData = res.d.animal;
 
+      // 本设备已领养过 → 直接进入它的页面（不用再领养）
+      try {
+        if (localStorage.getItem('adopted_' + animalData.id)) {
+          location.replace('/animal/' + animalData.id);
+          return;
+        }
+      } catch(e) {}
+
       // 已被领养
       if (res.d.status === 'claimed') {
         document.getElementById('viewBtn').addEventListener('click', function() {
@@ -604,6 +632,9 @@
       document.getElementById('revealSpecies').textContent = animalData.species;
       document.getElementById('revealStory').textContent =
         animalStories[animalData.id] || (animalData.story || '').substring(0, 100);
+      document.getElementById('revealStory').addEventListener('click', function() {
+        this.classList.toggle('expanded');
+      });
 
       // 延迟2秒后从"扫描中"切换到"揭示"
       setTimeout(function() {
@@ -639,6 +670,16 @@
 
               createConfetti();
               showStage('stageCelebrate');
+              // 8秒后自动进入它的世界
+              var sub = document.getElementById('celebrateSub');
+              if (sub) {
+                var auto = document.createElement('div');
+                auto.id = 'autoGo';
+                auto.style.cssText = 'margin-top:10px;font-size:12px;color:var(--sub);';
+                auto.textContent = '8 秒后自动进入它的世界…';
+                sub.appendChild(auto);
+              }
+              setTimeout(function(){ location.href = '/animal/' + animalData.id; }, 8000);
               // 证书展开动画：先光芒，再证书，最后印章
               setTimeout(function () {
                 var cert = document.getElementById('certificate');
