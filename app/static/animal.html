@@ -753,14 +753,14 @@ header { padding: 8px 12px; gap: 8px; justify-content: flex-end; }
 }
 .today-dyn {
 margin: 0 0 14px; padding: 14px 16px; border-radius: 16px;
-background: linear-gradient(135deg, rgba(14,124,102,.10), rgba(14,124,102,.16));
-border: 1px solid rgba(14,124,102,.22); display: flex; gap: 12px; align-items: flex-start;
+background: linear-gradient(135deg, rgba(58,40,96,.40), rgba(28,18,52,.55));
+border: 1px solid rgba(255,194,77,.18); display: flex; gap: 12px; align-items: flex-start;
 }
 .today-ico { font-size: 26px; line-height: 1.2; }
 .today-body { flex: 1; }
-.today-title { font-size: 13.5px; font-weight: 700; color: #0A5C4C; margin-bottom: 3px; }
-.today-text { font-size: 12.5px; color: #374151; line-height: 1.7; }
-.today-text b { color: #0E7C66; }
+.today-title { font-size: 13.5px; font-weight: 700; color: #FFE9A8; margin-bottom: 3px; }
+.today-text { font-size: 12.5px; color: #FBF4E8; line-height: 1.7; }
+.today-text b { color: #FFC94D; }
 .adopt-card-btn {
 margin: 0 0 14px; width: 100%; padding: 12px; border: none; border-radius: 14px;
 background: linear-gradient(135deg, #F59E0B, #8B5CF6); color: #fff;
@@ -5134,7 +5134,7 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
 
   // 主题 → 粒子配置（颜色 / 形状 / 运动 / 数量）
   var CONF = {
-    forest: { n: 34, colors: [[245,197,66],[255,238,200]], type: 'fly',   vy: -0.06, sway: .12 },
+    forest: { n: 36, colors: [[255,205,80],[255,240,210],[245,197,66]], type: 'fly',   vy: -0.06, sway: .14 },
     pools:  { n: 30, colors: [[94,234,212],[103,232,249],[255,126,182]], type: 'bubble', vy: -0.35, sway: .30 },
     snow:   { n: 40, colors: [[255,255,255],[240,248,255],[220,235,255]], type: 'flake', vy: .22, sway: .30 },
     desert: { n: 40, colors: [[253,186,116],[251,191,36],[217,119,6]], type: 'dust',  vy: .12, sway: .60 },
@@ -5211,12 +5211,16 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
         ctx.fillStyle = 'rgba(255,255,255,' + (a * .7) + ')';
         ctx.beginPath(); ctx.arc(f.x - f.r * .5, f.y - f.r * .5, f.r * .4, 0, Math.PI * 2); ctx.fill();
       } else {
-        // 萤火/光尘：柔和光点
-        var grd = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * 5);
-        grd.addColorStop(0, 'rgba(' + col + ',' + (a * .85) + ')');
+        // 萤火/光尘：柔和光点（双发光核，更亮的呼吸感）
+        var grd = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * 7);
+        grd.addColorStop(0, 'rgba(' + col + ',' + (a * .95) + ')');
+        grd.addColorStop(.35, 'rgba(' + col + ',' + (a * .35) + ')');
         grd.addColorStop(1, 'rgba(' + col + ',0)');
         ctx.fillStyle = grd;
-        ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 7, 0, Math.PI * 2); ctx.fill();
+        // 核心亮点
+        ctx.fillStyle = 'rgba(255,250,235,' + (a * .9) + ')';
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 1.1, 0, Math.PI * 2); ctx.fill();
       }
     }
     requestAnimationFrame(loop);
