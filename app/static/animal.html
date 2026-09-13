@@ -1152,25 +1152,28 @@ if ('serviceWorker' in navigator) {
 <style>
 /* 1. 色彩系统：深蓝夜色 + 琥珀金光 */
 :root {
-  --bg: #0E1B2F !important;
-  --card: rgba(23,36,58,.78) !important;
-  --ink: #F5EDD8 !important;
-  --sub: #9FB0C8 !important;
-  --accent: #F5C542 !important;
-  --accent-deep: #D9A62E !important;
-  --accent-soft: rgba(245,197,66,.14) !important;
-  --line: rgba(255,255,255,.10) !important;
-  --red: #FF7A6B !important;
+  --bg: #101E38 !important;
+  --card: rgba(30,44,72,.82) !important;
+  --ink: #F7F3E8 !important;
+  --sub: #C7D3E2 !important;
+  --accent: #FFC94D !important;
+  --accent-deep: #F0A830 !important;
+  --accent-soft: rgba(255,201,77,.16) !important;
+  --line: rgba(255,255,255,.12) !important;
+  --red: #FF8A7A !important;
+  --green: #6FCF97 !important;
+  --coral: #FF8A65 !important;
 }
 
 /* 2. 水彩背景：多层晕染光斑（像奥日的森林之夜） */
 body {
   background:
-    radial-gradient(ellipse at 18% -8%, rgba(245,197,66,.16), transparent 55%),
-    radial-gradient(ellipse at 85% 12%, rgba(126,200,165,.13), transparent 50%),
-    radial-gradient(ellipse at 12% 78%, rgba(150,130,220,.15), transparent 55%),
-    radial-gradient(ellipse at 92% 88%, rgba(245,197,66,.08), transparent 45%),
-    linear-gradient(180deg, #0A1424 0%, #0E1B2F 45%, #0C1729 100%) !important;
+    radial-gradient(ellipse at 15% -10%, rgba(255,201,77,.22), transparent 55%),
+    radial-gradient(ellipse at 88% 8%, rgba(111,207,151,.16), transparent 50%),
+    radial-gradient(ellipse at 10% 80%, rgba(160,140,230,.16), transparent 55%),
+    radial-gradient(ellipse at 95% 90%, rgba(255,138,101,.10), transparent 45%),
+    radial-gradient(ellipse at 50% 45%, rgba(60,90,140,.18), transparent 60%),
+    linear-gradient(180deg, #0B1730 0%, #12264A 48%, #0D1A36 100%) !important;
   background-attachment: fixed !important;
 }
 
@@ -1181,15 +1184,15 @@ html { color-scheme: dark; }
 
 /* 4. 顶部按钮：金色光晕圆钮（音乐/通知） */
 header button {
-  background: rgba(245,197,66,.10) !important;
-  border: 1px solid rgba(245,197,66,.35) !important;
+  background: rgba(255,201,77,.14) !important;
+  border: 1px solid rgba(255,201,77,.45) !important;
   border-radius: 50% !important;
   width: 38px !important; height: 38px !important;
   font-size: 16px !important;
-  box-shadow: 0 0 14px rgba(245,197,66,.18), inset 0 0 8px rgba(245,197,66,.08) !important;
+  box-shadow: 0 0 18px rgba(255,201,77,.22), inset 0 0 10px rgba(255,201,77,.10) !important;
   transition: transform .15s ease, box-shadow .2s ease !important;
 }
-header button:active { transform: scale(.86); box-shadow: 0 0 22px rgba(245,197,66,.35) !important; }
+header button:active { transform: scale(.86); box-shadow: 0 0 28px rgba(255,201,77,.4) !important; }
 
 /* 5. Tab 栏：深色毛玻璃 + 金色选中光晕 */
 .tab-bar {
@@ -1200,8 +1203,8 @@ header button:active { transform: scale(.86); box-shadow: 0 0 22px rgba(245,197,
 }
 .tab-item { color: var(--sub) !important; }
 .tab-item.active {
-  color: #FFE9A8 !important;
-  text-shadow: 0 0 12px rgba(245,197,66,.55) !important;
+  color: #FFF3D6 !important;
+  text-shadow: 0 0 14px rgba(255,201,77,.6) !important;
 }
 .tab-item.active .tab-glow, .tab-item .tab-glow {
   background: radial-gradient(circle, rgba(245,197,66,.32), transparent 70%) !important;
@@ -1210,32 +1213,32 @@ header button:active { transform: scale(.86); box-shadow: 0 0 22px rgba(245,197,
 
 /* 6. 卡片：深色半透明 + 金色细边 + 柔和光晕 + 大圆角 */
 .stat-card {
-  background: linear-gradient(150deg, rgba(245,197,66,.10), rgba(126,200,165,.06)) !important;
-  border: 1px solid rgba(245,197,66,.22) !important;
+  background: linear-gradient(150deg, rgba(255,201,77,.14), rgba(111,207,151,.08)) !important;
+  border: 1px solid rgba(255,201,77,.32) !important;
   border-radius: 18px !important;
-  box-shadow: 0 4px 18px rgba(0,0,0,.25), 0 0 12px rgba(245,197,66,.07) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,.30), 0 0 18px rgba(255,201,77,.10) !important;
 }
-.stat-card .v { color: #FFE9A8 !important; }
+.stat-card .v { color: #FFE9A8 !important; text-shadow: 0 0 12px rgba(255,201,77,.4) !important; }
 .postcard {
-  background: linear-gradient(160deg, rgba(26,40,64,.92), rgba(18,30,50,.92)) !important;
-  border: 1px solid rgba(245,197,66,.25) !important;
+  background: linear-gradient(160deg, rgba(36,52,84,.94), rgba(22,36,62,.94)) !important;
+  border: 1px solid rgba(255,201,77,.32) !important;
   border-radius: 20px !important;
-  box-shadow: 0 6px 22px rgba(0,0,0,.30), 0 0 14px rgba(245,197,66,.06) !important;
+  box-shadow: 0 6px 24px rgba(0,0,0,.32), 0 0 20px rgba(255,201,77,.08), inset 0 0 24px rgba(255,201,77,.04) !important;
 }
 .postcard .pc-stamp { border-color: rgba(245,197,66,.5) !important; }
 
 /* 7. 按钮：琥珀金渐变 + 光晕 + 按压反馈 */
 .btn, button.btn {
-  background: linear-gradient(135deg, #F5C542, #E3A82B) !important;
-  color: #2A1E05 !important; font-weight: 700 !important;
+  background: linear-gradient(135deg, #FFD166, #F5A623) !important;
+  color: #2A1A00 !important; font-weight: 700 !important;
   border: none !important; border-radius: 16px !important;
-  box-shadow: 0 6px 20px rgba(245,197,66,.30), 0 0 12px rgba(245,197,66,.15) !important;
+  box-shadow: 0 6px 22px rgba(255,201,77,.35), 0 0 16px rgba(255,201,77,.18) !important;
   transition: transform .12s ease, box-shadow .2s ease !important;
 }
-.btn:active, button.btn:active { transform: scale(.94); box-shadow: 0 3px 12px rgba(245,197,66,.40) !important; }
+.btn:active, button.btn:active { transform: scale(.94); box-shadow: 0 3px 14px rgba(255,201,77,.45) !important; }
 .btn.ghost {
-  background: transparent !important; color: #F5C542 !important;
-  border: 1.5px solid rgba(245,197,66,.45) !important;
+  background: transparent !important; color: #FFD166 !important;
+  border: 1.5px solid rgba(255,201,77,.5) !important;
   box-shadow: none !important;
 }
 
@@ -1263,9 +1266,19 @@ input[type="range"] { accent-color: #F5C542; }
   color: var(--ink) !important;
 }
 .year-chip.active, .style-btn.active, .season-chip.active {
-  background: rgba(245,197,66,.16) !important;
-  border-color: rgba(245,197,66,.5) !important;
-  color: #FFE9A8 !important;
+  background: linear-gradient(135deg, rgba(255,201,77,.28), rgba(255,201,77,.12)) !important;
+  border-color: rgba(255,201,77,.7) !important;
+  color: #FFF3D6 !important;
+  box-shadow: 0 0 14px rgba(255,201,77,.25) !important;
+}
+.year-chip, .season-chip, .style-btn {
+  background: rgba(255,255,255,.07) !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  color: var(--ink) !important;
+}
+.year-chip:hover, .season-chip:hover, .style-btn:hover {
+  background: rgba(255,201,77,.12) !important;
+  border-color: rgba(255,201,77,.4) !important;
 }
 </style>
 </head>
@@ -1729,8 +1742,8 @@ input[type="range"] { accent-color: #F5C542; }
     var sMark = L.marker(smooth[0], {
       icon: L.divIcon({
         className: '',
-        html: th.svg ? '<div style="filter:drop-shadow(0 3px 8px ' + th.main + '88);">' + th.svg + '</div>' : '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,' + th.light + ',' + th.main + ');border:3px solid #fff;box-shadow:0 3px 12px ' + th.main + '66;display:flex;align-items:center;justify-content:center;font-size:17px;">' + th.emoji + '</div>',
-        iconSize: th.svg ? [40, 40] : [36, 36], iconAnchor: th.svg ? [20, 20] : [18, 18]
+        html: '<div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,' + th.light + ',' + th.main + ');border:3px solid rgba(255,255,255,.95);box-shadow:0 0 18px ' + th.main + 'aa, 0 3px 10px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;font-size:15px;">' + th.emoji + '</div>',
+        iconSize: [34, 34], iconAnchor: [17, 17]
       })
     }).addTo(map);
     trackLayers.push(sMark);
