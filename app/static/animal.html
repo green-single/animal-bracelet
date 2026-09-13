@@ -1502,12 +1502,11 @@ body[data-theme="pools"] .year-label, body[data-theme="pools"] .season-label { c
 /* --- 主题3 雪山冰晶 Windtorn Ruins：银白冰蓝 --- */
 body[data-theme="snow"] {
   background:
-    radial-gradient(ellipse at 75% -10%, rgba(224,242,254,.28), transparent 52%),
-    radial-gradient(ellipse at 8% 12%, rgba(186,230,253,.18), transparent 48%),
-    radial-gradient(ellipse at 92% 45%, rgba(147,197,253,.14), transparent 46%),
-    radial-gradient(ellipse at 15% 82%, rgba(199,210,254,.18), transparent 52%),
-    radial-gradient(ellipse at 50% 55%, rgba(71,85,120,.20), transparent 60%),
-    linear-gradient(180deg, #101828 0%, #1B2A44 48%, #111C30 100%) !important;
+    radial-gradient(ellipse at 50% -6%, rgba(226,240,255,.40), transparent 46%),
+    radial-gradient(ellipse at 82% 16%, rgba(203,224,255,.16), transparent 40%),
+    radial-gradient(ellipse at 12% 30%, rgba(191,213,246,.12), transparent 42%),
+    radial-gradient(ellipse at 50% 68%, rgba(120,145,190,.16), transparent 55%),
+    linear-gradient(180deg, #0C1424 0%, #16233C 46%, #101B2E 100%) !important;
   background-attachment: fixed !important;
 }
 body[data-theme="snow"] .tab-bar { background: rgba(16,28,46,.8) !important; border-color: rgba(191,219,254,.35) !important; }
@@ -5058,6 +5057,68 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 
+
+<!-- ===== 雪主题：趴着睡觉的棕熊 ===== -->
+<div id="bearArt" aria-hidden="true">
+  <svg viewBox="0 0 200 120" width="170" height="102">
+    <defs>
+      <radialGradient id="bearFur" cx="42%" cy="35%" r="75%">
+        <stop offset="0%" stop-color="#9A6B4A"/>
+        <stop offset="55%" stop-color="#7C5233"/>
+        <stop offset="100%" stop-color="#5C3D24"/>
+      </radialGradient>
+    </defs>
+    <!-- 身下积雪 -->
+    <ellipse cx="100" cy="106" rx="86" ry="12" fill="rgba(226,240,255,.14)"/>
+    <!-- 身体（趴着） -->
+    <ellipse cx="104" cy="82" rx="62" ry="30" fill="url(#bearFur)"/>
+    <!-- 后臀 -->
+    <ellipse cx="156" cy="80" rx="26" ry="24" fill="#6E4B2D"/>
+    <!-- 后爪 -->
+    <ellipse cx="172" cy="92" rx="14" ry="9" fill="#4E351F"/>
+    <ellipse cx="176" cy="94" rx="7" ry="5" fill="#8A6140"/>
+    <!-- 前腿（身前交叉） -->
+    <ellipse cx="66" cy="92" rx="13" ry="9" fill="#5C3D24" transform="rotate(-8 66 92)"/>
+    <!-- 头（枕在前爪上） -->
+    <ellipse cx="46" cy="72" rx="26" ry="22" fill="url(#bearFur)"/>
+    <!-- 口鼻 -->
+    <ellipse cx="30" cy="80" rx="11" ry="8" fill="#6E4B2D"/>
+    <ellipse cx="27" cy="78" rx="5" ry="4" fill="#3E2A18"/>
+    <!-- 耳朵 -->
+    <ellipse cx="40" cy="54" rx="8" ry="8" fill="#7C5233"/>
+    <ellipse cx="40" cy="54" rx="4.5" ry="4.5" fill="#9A6B4A"/>
+    <ellipse cx="56" cy="52" rx="8" ry="8" fill="#7C5233"/>
+    <ellipse cx="56" cy="52" rx="4.5" ry="4.5" fill="#9A6B4A"/>
+    <!-- 眼睛（闭着睡觉） -->
+    <path d="M36 66 q3 2.5 6 0" stroke="#2A1B0F" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M50 65 q3 2.5 6 0" stroke="#2A1B0F" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <!-- 背上的雪花 -->
+    <circle cx="92" cy="70" r="1.6" fill="rgba(255,255,255,.85)"/>
+    <circle cx="120" cy="76" r="1.2" fill="rgba(255,255,255,.7)"/>
+    <circle cx="138" cy="66" r="1.4" fill="rgba(255,255,255,.75)"/>
+    <!-- 头顶一片雪 -->
+    <path d="M34 56 q6 -4 12 -2 q-2 4 -7 5 q-3 -1 -5 -3z" fill="rgba(240,248,255,.8)"/>
+  </svg>
+</div>
+<style>
+#bearArt {
+  position: fixed; left: 14px; bottom: 74px; z-index: 3; pointer-events: none;
+  display: none; opacity: 0; transition: opacity 1.2s ease;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,.35));
+}
+body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
+/* 睡觉呼吸 */
+#bearArt svg { animation: bearBreathe 4.6s ease-in-out infinite; transform-origin: 50% 88%; }
+@keyframes bearBreathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.018, 1.008); }
+}
+@media (max-width: 480px) {
+  #bearArt { left: 8px; bottom: 66px; }
+  #bearArt svg { width: 132px; height: 79px; }
+}
+</style>
+
 <!-- ===== 主题粒子系统（萤火/气泡/雪花/沙尘/光尘）+ 点击涟漪 ===== -->
 <canvas id="fireflyCanvas" style="position:fixed;inset:0;z-index:1;pointer-events:none;"></canvas>
 <style>#fireflyCanvas{opacity:.9}</style>
@@ -5075,7 +5136,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var CONF = {
     forest: { n: 34, colors: [[245,197,66],[255,238,200]], type: 'fly',   vy: -0.06, sway: .12 },
     pools:  { n: 30, colors: [[94,234,212],[103,232,249],[255,126,182]], type: 'bubble', vy: -0.35, sway: .30 },
-    snow:   { n: 44, colors: [[255,255,255],[224,242,254],[191,219,254]], type: 'flake', vy: .55, sway: .40 },
+    snow:   { n: 40, colors: [[255,255,255],[240,248,255],[220,235,255]], type: 'flake', vy: .22, sway: .30 },
     desert: { n: 40, colors: [[253,186,116],[251,191,36],[217,119,6]], type: 'dust',  vy: .12, sway: .60 },
     moon:   { n: 26, colors: [[203,213,225],[148,163,184],[226,232,240]], type: 'dust', vy: -0.05, sway: .18 }
   };
@@ -5092,7 +5153,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var c = cfg.colors[Math.floor(Math.random() * cfg.colors.length)];
       var base = {
         x: Math.random() * W, y: Math.random() * H,
-        r: cfg.type === 'flake' ? 1.2 + Math.random() * 2.2 : 1.3 + Math.random() * 2.4,
+        r: cfg.type === 'flake' ? 2.2 + Math.random() * 2.0 : 1.3 + Math.random() * 2.4,
         vx: (Math.random() - .5) * .5, vy: cfg.vy * (0.6 + Math.random() * 0.9),
         ph: Math.random() * Math.PI * 2, sp: 0.008 + Math.random() * 0.02,
         tw: 0.6 + Math.random() * 0.4, col: c, rot: Math.random() * Math.PI * 2, vr: (Math.random() - .5) * .04,
@@ -5122,17 +5183,24 @@ document.addEventListener('DOMContentLoaded', function() {
       var a = f.tw * (0.5 + 0.5 * Math.sin(f.ph * 2));
       var col = f.col;
       if (f.type === 'flake') {
-        // 雪花：小白点 + 六角微光
-        ctx.fillStyle = 'rgba(' + col + ',' + (a * .9) + ')';
-        ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = 'rgba(' + col + ',' + (a * .5) + ')';
-        ctx.lineWidth = .6;
+        // 温柔雪花：外发光 + 清晰六角 + 中心亮点
+        var glow = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * 6);
+        glow.addColorStop(0, 'rgba(255,255,255,' + (a * .30) + ')');
+        glow.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 6, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,' + (a * .85) + ')';
+        ctx.lineWidth = .7;
         ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot);
         for (var k = 0; k < 3; k++) {
           ctx.rotate(Math.PI / 3);
-          ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(f.r * 2.6, 0); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(f.r * 2.8, 0); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(f.r * 1.2, 0); ctx.lineTo(f.r * 2.0, f.r * .9); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(f.r * 1.2, 0); ctx.lineTo(f.r * 2.0, -f.r * .9); ctx.stroke();
         }
         ctx.restore();
+        ctx.fillStyle = 'rgba(255,255,255,' + (a * .95) + ')';
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r * .5, 0, Math.PI * 2); ctx.fill();
       } else if (f.type === 'bubble') {
         // 气泡：发光圆 + 高光点
         var grd = ctx.createRadialGradient(f.x - f.r * .4, f.y - f.r * .4, 0, f.x, f.y, f.r * 4.5);
