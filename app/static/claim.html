@@ -12,9 +12,18 @@
 <title>领养你的动物 · 动物追踪手环</title>
 <style>
   :root {
-    --bg: #0A0E14; --card: #151A23; --ink: #F4F3EE; --sub: #8B95A5;
-    --accent: #10B981; --accent2: #06B6D4; --gold: #F59E0B;
-    --line: rgba(255,255,255,0.08);
+    --bg: #0E1B2F; --card: rgba(23,36,58,.82); --ink: #F5EDD8; --sub: #9FB0C8;
+    --accent: #F5C542; --accent2: #7EC8A5; --gold: #F5C542;
+    --line: rgba(255,255,255,0.10);
+  }
+  body {
+    background:
+      radial-gradient(ellipse at 18% -8%, rgba(245,197,66,.16), transparent 55%),
+      radial-gradient(ellipse at 85% 12%, rgba(126,200,165,.12), transparent 50%),
+      radial-gradient(ellipse at 12% 78%, rgba(150,130,220,.14), transparent 55%),
+      radial-gradient(ellipse at 92% 88%, rgba(245,197,66,.08), transparent 45%),
+      linear-gradient(180deg, #0A1424 0%, #0E1B2F 45%, #0C1729 100%) !important;
+    background-attachment: fixed !important;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body {
@@ -844,6 +853,65 @@
       document.getElementById('errorText').textContent = '请检查网络连接后重新扫码。';
       showStage('stageError');
     });
+})();
+</script>
+
+<!-- ===== Ori 萤火虫粒子 + 点击涟漪 ===== -->
+<canvas id="fireflyCanvas" style="position:fixed;inset:0;z-index:0;pointer-events:none;"></canvas>
+<script>
+(function(){
+  var cv = document.getElementById('fireflyCanvas');
+  if (cv && window.innerWidth > 0) {
+    var ctx = cv.getContext('2d');
+    var W, H, flies = [];
+    function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+    var N = Math.min(30, Math.max(16, Math.floor(window.innerWidth / 30)));
+    for (var i = 0; i < N; i++) {
+      flies.push({
+        x: Math.random() * W, y: Math.random() * H,
+        r: 1.2 + Math.random() * 2.2,
+        vx: (Math.random() - .5) * .28, vy: (Math.random() - .5) * .28 - .06,
+        ph: Math.random() * Math.PI * 2, sp: 0.008 + Math.random() * 0.02,
+        tw: 0.7 + Math.random() * 0.35
+      });
+    }
+    var gold = [245, 197, 66], white = [255, 238, 200];
+    (function loop() {
+      ctx.clearRect(0, 0, W, H);
+      for (var i = 0; i < flies.length; i++) {
+        var f = flies[i];
+        f.ph += f.sp; f.x += f.vx + Math.sin(f.ph) * .12; f.y += f.vy;
+        if (f.x < -10) f.x = W + 10; if (f.x > W + 10) f.x = -10;
+        if (f.y < -10) f.y = H + 10; if (f.y > H + 10) f.y = -10;
+        var a = f.tw * (0.5 + 0.5 * Math.sin(f.ph * 2));
+        var grd = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * 5);
+        var col = Math.random() < .15 ? white : gold;
+        grd.addColorStop(0, 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',' + (a * .85) + ')');
+        grd.addColorStop(1, 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',0)');
+        ctx.fillStyle = grd;
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 5, 0, Math.PI * 2); ctx.fill();
+      }
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('.stage, header, main').forEach(function(el){
+      if (el) { el.style.position = 'relative'; el.style.zIndex = '2'; }
+    });
+  }
+  document.addEventListener('pointerdown', function(e) {
+    var el = document.createElement('div');
+    el.style.cssText = 'position:fixed;left:' + e.clientX + 'px;top:' + e.clientY + 'px;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;border:2px solid rgba(245,197,66,.65);pointer-events:none;z-index:9999;transform:scale(.3);opacity:.9;';
+    document.body.appendChild(el);
+    var r = 0;
+    (function grow() {
+      r += 14;
+      el.style.transform = 'scale(' + (1 + r / 30) + ')';
+      el.style.opacity = Math.max(0, .9 - r / 90);
+      if (r < 90) requestAnimationFrame(grow);
+      else el.remove();
+    })();
+  });
 })();
 </script>
 </body>
