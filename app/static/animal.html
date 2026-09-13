@@ -1428,7 +1428,7 @@ input[type="range"] { accent-color: #F5C542; }
     <!-- 成就徽章系统 -->
     <div class="achievements-section">
       <div class="achievements-title">成就徽章 <span class="ach-count-badge" id="achievementCount">0/16 已解锁</span></div>
-      <div id="adoptNeedTip" style="display:none;margin:0 0 10px;padding:9px 13px;border-radius:12px;background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(139,92,246,.12));border:1px solid rgba(245,158,11,.3);color:#92400e;font-size:12.5px;line-height:1.6;">🔒 所有成就都要先领养它才会解锁——扫描手环二维码，让它成为你的专属动物，然后通过每天的陪伴和互动来收集徽章。</div>
+      <div id="adoptNeedTip" style="display:none;margin:0 0 10px;padding:9px 13px;border-radius:12px;background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(139,92,246,.12));border:1px solid rgba(245,158,11,.3);color:#92400e;font-size:12.5px;line-height:1.6;">🔒 所有成就都要先领养它才会解锁——扫描手环二维码，让它成为你的专属动物，然后通过每天的陪伴和互动来收集徽章。<br><button id="findMyAnimalBtn" style="margin-top:7px;padding:6px 12px;border:none;border-radius:10px;background:linear-gradient(135deg,#F5C542,#E3A82B);color:#2A1E05;font-size:12px;font-weight:700;cursor:pointer;">🔑 我已经领养过了，找回它</button></div>
       <div class="achievements-grid" id="achievementsGrid">
         <!-- 🐣 初见 -->
         <div class="achievement-item locked" data-ach="first">
@@ -1717,7 +1717,7 @@ input[type="range"] { accent-color: #F5C542; }
     // ===== 0. 动物专属主题（每只动物有自己的颜色与图标） =====
     var animalThemes = {
       noe:         { main: '#10B981', dark: '#047857', light: '#A7F3D0', bg: '#E2E8F0', emoji: '🕊️' },
-      turtle:      { main: '#0EA5E9', dark: '#0369A1', light: '#BAE6FD', bg: '#E0F2FE', emoji: '🕊️' },
+      turtle:      { main: '#0EA5E9', dark: '#0369A1', light: '#BAE6FD', bg: '#E0F2FE', emoji: '🕊️', svg: '<svg viewBox="0 0 64 64" width="40" height="40"><defs><linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E8D9C4"/><stop offset="1" stop-color="#C9B79C"/></linearGradient><linearGradient id="lg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FA3B8"/><stop offset="1" stop-color="#6B7F96"/></linearGradient></defs><ellipse cx="24" cy="40" rx="17" ry="14" fill="url(#lg1)"/><circle cx="41" cy="27" r="10.5" fill="url(#lg1)"/><circle cx="41" cy="27" r="8" fill="#F2E7D5"/><ellipse cx="45" cy="24" rx="4.5" ry="3.6" fill="#fff"/><circle cx="45.6" cy="24" r="1.7" fill="#2C2418"/><circle cx="46.3" cy="23.2" r=".6" fill="#fff"/><path d="M51 26.5 L55.5 25 L51 24.6 Z" fill="#D9A62E"/><path d="M10 40 Q22 22 38 20 Q28 30 22 42 Z" fill="url(#lg2)" opacity=".92"/><path d="M38 20 Q44 18 50 21 Q44 24 38 20 Z" fill="#6B7F96"/><path d="M15 44 L12 50 L18 49 Z" fill="#A9956F"/><ellipse cx="24" cy="40" rx="9" ry="6.5" fill="#F2E7D5" opacity=".65"/></svg>' },
       redkite:     { main: '#F59E0B', dark: '#B45309', light: '#FDE68A', bg: '#FEF3C7', emoji: '🪁' },
       honeybuzzard:{ main: '#F97316', dark: '#C2410C', light: '#FED7AA', bg: '#FFEDD5', emoji: '🐝' },
       herringgull: { main: '#64748B', dark: '#334155', light: '#CBD5E1', bg: '#F1F5F9', emoji: '🕊️' },
@@ -1729,8 +1729,8 @@ input[type="range"] { accent-color: #F5C542; }
     var sMark = L.marker(smooth[0], {
       icon: L.divIcon({
         className: '',
-        html: '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,' + th.light + ',' + th.main + ');border:3px solid #fff;box-shadow:0 3px 12px ' + th.main + '66;display:flex;align-items:center;justify-content:center;font-size:17px;">' + th.emoji + '</div>',
-        iconSize: [36, 36], iconAnchor: [18, 18]
+        html: th.svg ? '<div style="filter:drop-shadow(0 3px 8px ' + th.main + '88);">' + th.svg + '</div>' : '<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,' + th.light + ',' + th.main + ');border:3px solid #fff;box-shadow:0 3px 12px ' + th.main + '66;display:flex;align-items:center;justify-content:center;font-size:17px;">' + th.emoji + '</div>',
+        iconSize: th.svg ? [40, 40] : [36, 36], iconAnchor: th.svg ? [20, 20] : [18, 18]
       })
     }).addTo(map);
     trackLayers.push(sMark);
@@ -4495,6 +4495,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <span>🎵 背景音乐 · 它的声音</span>
     <button class="music-x" id="musicX">✕</button>
   </div>
+  <div class="music-tip" id="musicTip" style="display:none;font-size:11.5px;color:rgba(245,237,216,.75);line-height:1.6;margin:-4px 2px 10px;">💝 这是 <b id="musicTipName" style="color:#F5C542;">它</b> 的专属之声——根据它的性格为你演奏。</div>
   <div class="music-grid">
     <button class="music-opt soul" data-music="soul">💝 它的专属之声</button>
     <button class="music-opt" data-music="piano">🎹 轻柔钢琴</button>
@@ -4502,6 +4503,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <button class="music-opt" data-music="lofi">🌙 夜晚 Lo-Fi</button>
     <button class="music-opt" data-music="ambient">🌊 深海氛围</button>
   </div>
+  <div class="music-now" id="musicNow" style="font-size:11.5px;color:rgba(245,197,66,.85);margin-top:10px;text-align:center;display:none;">♪ 正在播放：<b id="musicNowName"></b></div>
   <button class="music-off" id="musicOff">🔇 关闭音乐</button>
 </div>
 
@@ -4510,7 +4512,8 @@ document.addEventListener('DOMContentLoaded', function() {
 .music-head{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:700;color:#111;margin-bottom:10px;}
 .music-x{border:none;background:#f1f2f6;width:26px;height:26px;border-radius:50%;font-size:12px;color:#555;cursor:pointer;}
 .music-grid{display:flex;flex-wrap:wrap;gap:8px;}
-.music-opt{flex:1 1 calc(50% - 4px);padding:11px 8px;border:1.5px solid #e5e7eb;border-radius:14px;background:#fff;font-size:13px;font-weight:600;color:#333;cursor:pointer;transition:all .2s;}
+.music-opt{flex:1 1 calc(50% - 4px);padding:13px 6px;border:1.5px solid rgba(245,197,66,.22);border-radius:16px;background:rgba(255,255,255,.05);font-size:13.5px;font-weight:600;color:rgba(245,237,216,.9);cursor:pointer;transition:all .2s;min-height:52px;}
+.music-opt:active{transform:scale(.93);}
 .music-opt.on{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8;}
 .music-off{margin-top:10px;width:100%;padding:9px;border:none;border-radius:12px;background:#f1f2f6;color:#666;font-size:13px;font-weight:600;cursor:pointer;}
 </style>
@@ -4711,12 +4714,23 @@ document.addEventListener('DOMContentLoaded', function() {
     runners[type]();
     localStorage.setItem('bgm', type);
     setActive();
+    var now = document.getElementById('musicNow');
+    var nowName = document.getElementById('musicNowName');
+    var names = { soul: '它的专属之声', piano: '轻柔钢琴', nature: '自然原野', lofi: '夜晚 Lo-Fi', ambient: '深海氛围' };
+    if (now && nowName) { now.style.display = 'block'; nowName.textContent = names[type] || ''; }
   }
   function setActive() {
     var saved = localStorage.getItem('bgm');
     document.querySelectorAll('.music-opt').forEach(function(o){
       o.classList.toggle('on', o.dataset.music === saved && current);
     });
+    var tip = document.getElementById('musicTip');
+    var tipName = document.getElementById('musicTipName');
+    if (tip && tipName) {
+      var nm = (typeof a !== 'undefined' && a && a.name) ? a.name : '它';
+      tipName.textContent = nm;
+      tip.style.display = 'block';
+    }
   }
   document.querySelectorAll('.music-opt').forEach(function(o){
     o.addEventListener('click', function(){ play(o.dataset.music); togglePanel(false); });
@@ -4798,5 +4812,76 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 })();
 </script>
+
+<!-- ===== 找回我的动物 Modal ===== -->
+<div id="findModal" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(6,12,24,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:24px;">
+  <div style="width:min(340px,92vw);background:linear-gradient(165deg,#1A2B47,#12203A);border:1px solid rgba(245,197,66,.30);border-radius:24px;padding:22px 20px;box-shadow:0 18px 60px rgba(0,0,0,.5),0 0 30px rgba(245,197,66,.10);">
+    <div style="font-size:16px;font-weight:800;color:#FFE9A8;margin-bottom:4px;">🔑 找回我的动物</div>
+    <div style="font-size:12.5px;color:#9FB0C8;line-height:1.7;margin-bottom:14px;">换手机或从桌面打开后，领养记录不会自动同步。输入你的<b style="color:#F5C542;">领养码</b>（手环吊牌/领养卡片上的那串字母数字），即可把它找回来。</div>
+    <input id="findCodeInput" type="text" placeholder="例如：KHYM-NVWZ" autocomplete="off" spellcheck="false" style="width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid rgba(245,197,66,.35);background:rgba(255,255,255,.06);color:#F5EDD8;font-size:15px;letter-spacing:.5px;outline:none;text-transform:uppercase;">
+    <div id="findMsg" style="font-size:12px;margin-top:8px;min-height:16px;color:#FF7A6B;"></div>
+    <div style="display:flex;gap:10px;margin-top:14px;">
+      <button id="findCancel" style="flex:1;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:transparent;color:#9FB0C8;font-size:14px;font-weight:600;cursor:pointer;">取消</button>
+      <button id="findGo" style="flex:1;padding:12px;border-radius:14px;border:none;background:linear-gradient(135deg,#F5C542,#E3A82B);color:#2A1E05;font-size:14px;font-weight:800;cursor:pointer;">找回</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var modal = document.getElementById('findModal');
+  var openBtn = document.getElementById('findMyAnimalBtn');
+  if (!modal || !openBtn) return;
+  var input = document.getElementById('findCodeInput');
+  var msg = document.getElementById('findMsg');
+  var busy = false;
+
+  function open() { modal.style.display = 'flex'; input.value = ''; msg.textContent = ''; setTimeout(function(){ input.focus(); }, 60); }
+  function close() { modal.style.display = 'none'; }
+  openBtn.addEventListener('click', open);
+  document.getElementById('findCancel').addEventListener('click', close);
+  modal.addEventListener('click', function(e){ if (e.target === modal) close(); });
+  input.addEventListener('keydown', function(e){ if (e.key === 'Enter') go(); });
+
+  function go() {
+    if (busy) return;
+    var code = input.value.trim().toUpperCase();
+    if (!code) { msg.textContent = '请输入领养码'; return; }
+    busy = true;
+    msg.textContent = '正在核对…'; msg.style.color = '#F5C542';
+    fetch('/api/claim/' + encodeURIComponent(code))
+      .then(function(r){ return r.json().then(function(d){ return { ok: r.ok, d: d }; }); })
+      .then(function(res){
+        busy = false;
+        if (!res.ok || !res.d || !res.d.animal) {
+          msg.textContent = '这个领养码不存在，请检查后重试'; msg.style.color = '#FF7A6B';
+          return;
+        }
+        var aid = res.d.animal.id;
+        var isClaimed = res.d.status === 'claimed';
+        // 写入本机绑定（用码作为凭证）
+        try {
+          localStorage.setItem('adopted_' + aid, JSON.stringify({
+            date: new Date().toISOString(), code: code, nickname: ''
+          }));
+        } catch(e) {}
+        try { document.cookie = 'my_animal=' + aid + '; path=/; max-age=31536000; SameSite=Lax'; } catch(e) {}
+        if (aid === (window._animalData && window._animalData.a ? window._animalData.a.id : null)) {
+          msg.textContent = '✅ 找到啦！正在回到它的世界…'; msg.style.color = '#7EC8A5';
+          setTimeout(function(){ location.reload(); }, 700);
+        } else {
+          msg.textContent = '✅ 这个码属于另一只动物，正在带你去见它…'; msg.style.color = '#7EC8A5';
+          setTimeout(function(){ location.href = '/animal/' + aid; }, 900);
+        }
+      })
+      .catch(function(){
+        busy = false;
+        msg.textContent = '网络错误，请稍后再试'; msg.style.color = '#FF7A6B';
+      });
+  }
+  document.getElementById('findGo').addEventListener('click', go);
+})();
+</script>
+
 </body>
 </html>
