@@ -1170,7 +1170,8 @@ if ('serviceWorker' in navigator) {
 </div>
 
 <header>
-  <button id="pushBtn" type="button" title="有新足迹时通知我" style="margin-left:auto;">🔔</button>
+  <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
+  <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
 </header>
 <div id="pwaTip"><b>📲 把它装到桌面</b>，以后像 App 一样一键打开<br><span id="pwaTipHow"></span><button class="pwa-x" onclick="dismissPwaTip()">✕</button></div>
 <main>
@@ -1630,8 +1631,8 @@ if ('serviceWorker' in navigator) {
         var sEnd = Math.max(sStart + 1, Math.floor((si2 + 1) * drawn.length / segN));
         var seg = L.polyline(drawn.slice(sStart, sEnd), {
           color: si2 >= segN - 1 ? th.main : th.light,
-          weight: si2 >= segN - 1 ? 6 : 4.5,
-          opacity: 0.35 + (si2 / segN) * 0.65
+          weight: si2 >= segN - 1 ? 8 : 6,
+          opacity: 0.45 + (si2 / segN) * 0.55
         }).addTo(map);
         trackLayers.push(seg);
       }
@@ -1650,13 +1651,13 @@ if ('serviceWorker' in navigator) {
     
     // ===== 2. 🎯 时间点阵：离散点，大小随时间变大，起终点大标记 =====
     else if (style === 'dots') {
-      var dotStep = Math.max(1, Math.floor(smooth.length / 60));
+      var dotStep = Math.max(1, Math.floor(smooth.length / 45));
       smooth.forEach(function(p, i) {
         if (i % dotStep !== 0 && i !== smooth.length - 1) return;
         var ratio = i / smooth.length;
-        var size = 7 + ratio * 11;
+        var size = 13 + ratio * 20;
         // 时间由远及近：蓝→绿→黄→红（更饱和）
-        var color = ratio > 0.85 ? '#EF4444' : ratio > 0.6 ? '#F59E0B' : ratio > 0.3 ? '#10B981' : '#2563EB';
+        var color = ratio > 0.8 ? '#EF4444' : ratio > 0.6 ? '#F59E0B' : ratio > 0.4 ? '#10B981' : ratio > 0.2 ? '#3B82F6' : '#8B5CF6';
         var dot = L.circleMarker(p, { radius: size, fillColor: color, color: '#fff', weight: 3, fillOpacity: 0.95 }).addTo(map);
         dot.bindTooltip(fmtDate(timestamps[Math.min(i, timestamps.length-1)]), { sticky: true });
         trackLayers.push(dot);
@@ -1671,7 +1672,7 @@ if ('serviceWorker' in navigator) {
       }).addTo(map);
       trackLayers.push(eDot);
       // 连接虚线
-      var dash = L.polyline(smooth, { color: '#94A3B8', weight: 2.5, opacity: 0.35, dashArray: '2,7' }).addTo(map);
+      var dash = L.polyline(smooth, { color: '#94A3B8', weight: 1.5, opacity: 0.18, dashArray: '1,10' }).addTo(map);
       trackLayers.push(dash);
     }
     
@@ -1695,10 +1696,13 @@ if ('serviceWorker' in navigator) {
         var vc = bands[bIdx];
         var seg = L.polyline([smooth[vi], smooth[vi+1]], {
           color: 'rgb(' + vc[0] + ',' + vc[1] + ',' + vc[2] + ')',
-          weight: 4.5, opacity: 0.95
+          weight: 8, opacity: 0.95
         }).addTo(map);
         trackLayers.push(seg);
       }
+      // 终点标记：当前所在（红圈脉冲）
+      var gEnd = L.circleMarker(smooth[smooth.length-1], { radius: 10, fillColor: '#EF4444', color: '#fff', weight: 3, fillOpacity: 1, className: 'pulse-dot' }).addTo(map);
+      trackLayers.push(gEnd);
       // 图例提示
       var legend = document.createElement('div');
       legend.className = 'speed-legend';
@@ -1716,10 +1720,12 @@ if ('serviceWorker' in navigator) {
       var aBg = L.polyline(smooth, { color: th.bg, weight: 7, opacity: 0.6 }).addTo(map);
       trackLayers.push(aBg);
       // 主体导航线
-      var aMain = L.polyline(smooth, { color: th.main, weight: 5, opacity: 0.9 }).addTo(map);
+      var aOutline = L.polyline(smooth, { color: '#fff', weight: 10, opacity: 0.9 }).addTo(map);
+      trackLayers.push(aOutline);
+      var aMain = L.polyline(smooth, { color: th.main, weight: 6, opacity: 0.95 }).addTo(map);
       trackLayers.push(aMain);
       // 箭头：沿轨迹均匀分布，方向跟随轨迹
-      var aStep = Math.max(1, Math.floor(smooth.length / 10));
+      var aStep = Math.max(1, Math.floor(smooth.length / 6));
       for (var ai = aStep; ai < smooth.length - 1; ai += aStep) {
         var p1 = smooth[ai - 1], p2 = smooth[ai];
         var angle = Math.atan2(p2[1] - p1[1], p2[0] - p1[0]) * 180 / Math.PI;
@@ -1727,7 +1733,7 @@ if ('serviceWorker' in navigator) {
         var arrow = L.marker(p2, {
           icon: L.divIcon({
             className: '',
-            html: '<div style="transform:rotate(' + angle + 'deg);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:22px solid ' + th.main + ';filter:drop-shadow(0 0 5px ' + th.main + ';"></div>',
+            html: '<div style="transform:rotate(' + angle + 'deg);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-bottom:30px solid ' + th.main + ';filter:drop-shadow(0 0 5px ' + th.main + ';"></div>',
             iconSize: [14, 14], iconAnchor: [7, 7]
           })
         }).addTo(map);
@@ -1745,12 +1751,12 @@ if ('serviceWorker' in navigator) {
       for (var hi = 0; hi < smooth.length; hi += heatStep) {
         var hp = smooth[hi];
         // 热力同心光晕：内红外橙（更暖更有热感）
-        for (var hl = 0; hl < 4; hl++) {
+        for (var hl = 0; hl < 5; hl++) {
           var heatCircle = L.circle(hp, {
-            radius: (44 - hl * 9) * 1000,
+            radius: (80 - hl * 13) * 1000,
             fillColor: hl < 1 ? '#EF4444' : '#F59E0B',
             color: 'none',
-            fillOpacity: 0.16 - hl * 0.03
+            fillOpacity: 0.30 - hl * 0.045
           }).addTo(map);
           trackLayers.push(heatCircle);
         }
@@ -1759,7 +1765,7 @@ if ('serviceWorker' in navigator) {
       var cStep = Math.max(1, Math.floor(smooth.length / 40));
       smooth.forEach(function(p, i) {
         if (i % cStep !== 0) return;
-        var cDot = L.circleMarker(p, { radius: 4, fillColor: '#B91C1C', color: '#fff', weight: 1, fillOpacity: 0.9 }).addTo(map);
+        var cDot = L.circleMarker(p, { radius: 6, fillColor: '#B91C1C', color: '#fff', weight: 1.5, fillOpacity: 0.95 }).addTo(map);
         trackLayers.push(cDot);
       });
     }
@@ -3158,10 +3164,10 @@ if ('serviceWorker' in navigator) {
               timestamps = allTimestamps.slice();
               document.getElementById('yearStart').value = years[0];
               document.getElementById('yearEnd').value = years[years.length-1];
-              idx = 0;
+              idx = points.length - 1;
               var slider = document.getElementById('tlSlider');
               slider.max = points.length - 1;
-              slider.value = 0;
+              slider.value = points.length - 1;
               if (map) {
                 if (lineLayer) map.removeLayer(lineLayer);
                 if (pathLayer) map.removeLayer(pathLayer);
@@ -4361,5 +4367,158 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 })();
 </script>
+
+<!-- ===== 音乐面板 ===== -->
+<div id="musicPanel" class="music-panel" style="display:none;">
+  <div class="music-head">
+    <span>🎵 背景音乐 · 它的声音</span>
+    <button class="music-x" id="musicX">✕</button>
+  </div>
+  <div class="music-grid">
+    <button class="music-opt" data-music="piano">🎹 轻柔钢琴</button>
+    <button class="music-opt" data-music="nature">🌿 自然原野</button>
+    <button class="music-opt" data-music="lofi">🌙 夜晚 Lo-Fi</button>
+    <button class="music-opt" data-music="ambient">🌊 深海氛围</button>
+  </div>
+  <button class="music-off" id="musicOff">🔇 关闭音乐</button>
+</div>
+
+<style>
+.music-panel{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 92px);transform:translateX(-50%);width:min(360px,92vw);background:rgba(255,255,255,.97);border-radius:22px;box-shadow:0 12px 40px rgba(0,0,0,.18);z-index:3000;padding:14px 16px 16px;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;}
+.music-head{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:700;color:#111;margin-bottom:10px;}
+.music-x{border:none;background:#f1f2f6;width:26px;height:26px;border-radius:50%;font-size:12px;color:#555;cursor:pointer;}
+.music-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.music-opt{flex:1 1 calc(50% - 4px);padding:11px 8px;border:1.5px solid #e5e7eb;border-radius:14px;background:#fff;font-size:13px;font-weight:600;color:#333;cursor:pointer;transition:all .2s;}
+.music-opt.on{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8;}
+.music-off{margin-top:10px;width:100%;padding:9px;border:none;border-radius:12px;background:#f1f2f6;color:#666;font-size:13px;font-weight:600;cursor:pointer;}
+</style>
+
+<script>
+(function(){
+  var panel = document.getElementById('musicPanel');
+  var btn = document.getElementById('musicBtn');
+  var xBtn = document.getElementById('musicX');
+  var offBtn = document.getElementById('musicOff');
+  if (!panel || !btn) return;
+
+  function togglePanel(show) { panel.style.display = show ? 'block' : 'none'; }
+  btn.addEventListener('click', function(){ togglePanel(panel.style.display === 'none'); });
+  xBtn.addEventListener('click', function(){ togglePanel(false); });
+  offBtn.addEventListener('click', function(){ stopMusic(); localStorage.setItem('bgm', 'off'); setActive(); togglePanel(false); });
+
+  // ---------- Web Audio 合成引擎 ----------
+  var AC = window.AudioContext || window.webkitAudioContext;
+  var actx = null, master = null, timer = null, timers = [];
+  var current = null;
+
+  function ensureCtx() {
+    if (!actx) { actx = new AC(); master = actx.createGain(); master.gain.value = 0.16; master.connect(actx.destination); }
+    if (actx.state === 'suspended') actx.resume();
+  }
+  function stopMusic() {
+    timers.forEach(clearInterval); timers = [];
+    if (timer) { clearInterval(timer); timer = null; }
+    if (master && actx) { try { master.gain.cancelScheduledValues(actx.currentTime); master.gain.setValueAtTime(0.0001, actx.currentTime); } catch(e){} }
+    current = null;
+  }
+  function note(freq, t0, dur, gainV, wave) {
+    var o = actx.createOscillator(), g = actx.createGain();
+    o.type = wave || 'sine'; o.frequency.value = freq;
+    var t = actx.currentTime + (t0 || 0);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(gainV, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+  function noiseBuf(sec) {
+    var b = actx.createBuffer(1, actx.sampleRate * sec, actx.sampleRate);
+    var d = b.getChannelData(0);
+    for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * 0.6;
+    return b;
+  }
+
+  function startPiano() {
+    // C大调五声音阶琶音，舒缓流动
+    var scale = [261.63, 329.63, 392.00, 440.00, 523.25, 659.25, 783.99, 880.00];
+    var i = 0;
+    timer = setInterval(function(){
+      var f = scale[i % scale.length];
+      note(f, 0, 1.8, 0.5, 'sine');
+      note(f * 2, 0.15, 1.2, 0.12, 'sine');
+      if (Math.random() < 0.3) note(f * 1.5, 0.3, 1.5, 0.18, 'sine');
+      i++;
+    }, 640);
+  }
+  function startNature() {
+    // 风（低通白噪）+ 偶发鸟鸣
+    var src = actx.createBufferSource(); src.buffer = noiseBuf(3); src.loop = true;
+    var lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 480;
+    var g = actx.createGain(); g.gain.value = 0.5;
+    src.connect(lp); lp.connect(g); g.connect(master); src.start();
+    timers.push(setInterval(function(){
+      var t = Math.random() * 0.3;
+      var base = 1800 + Math.random() * 1600;
+      note(base, 0, 0.16, 0.16, 'sine');
+      note(base * 1.25, 0.14, 0.12, 0.10, 'sine');
+    }, 2600 + Math.random() * 2600));
+  }
+  function startLoFi() {
+    // 简单和弦分解 + 轻鼓
+    var ch = [130.81, 196.00, 246.94, 329.63];
+    var i = 0;
+    timer = setInterval(function(){
+      var f = ch[i % ch.length];
+      note(f, 0, 1.6, 0.4, 'triangle');
+      note(f * 2, 0.2, 1.0, 0.14, 'sine');
+      if (i % 4 === 0) note(70, 0, 0.5, 0.5, 'sine');   // 鼓点
+      if (i % 4 === 2) note(95, 0.05, 0.3, 0.35, 'sine');
+      i++;
+    }, 500);
+  }
+  function startAmbient() {
+    // 深海：缓慢漂移长音垫
+    var pad = [110.00, 164.81, 220.00, 329.63];
+    var i = 0;
+    timer = setInterval(function(){
+      var f = pad[i % pad.length];
+      note(f, 0, 4.5, 0.22, 'sine');
+      note(f * 1.5, 0.6, 4.0, 0.12, 'sine');
+      note(f * 2.01, 1.2, 3.5, 0.08, 'sine');
+      i++;
+    }, 2400);
+  }
+
+  var runners = { piano: startPiano, nature: startNature, lofi: startLoFi, ambient: startAmbient };
+  function play(type) {
+    stopMusic();
+    ensureCtx();
+    master.gain.setValueAtTime(0.16, actx.currentTime);
+    current = type;
+    runners[type]();
+    localStorage.setItem('bgm', type);
+    setActive();
+  }
+  function setActive() {
+    var saved = localStorage.getItem('bgm');
+    document.querySelectorAll('.music-opt').forEach(function(o){
+      o.classList.toggle('on', o.dataset.music === saved && current);
+    });
+  }
+  document.querySelectorAll('.music-opt').forEach(function(o){
+    o.addEventListener('click', function(){ play(o.dataset.music); togglePanel(false); });
+  });
+
+  // 恢复上次选择
+  var saved = localStorage.getItem('bgm');
+  if (saved && saved !== 'off' && runners[saved]) {
+    // 需用户手势才能播音频：首次点击页面任意处再启动
+    var once = function(){ play(saved); document.removeEventListener('pointerdown', once); };
+    document.addEventListener('pointerdown', once);
+  }
+  setActive();
+})();
+</script>
+
 </body>
 </html>

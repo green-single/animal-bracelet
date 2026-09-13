@@ -445,6 +445,31 @@
   .btn { font-size: 14px; padding: 13px 34px; }
   }
 
+  /* ---------- 领养赠言卡 ---------- */
+  .gift-note {
+    margin-top: 18px; max-width: 320px; padding: 16px 18px;
+    border-radius: 18px; background: linear-gradient(135deg, rgba(16,185,129,.14), rgba(6,182,212,.10));
+    border: 1px solid rgba(16,185,129,.35);
+    color: var(--ink); font-size: 13.5px; line-height: 1.85; text-align: left;
+    opacity: 0; transform: translateY(14px); transition: all .8s ease;
+    box-shadow: 0 0 24px rgba(16,185,129,.12);
+  }
+  .gift-note.show { opacity: 1; transform: translateY(0); }
+  .gift-note .gift-q { font-size: 20px; }
+  .gift-note .gift-from { margin-top: 8px; font-size: 11.5px; color: var(--sub); text-align: right; }
+  .gift-note .gift-from b { color: var(--accent); }
+
+  /* ---------- 仪式星光粒子 ---------- */
+  .ritual-star {
+    position: fixed; z-index: 50; pointer-events: none;
+    color: var(--gold); font-size: 14px;
+    animation: starUp 1.6s ease-out forwards;
+  }
+  @keyframes starUp {
+    0% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+    100% { opacity: 0; transform: translateY(-90px) scale(.3) rotate(200deg); }
+  }
+
 </style>
 <meta name="theme-color" content="#0A0E14">
 </head>
@@ -491,6 +516,11 @@
   <div class="celebrate-icon">🎉</div>
   <div class="celebrate-title">领养成功！</div>
   <div class="celebrate-sub" id="celebrateSub">你现在是它的主人了<br>它的每一次迁徙，都有你在陪伴</div>
+  <div class="gift-note" id="giftNote">
+    <div class="gift-q">💌</div>
+    <div id="giftText">—</div>
+    <div class="gift-from">—— <b id="giftFrom">—</b></div>
+  </div>
   <div class="level-badge">⭐ Lv.1 新手守护者 · 经验 0/100</div>
   <div class="certificate" id="certificate">
     <div class="cert-glow" id="certGlow"></div>
@@ -689,6 +719,64 @@
                 '它的每一次迁徙，都有你在陪伴';
 
               createConfetti();
+              // 领养赠言：每只动物专属，口吻来自它自己
+              var giftLines = {
+                turtle: [
+                  '我飞越了整片大陆的夜晚，终于等到一个愿意记住我的人。',
+                  '多瑙河畔的风很大，但从此我的每一次起飞，都有了牵挂。',
+                  '六千公里的路我从不孤单，因为知道终点有你。'
+                ],
+                noe: [
+                  '每一根羽毛都记得来时的路，而你，是我新的坐标。',
+                  '我跨过了整片天空来见你，请多关照，我的守护者。',
+                  '风暴都绕着我走，因为我带着你的名字赶路。'
+                ],
+                herringgull: [
+                  '海风是我的信使，从今往后，也会把我的消息带给你。',
+                  '我在浪尖生活了很久，现在，想在你的目光里靠岸。',
+                  '每一次俯冲都有理由——捡贝壳，还有回来见你。'
+                ],
+                redkite: [
+                  '天空那么大，我却只选了你的目光当航标。',
+                  '我盘旋的不是气流，是想你的轨迹。',
+                  '风往哪吹我就往哪飞，但不管飞多远，都记得家。'
+                ],
+                honeybuzzard: [
+                  '我追着蜂群飞了半个非洲，现在，想追着你的关心飞。',
+                  '地图上没有国界，只有我赶路的痕迹和你等我的方向。',
+                  '每一座山脊都是我写给世界的信，这一封，是给你的。'
+                ],
+                koa: [
+                  '海洋没有边界，但从此，我有了一个陆地上的家。',
+                  '我在深蓝里独自巡游了很久，谢谢你让我被看见。',
+                  '潮汐会记住月亮的引力，我也会记住你的名字。'
+                ]
+              };
+              var lines = giftLines[animalData.id] || giftLines.turtle;
+              var gift = lines[Math.floor(Math.random() * lines.length)];
+              var gn = document.getElementById('giftNote');
+              var gt = document.getElementById('giftText');
+              var gf = document.getElementById('giftFrom');
+              if (gt) gt.textContent = gift;
+              if (gf) gf.textContent = animalData.name;
+              if (gn) setTimeout(function(){ gn.classList.add('show'); }, 1400);
+              // 仪式星光粒子：从证书位置升起
+              var certEl = document.getElementById('certificate');
+              if (certEl) {
+                for (var si = 0; si < 14; si++) {
+                  setTimeout(function () {
+                    var st = document.createElement('div');
+                    st.className = 'ritual-star';
+                    st.textContent = ['✦', '✧', '✦', '✧', '★'][Math.floor(Math.random() * 5)];
+                    var r = certEl.getBoundingClientRect();
+                    st.style.left = (r.left + Math.random() * r.width) + 'px';
+                    st.style.top = (r.top + Math.random() * r.height * .6) + 'px';
+                    st.style.fontSize = (10 + Math.random() * 14) + 'px';
+                    document.body.appendChild(st);
+                    setTimeout(function(){ st.remove(); }, 1700);
+                  }, 900 + Math.random() * 1600);
+                }
+              }
               showStage('stageCelebrate');
               // 8秒后自动进入它的世界
               var sub = document.getElementById('celebrateSub');
