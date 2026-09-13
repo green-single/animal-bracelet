@@ -1280,6 +1280,68 @@ input[type="range"] { accent-color: #F5C542; }
   background: rgba(255,201,77,.12) !important;
   border-color: rgba(255,201,77,.4) !important;
 }
+
+/* ===== v2.1 功能控件柔和化（年份筛选/日记/季节/光谱，主文字不动）===== */
+.year-chip {
+  background: rgba(255,255,255,.05) !important;
+  border-color: rgba(255,255,255,.13) !important;
+  color: #A9B7C9 !important;
+  font-weight: 500 !important;
+}
+.year-chip:hover { border-color: rgba(255,201,77,.35) !important; color: #D8E0EA !important; }
+.year-chip.active {
+  background: rgba(255,201,77,.14) !important;
+  border-color: rgba(255,201,77,.4) !important;
+  color: #F3E2B8 !important;
+  box-shadow: none !important;
+  font-weight: 600 !important;
+}
+.year-select {
+  background: rgba(255,255,255,.05) !important;
+  border-color: rgba(255,255,255,.13) !important;
+  color: #C7D3E2 !important;
+  font-weight: 500 !important;
+}
+.year-select option { background: #16223C; color: #C7D3E2; }
+.year-apply {
+  background: linear-gradient(135deg, rgba(255,201,77,.85), rgba(240,168,48,.85)) !important;
+  color: #3A2A08 !important;
+  font-weight: 600 !important;
+}
+.play-btn {
+  background: rgba(255,201,77,.12) !important;
+  color: #E8D9A8 !important;
+  border: 1px solid rgba(255,201,77,.30) !important;
+  font-weight: 600 !important;
+}
+.play-btn:hover { background: rgba(255,201,77,.20) !important; filter: none !important; }
+.follow-btn {
+  background: rgba(111,207,151,.10) !important;
+  color: #A8D8BC !important;
+  border-color: rgba(111,207,151,.30) !important;
+}
+.season-label, .speed-label, .tl-label, .range-title, .sec-label {
+  color: #A9B7C9 !important;
+}
+.season-btn {
+  background: rgba(255,255,255,.05) !important;
+  border-color: rgba(255,255,255,.13) !important;
+  color: #C7D3E2 !important;
+}
+.season-btn.active {
+  background: rgba(255,201,77,.14) !important;
+  border-color: rgba(255,201,77,.4) !important;
+  color: #F3E2B8 !important;
+}
+.style-btn {
+  background: rgba(255,255,255,.05) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+}
+.style-btn.active {
+  background: rgba(255,201,77,.16) !important;
+  border-color: rgba(255,201,77,.45) !important;
+}
+.loc-info, .region-line { color: #C7D3E2 !important; }
 </style>
 </head>
 <body>
