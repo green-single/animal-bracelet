@@ -92,8 +92,8 @@ transition: all .18s ease; white-space: nowrap;
 #map { height: 430px; background: #dfe8ea; }
 .loc-bar {
 display: flex; align-items: center; gap: 12px; padding: 13px 18px;
-background: linear-gradient(135deg, rgba(14,124,102,.08), rgba(14,124,102,.16));
-flex-wrap: wrap;
+background: linear-gradient(135deg, rgba(58,40,96,.45), rgba(28,18,52,.6));
+flex-wrap: wrap; border-bottom: 1px solid rgba(255,194,77,.14);
 }
 .loc-pin {
 width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
@@ -102,8 +102,8 @@ color: #fff; display: flex; align-items: center; justify-content: center; font-s
 box-shadow: 0 2px 8px rgba(14,124,102,.35);
 }
 .loc-info { flex: 1 1 220px; min-width: 0; }
-.loc-info .t { font-size: 13.5px; font-weight: 700; }
-.loc-info .s { font-size: 12px; color: var(--sub); margin-top: 3px; line-height: 1.5; }
+.loc-info .t { font-size: 13.5px; font-weight: 700; color: #FBF4E8; }
+.loc-info .s { font-size: 12.5px; color: #DCD4F0; margin-top: 3px; line-height: 1.5; }
 .loc-info .u { font-size: 11px; color: var(--accent); margin-top: 4px; font-weight: 600; }
 .loc-info .u::before { content: '↻ '; }
 .tl-sec { padding: 8px 18px 18px; }
@@ -1430,9 +1430,9 @@ body {
   border: 1px solid rgba(255,194,77,.38) !important;
 }
 .follow-btn {
-  background: rgba(79,209,197,.12) !important;
-  color: #A8E4DE !important;
-  border-color: rgba(79,209,197,.38) !important;
+  background: rgba(79,209,197,.16) !important;
+  color: #D8F5F0 !important;
+  border-color: rgba(79,209,197,.5) !important;
 }
 .season-btn {
   background: rgba(24,15,48,.6) !important;
@@ -1462,6 +1462,110 @@ textarea, input[type="text"], input[type="search"], input:not([type]) {
 .msg-item { background: rgba(255,255,255,.07) !important; }
 /* 地图容器柔光 */
 #map { box-shadow: 0 0 30px rgba(255,194,77,.06), inset 0 0 60px rgba(30,15,60,.35) !important; }
+
+/* ===== v4 多主题系统（Ori2 区域风 × 舒适风）===== */
+/* --- 主题1 金辉森林（默认，继承 v3）--- */
+/* --- 主题2 源泉之夜 Luma Pools：深蓝 + 霓虹青绿 + 粉彩 --- */
+body[data-theme="pools"] {
+  background:
+    radial-gradient(ellipse at 80% -8%, rgba(94,234,212,.30), transparent 52%),
+    radial-gradient(ellipse at 10% 15%, rgba(255,126,182,.20), transparent 48%),
+    radial-gradient(ellipse at 90% 45%, rgba(45,212,191,.16), transparent 46%),
+    radial-gradient(ellipse at 15% 80%, rgba(56,130,246,.20), transparent 52%),
+    radial-gradient(ellipse at 50% 55%, rgba(30,80,140,.18), transparent 60%),
+    linear-gradient(180deg, #0A1E35 0%, #123158 46%, #0B2238 100%) !important;
+  background-attachment: fixed !important;
+}
+body[data-theme="pools"] .tab-bar {
+  background: rgba(8,26,48,.8) !important;
+  border-color: rgba(94,234,212,.3) !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,.4), 0 0 22px rgba(94,234,212,.12) !important;
+}
+body[data-theme="pools"] .tab-item.active { color: #BEF7EF !important; text-shadow: 0 0 16px rgba(94,234,212,.7) !important; }
+body[data-theme="pools"] .tab-item.active .tab-glow { background: radial-gradient(circle, rgba(94,234,212,.4), transparent 72%) !important; }
+body[data-theme="pools"] .stat-card {
+  background: linear-gradient(150deg, rgba(94,234,212,.18), rgba(255,126,182,.08)) !important;
+  border-color: rgba(94,234,212,.4) !important;
+}
+body[data-theme="pools"] .year-sec {
+  background: linear-gradient(160deg, rgba(10,40,70,.92), rgba(6,22,42,.95)) !important;
+  border-color: rgba(94,234,212,.4) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35), 0 0 24px rgba(94,234,212,.12) !important;
+}
+body[data-theme="pools"] .year-select, body[data-theme="pools"] .year-chip,
+body[data-theme="pools"] .season-btn { background: rgba(6,20,38,.6) !important; color: #BFD8E8 !important; }
+body[data-theme="pools"] .year-chip.active, body[data-theme="pools"] .season-btn.active,
+body[data-theme="pools"] .style-btn.active { background: rgba(94,234,212,.2) !important; color: #D9FFF9 !important; }
+body[data-theme="pools"] .year-apply { background: linear-gradient(135deg, #2DD4BF, #0EA5E9) !important; color: #04222A !important; }
+body[data-theme="pools"] .play-btn { background: rgba(94,234,212,.14) !important; color: #C8F6EE !important; border-color: rgba(94,234,212,.4) !important; }
+body[data-theme="pools"] .year-label, body[data-theme="pools"] .season-label { color: #A7E8DD !important; }
+/* --- 主题3 雪山冰晶 Windtorn Ruins：银白冰蓝 --- */
+body[data-theme="snow"] {
+  background:
+    radial-gradient(ellipse at 75% -10%, rgba(224,242,254,.28), transparent 52%),
+    radial-gradient(ellipse at 8% 12%, rgba(186,230,253,.18), transparent 48%),
+    radial-gradient(ellipse at 92% 45%, rgba(147,197,253,.14), transparent 46%),
+    radial-gradient(ellipse at 15% 82%, rgba(199,210,254,.18), transparent 52%),
+    radial-gradient(ellipse at 50% 55%, rgba(71,85,120,.20), transparent 60%),
+    linear-gradient(180deg, #101828 0%, #1B2A44 48%, #111C30 100%) !important;
+  background-attachment: fixed !important;
+}
+body[data-theme="snow"] .tab-bar { background: rgba(16,28,46,.8) !important; border-color: rgba(191,219,254,.35) !important; }
+body[data-theme="snow"] .tab-item.active { color: #E3EDFF !important; text-shadow: 0 0 16px rgba(147,197,253,.7) !important; }
+body[data-theme="snow"] .stat-card { background: linear-gradient(150deg, rgba(191,219,254,.18), rgba(147,197,253,.07)) !important; border-color: rgba(191,219,254,.4) !important; }
+body[data-theme="snow"] .year-sec { background: linear-gradient(160deg, rgba(28,44,72,.92), rgba(16,26,46,.95)) !important; border-color: rgba(191,219,254,.4) !important; }
+body[data-theme="snow"] .year-select, body[data-theme="snow"] .year-chip,
+body[data-theme="snow"] .season-btn { background: rgba(13,22,40,.6) !important; color: #C8D8EE !important; }
+body[data-theme="snow"] .year-chip.active, body[data-theme="snow"] .season-btn.active { background: rgba(147,197,253,.22) !important; color: #EAF2FF !important; }
+body[data-theme="snow"] .year-apply { background: linear-gradient(135deg, #93C5FD, #60A5FA) !important; color: #0B1E3A !important; }
+body[data-theme="snow"] .play-btn { background: rgba(191,219,254,.14) !important; color: #DCE9FF !important; border-color: rgba(191,219,254,.4) !important; }
+body[data-theme="snow"] .follow-btn { background: rgba(165,180,252,.12) !important; color: #D8E0FF !important; border-color: rgba(165,180,252,.4) !important; }
+body[data-theme="snow"] .year-label, body[data-theme="snow"] .season-label { color: #C7D7EE !important; }
+/* --- 主题4 晨曦沙漠：暖棕琥珀 --- */
+body[data-theme="desert"] {
+  background:
+    radial-gradient(ellipse at 75% -10%, rgba(253,186,116,.32), transparent 52%),
+    radial-gradient(ellipse at 10% 15%, rgba(251,191,36,.16), transparent 48%),
+    radial-gradient(ellipse at 92% 45%, rgba(217,119,6,.14), transparent 46%),
+    radial-gradient(ellipse at 15% 82%, rgba(120,72,24,.22), transparent 52%),
+    radial-gradient(ellipse at 50% 55%, rgba(90,55,20,.22), transparent 60%),
+    linear-gradient(180deg, #241407 0%, #3A2412 48%, #241608 100%) !important;
+  background-attachment: fixed !important;
+}
+body[data-theme="desert"] .tab-bar { background: rgba(38,24,12,.8) !important; border-color: rgba(253,186,116,.35) !important; }
+body[data-theme="desert"] .tab-item.active { color: #FFE8CC !important; text-shadow: 0 0 16px rgba(253,186,116,.7) !important; }
+body[data-theme="desert"] .stat-card { background: linear-gradient(150deg, rgba(253,186,116,.20), rgba(251,191,36,.08)) !important; border-color: rgba(253,186,116,.42) !important; }
+body[data-theme="desert"] .year-sec { background: linear-gradient(160deg, rgba(62,40,20,.92), rgba(38,22,10,.95)) !important; border-color: rgba(253,186,116,.42) !important; }
+body[data-theme="desert"] .year-select, body[data-theme="desert"] .year-chip,
+body[data-theme="desert"] .season-btn { background: rgba(30,16,8,.6) !important; color: #E8C9A8 !important; }
+body[data-theme="desert"] .year-chip.active, body[data-theme="desert"] .season-btn.active { background: rgba(253,186,116,.22) !important; color: #FFF0DC !important; }
+body[data-theme="desert"] .year-apply { background: linear-gradient(135deg, #FBBF24, #D97706) !important; color: #2A1504 !important; }
+body[data-theme="desert"] .play-btn { background: rgba(253,186,116,.16) !important; color: #FFE3C2 !important; border-color: rgba(253,186,116,.42) !important; }
+body[data-theme="desert"] .follow-btn { background: rgba(251,191,36,.14) !important; color: #FFE9B8 !important; border-color: rgba(251,191,36,.4) !important; }
+body[data-theme="desert"] .year-label, body[data-theme="desert"] .season-label { color: #E5BE94 !important; }
+/* --- 主题5 月光静谧：柔和低饱和深灰蓝（舒适系）--- */
+body[data-theme="moon"] {
+  background:
+    radial-gradient(ellipse at 75% -10%, rgba(148,163,184,.16), transparent 52%),
+    radial-gradient(ellipse at 10% 15%, rgba(203,213,225,.08), transparent 48%),
+    radial-gradient(ellipse at 92% 45%, rgba(148,163,184,.08), transparent 46%),
+    radial-gradient(ellipse at 15% 82%, rgba(100,116,139,.14), transparent 52%),
+    radial-gradient(ellipse at 50% 55%, rgba(51,65,85,.22), transparent 60%),
+    linear-gradient(180deg, #111827 0%, #1F2937 48%, #141B26 100%) !important;
+  background-attachment: fixed !important;
+}
+body[data-theme="moon"] .tab-bar { background: rgba(17,24,39,.8) !important; border-color: rgba(203,213,225,.25) !important; }
+body[data-theme="moon"] .tab-item.active { color: #E5E7EB !important; text-shadow: 0 0 14px rgba(148,163,184,.6) !important; }
+body[data-theme="moon"] .stat-card { background: linear-gradient(150deg, rgba(148,163,184,.14), rgba(100,116,139,.06)) !important; border-color: rgba(203,213,225,.28) !important; }
+body[data-theme="moon"] .year-sec { background: linear-gradient(160deg, rgba(31,41,55,.94), rgba(17,24,39,.96)) !important; border-color: rgba(203,213,225,.28) !important; }
+body[data-theme="moon"] .year-select, body[data-theme="moon"] .year-chip,
+body[data-theme="moon"] .season-btn { background: rgba(15,20,30,.6) !important; color: #C9D2DE !important; }
+body[data-theme="moon"] .year-chip.active, body[data-theme="moon"] .season-btn.active { background: rgba(148,163,184,.24) !important; color: #F1F5F9 !important; }
+body[data-theme="moon"] .year-apply { background: linear-gradient(135deg, #94A3B8, #64748B) !important; color: #0F172A !important; }
+body[data-theme="moon"] .play-btn { background: rgba(148,163,184,.14) !important; color: #DDE3EA !important; border-color: rgba(148,163,184,.3) !important; }
+body[data-theme="moon"] .follow-btn { background: rgba(100,116,139,.14) !important; color: #CDD6E2 !important; border-color: rgba(100,116,139,.35) !important; }
+body[data-theme="moon"] .year-label, body[data-theme="moon"] .season-label { color: #B8C2CE !important; }
+body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !important; }
 </style>
 </head>
 <body>
@@ -1488,7 +1592,18 @@ textarea, input[type="text"], input[type="search"], input:not([type]) {
 <header>
   <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
   <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
+  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button>
 </header>
+<div id="themePanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4000;width:min(240px,86vw);background:linear-gradient(165deg,#2C1D50,#1E1338);border:1px solid rgba(255,194,77,.35);border-radius:18px;padding:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);">
+  <div style="font-size:13px;font-weight:800;color:#FFE9C4;margin-bottom:10px;">🎨 选择主题 · 挑一个你喜欢的夜色</div>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <div class="theme-opt" data-theme="forest" style="display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:12px;border:1px solid rgba(255,194,77,.35);background:linear-gradient(135deg,#2C1D50,#1E1338);cursor:pointer;"><span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#FFC24D,#7B2CBF);flex-shrink:0;"></span><span style="font-size:12px;color:#E9E2F5;font-weight:600;">金辉森林 · 默认</span></div>
+    <div class="theme-opt" data-theme="pools" style="display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:12px;border:1px solid rgba(94,234,212,.35);background:linear-gradient(135deg,#0A2E4A,#0B2238);cursor:pointer;"><span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#2DD4BF,#FF7EB6);flex-shrink:0;"></span><span style="font-size:12px;color:#C8F6EE;font-weight:600;">源泉之夜 · 青蓝霓虹</span></div>
+    <div class="theme-opt" data-theme="snow" style="display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:12px;border:1px solid rgba(191,219,254,.35);background:linear-gradient(135deg,#1B2A44,#111C30);cursor:pointer;"><span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#93C5FD,#E0F2FE);flex-shrink:0;"></span><span style="font-size:12px;color:#DCE9FF;font-weight:600;">雪山冰晶 · 银蓝</span></div>
+    <div class="theme-opt" data-theme="desert" style="display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:12px;border:1px solid rgba(253,186,116,.35);background:linear-gradient(135deg,#3A2412,#241608);cursor:pointer;"><span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#FBBF24,#D97706);flex-shrink:0;"></span><span style="font-size:12px;color:#FFE3C2;font-weight:600;">晨曦沙漠 · 暖琥珀</span></div>
+    <div class="theme-opt" data-theme="moon" style="display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:12px;border:1px solid rgba(203,213,225,.25);background:linear-gradient(135deg,#1F2937,#111827);cursor:pointer;"><span style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#94A3B8,#64748B);flex-shrink:0;"></span><span style="font-size:12px;color:#DDE3EA;font-weight:600;">月光静谧 · 低饱和灰蓝</span></div>
+  </div>
+</div>
 <div id="pwaTip"><b>📲 把它装到桌面</b>，以后像 App 一样一键打开<br><span id="pwaTipHow"></span><button class="pwa-x" onclick="dismissPwaTip()">✕</button></div>
 <main>
 <!-- Tab 底部导航 -->
@@ -5078,5 +5193,36 @@ document.addEventListener('DOMContentLoaded', function() {
 })();
 </script>
 
+
+<script>
+(function () {
+  var THEMES = ['forest', 'pools', 'snow', 'desert', 'moon'];
+  var saved = null;
+  try { saved = localStorage.getItem('ori_theme'); } catch (e) {}
+  if (saved && THEMES.indexOf(saved) > -1) {
+    document.body.setAttribute('data-theme', saved);
+  } else {
+    document.body.setAttribute('data-theme', 'forest');
+  }
+  var btn = document.getElementById('themeBtn');
+  var panel = document.getElementById('themePanel');
+  if (!btn || !panel) return;
+  btn.addEventListener('click', function (ev) {
+    ev.stopPropagation();
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  });
+  document.addEventListener('click', function (ev) {
+    if (!panel.contains(ev.target) && ev.target !== btn) panel.style.display = 'none';
+  });
+  panel.querySelectorAll('.theme-opt').forEach(function (opt) {
+    opt.addEventListener('click', function () {
+      var t = opt.getAttribute('data-theme');
+      document.body.setAttribute('data-theme', t);
+      try { localStorage.setItem('ori_theme', t); } catch (e) {}
+      panel.style.display = 'none';
+    });
+  });
+})();
+</script>
 </body>
 </html>
