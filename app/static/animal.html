@@ -1341,6 +1341,127 @@ input[type="range"] { accent-color: #F5C542; }
   border-color: rgba(255,201,77,.45) !important;
 }
 .loc-info, .region-line { color: #C7D3E2 !important; }
+
+/* ===== v3 Ori 2 · 精灵与萤火意志 ===== */
+:root {
+  --bg: #1A1030 !important;
+  --card: rgba(38,26,66,.82) !important;
+  --ink: #FBF4E8 !important;
+  --sub: #CFC6E4 !important;
+  --accent: #FFC24D !important;
+  --accent-deep: #F0A830 !important;
+  --accent-soft: rgba(255,194,77,.16) !important;
+  --line: rgba(255,255,255,.14) !important;
+  --green: #4FD1C5 !important;
+  --coral: #FF8A65 !important;
+  --pink: #FF7EB6 !important;
+  --teal: #4FD1C5 !important;
+}
+/* 背景：深紫暮色 + 金辉/霓虹粉/青绿水彩光晕（奥日2开场森林的梦幻感） */
+body {
+  background:
+    radial-gradient(ellipse at 78% -8%, rgba(255,194,77,.30), transparent 52%),
+    radial-gradient(ellipse at 8% 12%, rgba(255,126,182,.16), transparent 48%),
+    radial-gradient(ellipse at 92% 40%, rgba(79,209,197,.14), transparent 45%),
+    radial-gradient(ellipse at 12% 78%, rgba(150,120,230,.22), transparent 55%),
+    radial-gradient(ellipse at 55% 55%, rgba(90,60,150,.16), transparent 60%),
+    linear-gradient(180deg, #140E2A 0%, #231741 46%, #170F30 100%) !important;
+  background-attachment: fixed !important;
+}
+/* Tab 栏：深紫毛玻璃 + 金辉 */
+.tab-bar {
+  background: rgba(28,18,52,.78) !important;
+  border: 1px solid rgba(255,194,77,.26) !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,.4), 0 0 22px rgba(255,194,77,.10), inset 0 0 0 .5px rgba(255,255,255,.05) !important;
+}
+.tab-item.active {
+  color: #FFE9C4 !important;
+  text-shadow: 0 0 16px rgba(255,194,77,.75) !important;
+}
+.tab-item.active .tab-glow, .tab-item .tab-glow {
+  background: radial-gradient(circle, rgba(255,194,77,.38), transparent 72%) !important;
+  box-shadow: 0 0 18px rgba(255,194,77,.34) !important;
+}
+/* 卡片：深紫渐变 + 暖金边 */
+.stat-card {
+  background: linear-gradient(150deg, rgba(255,194,77,.16), rgba(79,209,197,.07)) !important;
+  border: 1px solid rgba(255,194,77,.36) !important;
+}
+/* ===== 年份范围面板：深紫渐变卡片（明显容器）===== */
+.year-sec {
+  margin: 0 12px 16px !important;
+  padding: 14px 14px 16px !important;
+  border-radius: 20px !important;
+  background: linear-gradient(160deg, rgba(58,40,96,.92), rgba(30,20,58,.94)) !important;
+  border: 1px solid rgba(255,194,77,.35) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35), 0 0 24px rgba(255,194,77,.10), inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+.year-label {
+  color: #E8D9AE !important;
+  font-size: 11.5px !important;
+  letter-spacing: .08em !important;
+}
+.year-row { gap: 10px !important; }
+.year-select {
+  background: rgba(20,12,40,.6) !important;
+  border-color: rgba(255,194,77,.3) !important;
+  color: #E9E2F5 !important;
+}
+.year-select option { background: #241743; color: #E9E2F5; }
+.year-apply {
+  background: linear-gradient(135deg, #FFC24D, #F0A830) !important;
+  color: #3A2408 !important;
+  box-shadow: 0 0 16px rgba(255,194,77,.35) !important;
+}
+.year-chip {
+  background: rgba(24,15,48,.6) !important;
+  border-color: rgba(255,255,255,.14) !important;
+  color: #B8ACD8 !important;
+}
+.year-chip.active {
+  background: rgba(255,194,77,.18) !important;
+  border-color: rgba(255,194,77,.55) !important;
+  color: #FFE9C4 !important;
+}
+/* 沿途日记/跟随/季节/光谱 同步 Ori2 */
+.play-btn {
+  background: rgba(255,194,77,.14) !important;
+  color: #F3DFAE !important;
+  border: 1px solid rgba(255,194,77,.38) !important;
+}
+.follow-btn {
+  background: rgba(79,209,197,.12) !important;
+  color: #A8E4DE !important;
+  border-color: rgba(79,209,197,.38) !important;
+}
+.season-btn {
+  background: rgba(24,15,48,.6) !important;
+  border-color: rgba(255,255,255,.14) !important;
+  color: #CEC4E6 !important;
+}
+.season-btn.active {
+  background: rgba(255,194,77,.18) !important;
+  border-color: rgba(255,194,77,.55) !important;
+  color: #FFE9C4 !important;
+}
+.season-label, .speed-label, .tl-label, .range-title, .sec-label, .loc-info, .region-line {
+  color: #B8ACD8 !important;
+}
+.style-btn { background: rgba(24,15,48,.5) !important; border: 1px solid rgba(255,255,255,.12) !important; }
+.style-btn.active { background: rgba(255,194,77,.20) !important; border-color: rgba(255,194,77,.6) !important; }
+/* 弹窗/输入框/留言 深紫统一 */
+.find-modal-card, #findModal div[style*="linear-gradient"] {
+  background: linear-gradient(165deg, #2C1D50, #1E1338) !important;
+  border-color: rgba(255,194,77,.35) !important;
+}
+textarea, input[type="text"], input[type="search"], input:not([type]) {
+  background: rgba(20,12,40,.6) !important;
+  border-color: rgba(255,194,77,.25) !important;
+  color: #E9E2F5 !important;
+}
+.msg-item { background: rgba(255,255,255,.07) !important; }
+/* 地图容器柔光 */
+#map { box-shadow: 0 0 30px rgba(255,194,77,.06), inset 0 0 60px rgba(30,15,60,.35) !important; }
 </style>
 </head>
 <body>
