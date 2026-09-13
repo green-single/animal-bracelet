@@ -1596,7 +1596,7 @@ if ('serviceWorker' in navigator) {
     // ===== 0. 动物专属主题（每只动物有自己的颜色与图标） =====
     var animalThemes = {
       noe:         { main: '#10B981', dark: '#047857', light: '#A7F3D0', bg: '#E2E8F0', emoji: '🕊️' },
-      turtle:      { main: '#0EA5E9', dark: '#0369A1', light: '#BAE6FD', bg: '#E0F2FE', emoji: '🐢' },
+      turtle:      { main: '#0EA5E9', dark: '#0369A1', light: '#BAE6FD', bg: '#E0F2FE', emoji: '🕊️' },
       redkite:     { main: '#F59E0B', dark: '#B45309', light: '#FDE68A', bg: '#FEF3C7', emoji: '🪁' },
       honeybuzzard:{ main: '#F97316', dark: '#C2410C', light: '#FED7AA', bg: '#FFEDD5', emoji: '🐝' },
       herringgull: { main: '#64748B', dark: '#334155', light: '#CBD5E1', bg: '#F1F5F9', emoji: '🕊️' },
@@ -4375,6 +4375,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <button class="music-x" id="musicX">✕</button>
   </div>
   <div class="music-grid">
+    <button class="music-opt soul" data-music="soul">💝 它的专属之声</button>
     <button class="music-opt" data-music="piano">🎹 轻柔钢琴</button>
     <button class="music-opt" data-music="nature">🌿 自然原野</button>
     <button class="music-opt" data-music="lofi">🌙 夜晚 Lo-Fi</button>
@@ -4489,7 +4490,98 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 2400);
   }
 
-  var runners = { piano: startPiano, nature: startNature, lofi: startLoFi, ambient: startAmbient };
+  // ===== 动物专属灵魂之声：按动物性格定制 =====
+  // Lumi（欧斑鸠）：温柔 深情 善良 纯真 顾家 → 温暖五声旋律+轻柔低音+偶尔咕咕
+  function startSoul() {
+    if (currentAnimal === 'turtle' || !soulRunners[currentAnimal]) { soulRunners.turtle(); return; }
+    soulRunners[currentAnimal]();
+  }
+  var soulRunners = {
+    turtle: function() {
+      // 晨光田野：C大调五声（C D E G A），温暖圆润，慢速气息感
+      var scale = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50];  // C5 D5 E5 G5 A5 C6
+      var bass = [130.81, 146.83, 196.00, 130.81, 174.61, 146.83];    // C3 D3 G3 C3 F3 D3
+      var i = 0;
+      timer = setInterval(function(){
+        // 主旋律：五声上行/下行交替，温柔圆润（triangle）
+        var step = (i % 8 < 4) ? 1 : -1;
+        var mi = (i * 2 + (i % 3)) % scale.length;
+        note(scale[mi], 0, 1.6, 0.30, 'triangle');
+        // 高八度泛音轻颤（纯真感）
+        note(scale[mi] * 2, 0.12, 1.0, 0.06, 'sine');
+        // 低音心跳：每4拍换一个根音（安定感=顾家）
+        if (i % 4 === 0) note(bass[(i / 4) % bass.length], 0, 2.6, 0.22, 'sine');
+        // 偶尔斑鸠咕咕（可爱纯真）：两个低音短音下滑
+        if (Math.random() < 0.12) {
+          var g1 = 500 + Math.random() * 60;
+          note(g1, 0.1, 0.18, 0.10, 'sine');
+          note(g1 * 0.92, 0.32, 0.22, 0.09, 'sine');
+        }
+        i++;
+      }, 720);
+    },
+    noe: function() {
+      // 地中海晨风：双音程交替的悠远长音（优雅白鹳）
+      var pad = [196.00, 293.66, 392.00, 587.33];
+      var i = 0;
+      timer = setInterval(function(){
+        var f = pad[i % pad.length];
+        note(f, 0, 3.0, 0.20, 'triangle');
+        note(f * 1.5, 0.5, 2.4, 0.10, 'sine');
+        if (Math.random() < 0.2) note(f * 2.02, 0.9, 1.6, 0.06, 'sine');
+        i++;
+      }, 1900);
+    },
+    herringgull: function() {
+      // 海边浪声：白噪海浪 + 海鸥
+      var src = actx.createBufferSource(); src.buffer = noiseBuf(3); src.loop = true;
+      var lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 320;
+      var g = actx.createGain(); g.gain.value = 0.5;
+      src.connect(lp); lp.connect(g); g.connect(master); src.start();
+      timers.push(setInterval(function(){
+        var base = 900 + Math.random() * 500;
+        note(base, 0, 0.30, 0.13, 'sawtooth');
+        note(base * 1.6, 0.12, 0.25, 0.09, 'sawtooth');
+      }, 3400 + Math.random() * 2200));
+    },
+    redkite: function() {
+      // 高空长风：悠远长笛（风在翼下）
+      var scale = [440.00, 493.88, 554.37, 659.25, 739.99, 880.00];
+      var i = 0;
+      timer = setInterval(function(){
+        var f = scale[i % scale.length];
+        note(f, 0, 2.2, 0.16, 'triangle');
+        note(f * 1.5, 0.7, 1.6, 0.07, 'sine');
+        i += Math.random() < 0.5 ? 1 : 2;
+      }, 1150);
+    },
+    honeybuzzard: function() {
+      // 夏夜田野：虫鸣轻响
+      var src = actx.createBufferSource(); src.buffer = noiseBuf(2); src.loop = true;
+      var bp = actx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1200; bp.Q.value = 3;
+      var g = actx.createGain(); g.gain.value = 0.25;
+      src.connect(bp); bp.connect(g); g.connect(master); src.start();
+      timers.push(setInterval(function(){
+        var base = 2800 + Math.random() * 1200;
+        note(base, 0, 0.1, 0.06, 'sine');
+        note(base * 0.97, 0.09, 0.1, 0.05, 'sine');
+      }, 1500 + Math.random() * 1200));
+    },
+    koa: function() {
+      // 深海之心：低频缓慢脉动（鲸歌感）
+      var pad = [55.00, 82.41, 110.00, 146.83];
+      var i = 0;
+      timer = setInterval(function(){
+        var f = pad[i % pad.length];
+        note(f, 0, 4.2, 0.20, 'sine');
+        note(f * 2.99, 0.8, 3.4, 0.05, 'sine');
+        note(f * 4.01, 1.6, 2.6, 0.04, 'sine');
+        i++;
+      }, 2200);
+    }
+  };
+  var currentAnimal = typeof animalId !== 'undefined' ? animalId : '';
+  var runners = { soul: startSoul, piano: startPiano, nature: startNature, lofi: startLoFi, ambient: startAmbient };
   function play(type) {
     stopMusic();
     ensureCtx();

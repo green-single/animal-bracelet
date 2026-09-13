@@ -63,3 +63,31 @@
 2026-09-10 14:42:02 [backup] 快照 20260910_144202_092235 (16项, 健康项: db, qr, sheet, photos)
 2026-09-10 14:42:02 [backup] 清理旧快照 C:\DoubaoProjects\_backups\animal-bracelet\snapshot_20260909_123840_095841
 2026-09-10 14:42:02 [check] ✅ 全部正常 (DB/二维码/打印稿/照片/代码/服务)
+2026-09-10 16:42:02 [backup] 快照 20260910_164201_932591 (16项, 健康项: db, qr, sheet, photos)
+2026-09-10 16:42:02 [backup] 清理旧快照 C:\DoubaoProjects\_backups\animal-bracelet\snapshot_20260909_123840_737553
+2026-09-10 16:42:02 [check] ✅ 全部正常 (DB/二维码/打印稿/照片/代码/服务)
+2026-09-10 22:42:02 [backup] 快照 20260910_224202_145388 (16项, 健康项: db, qr, sheet, photos)
+2026-09-10 22:42:02 [backup] 清理旧快照 C:\DoubaoProjects\_backups\animal-bracelet\snapshot_20260909_123900_969812
+2026-09-10 22:42:17 [service] 服务未运行, 正在重启
+2026-09-10 22:42:28 [check] ✅ 全部正常 (DB/二维码/打印稿/照片/代码/服务)
+2026-09-11 14:42:02 [backup] 快照 20260911_144202_529070 (16项, 健康项: db, qr, sheet, photos)
+2026-09-11 14:42:02 [backup] 清理旧快照 C:\DoubaoProjects\_backups\animal-bracelet\snapshot_20260909_124057_145233
+2026-09-11 14:42:02 [check] ✅ 全部正常 (DB/二维码/打印稿/照片/代码/服务)
+2026-09-11 16:42:02 [backup] 快照 20260911_164202_554056 (16项, 健康项: db, qr, sheet, photos)
+2026-09-11 16:42:02 [backup] 清理旧快照 C:\DoubaoProjects\_backups\animal-bracelet\snapshot_20260909_124314_563054
+2026-09-11 16:42:02 [check] ✅ 全部正常 (DB/二维码/打印稿/照片/代码/服务)
+2026-09-11 20:42:02 [backup] 快照 20260911_204201_977525 (16项, 健康项: db, qr, sheet, photos)
+2026-09-11 20:42:02 [backup] 清理旧快照 C:\DoubaoProjects\_backups\animal-bracelet\snapshot_20260909_124331_074579
+2026-09-11 20:42:02 [check] ✅ 全部正常 (DB/二维码/打印稿/照片/代码/服务)
+2026-09-11 22:42:02 [backup] 快照 20260911_224201_920088 (16项, 健康项: db, qr, sheet, photos)
+2026-09-11 22:42:02 [backup] 清理旧快照 C:\DoubaoProjects\_backups\animal-bracelet\snapshot_20260909_124351_475768
+2026-09-11 22:42:02 [check] ✅ 全部正常 (DB/二维码/打印稿/照片/代码/服务)
+2026-09-12 18:42:02 [backup] 快照 20260912_184201_972196 (16项, 健康项: db, qr, sheet, photos)
+2026-09-12 18:42:02 [backup] 清理旧快照 C:\DoubaoProjects\_backups\animal-bracelet\snapshot_20260909_222356_165082
+2026-09-12 18:42:02 [check] ✅ 全部正常 (DB/二维码/打印稿/照片/代码/服务)
+2026-09-12 21:49:58 [backup] 快照 20260912_214957_610639 (16项, 健康项: db, qr, sheet, photos)
+2026-09-12 21:49:58 [backup] 清理旧快照 C:\DoubaoProjects\_backups\animal-bracelet\snapshot_20260909_224201_966155
+2026-09-12 21:49:58 [check] ✅ 全部正常 (DB/二维码/打印稿/照片/代码/服务)
+2026-09-12 22:42:02 [backup] 快照 20260912_224202_148316 (16项, 健康项: db, qr, sheet, photos)
+2026-09-12 22:42:02 [backup] 清理旧快照 C:\DoubaoProjects\_backups\animal-bracelet\snapshot_20260910_124202_133078
+2026-09-12 22:42:02 [check] ✅ 全部正常 (DB/二维码/打印稿/照片/代码/服务)

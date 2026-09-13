@@ -4,8 +4,15 @@
 $ErrorActionPreference = 'SilentlyContinue'
 $proj = 'C:\DoubaoProjects\animal-bracelet'
 $log = "$proj\guard\guard.log"
-$python = (Get-Command python -ErrorAction SilentlyContinue).Source
-if (-not $python) { $python = "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe" }
+# 固定使用豆包沙箱 python（Get-Command 会解析到 WindowsApps 假壳导致闪黑窗）
+$python = "$env:LOCALAPPDATA\Doubao\User Data\sandbox_runtime\bases\9f6d27f23933fb44a3a1c728c88a5ce4\python\python.exe"
+if (-not (Test-Path -LiteralPath $python)) {
+  # 兜底：扫一遍 bases 目录找第一个带 python.exe 的
+  $cand = Get-ChildItem "$env:LOCALAPPDATA\Doubao\User Data\sandbox_runtime\bases" -Directory -ErrorAction SilentlyContinue |
+    ForEach-Object { Join-Path $_.FullName 'python\python.exe' } |
+    Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+  if ($cand) { $python = $cand }
+}
 
 function Write-Log($msg) {
   $line = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') $msg"
