@@ -85,9 +85,10 @@ transition: all .18s ease; white-space: nowrap;
 }
 .view-btn:hover { border-color: var(--accent); color: var(--accent); }
 .view-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-.track-style-switcher { display: inline-flex; gap: 4px; margin-left: 8px; background: rgba(255,255,255,0.95); padding: 4px; border-radius: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
-.style-btn { width: 34px; height: 34px; border: none; background: transparent; border-radius: 50%; cursor: pointer; font-size: 17px; transition: all 0.25s cubic-bezier(0.4,0,0.2,1); display: flex; align-items: center; justify-content: center; }
-.style-btn:hover { background: #E8F5F1; transform: scale(1.15); }
+.track-style-switcher { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; padding: 9px; background: rgba(26,17,48,.62); border: 1px solid rgba(255,194,77,.22); border-radius: 14px; }
+.style-btn { flex: 1 1 auto; min-width: 0; height: 40px; padding: 0 9px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); border-radius: 11px; color: rgba(235,238,245,.85); font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; white-space: nowrap; transition: all .2s ease; }
+.style-btn:hover { background: rgba(255,255,255,.12); transform: translateY(-1px); }
+.style-btn.active { background: rgba(245,197,66,.18); border-color: rgba(245,197,66,.55); color: #FFE9A8; box-shadow: 0 0 12px rgba(245,197,66,.15); }
 .style-btn.active { background: linear-gradient(135deg, #0E7C66, #10B981); box-shadow: 0 2px 10px rgba(14,124,102,0.5); transform: scale(1.1); }
 #map { height: 430px; background: #dfe8ea; }
 .loc-bar {
@@ -504,8 +505,8 @@ width: 24px; height: 24px; border-radius: 50%;
 background: var(--accent); color: #fff; font-size: 12px; font-weight: 700;
 display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.story-chapter-title { font-size: 14px; font-weight: 600; color: var(--ink); }
-.story-chapter-time { font-size: 11px; color: var(--sub); margin-left: auto; }
+.story-chapter-title { font-size: 14px; font-weight: 600; color: var(--ink); flex: 1; min-width: 0; line-height: 1.45; }
+.story-chapter-time { font-size: 11px; color: var(--sub); margin-left: auto; flex-shrink: 0; white-space: nowrap; padding-left: 8px; }
 .story-chapter-content {
 font-size: 13px; color: var(--sub); line-height: 1.7;
 max-height: 0; overflow: hidden; transition: max-height .3s ease;
@@ -1127,6 +1128,8 @@ function showTab(name) {
       t.classList.toggle('active', t.getAttribute('data-tab') === name);
     });
     if (name === 'mine') { var _mb = document.getElementById('mineBadge'); if (_mb) _mb.classList.remove('show'); }
+    var _info = document.getElementById('infoSec');
+    if (_info) _info.style.display = (name === 'photos') ? '' : 'none';
     window.scrollTo(0, 0);
     if (window.map && typeof window.map.invalidateSize === 'function') {
       setTimeout(function() { window.map.invalidateSize(); }, 120);
@@ -1591,7 +1594,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 <header>
   <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
   <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
-  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.5</span>
+  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.6</span>
 </header>
 <div id="themePanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4000;width:min(240px,86vw);background:linear-gradient(165deg,#2C1D50,#1E1338);border:1px solid rgba(255,194,77,.35);border-radius:18px;padding:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);">
   <div style="font-size:13px;font-weight:800;color:#FFE9C4;margin-bottom:10px;">🎨 选择主题 · 挑一个你喜欢的夜色</div>
@@ -1681,11 +1684,11 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
         <button class="view-btn" id="worldBtn">🌍 世界</button>
         <button class="view-btn active" id="trackBtn">🐾 轨迹</button>
         <div class="track-style-switcher">
-          <button class="style-btn active" data-style="ant" title="轨迹生长：线随旅程逐渐画出">🪶</button>
-          <button class="style-btn" data-style="dots" title="时间点阵：每个停留点的足迹">🎯</button>
-          <button class="style-btn" data-style="gradient" title="速度光谱：快慢一目了然">⚡</button>
-          <button class="style-btn" data-style="arrow" title="方向流线：导航箭头指示去向">➡️</button>
-          <button class="style-btn" data-style="heat" title="驻留热力：它在哪里生活">🔥</button>
+          <button class="style-btn active" data-style="ant">🪶 生长</button>
+          <button class="style-btn" data-style="dots">🎯 点阵</button>
+          <button class="style-btn" data-style="gradient">⚡ 速度</button>
+          <button class="style-btn" data-style="arrow">🔵 点迹</button>
+          <button class="style-btn" data-style="heat">🔥 热力</button>
         </div>
       </div>
     </div>
@@ -1913,6 +1916,8 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 <script>
 (function () {
   var animalId = decodeURIComponent((location.pathname.match(/\/animal\/([^/]+)/) || [, ''])[1] || '');
+  // —— koa 示例数据已下架：直接回首页 ——
+  if (animalId === 'koa') { try { location.replace('/'); } catch(e) {} }
   var points = [], timestamps = [], photos = [];
   var map = null, lineLayer = null, pathLayer = null;
   var worldMarker = null, playMarker = null;
