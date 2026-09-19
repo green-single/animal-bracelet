@@ -1596,7 +1596,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 <header>
   <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
   <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
-  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.7</span>
+  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.8</span>
 </header>
 <div id="themePanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4000;width:min(240px,86vw);background:linear-gradient(165deg,#2C1D50,#1E1338);border:1px solid rgba(255,194,77,.35);border-radius:18px;padding:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);">
   <div style="font-size:13px;font-weight:800;color:#FFE9C4;margin-bottom:10px;">🎨 选择主题 · 挑一个你喜欢的夜色</div>
@@ -2569,6 +2569,8 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
           // 日常任务定义
           var tasks = [
             { id: 'visit', name: '来看看它今天过得好吗', reward: '+10 经验', icon: '🌅', auto: true },
+            { id: 'greet', name: '和它打个招呼', reward: '+10 经验', icon: '👋', auto: false },
+            { id: 'postcard', name: '收藏一张它的明信片', reward: '+15 经验', icon: '💌', auto: false },
             { id: 'photos', name: '看看它最近的样子', reward: '+15 经验', icon: '📸', auto: false },
             { id: 'story', name: '听听它的故事，认识真正的它', reward: '+10 经验', icon: '📖', auto: false },
             { id: 'quiz', name: '挑战一下你对它的了解', reward: '+20 经验', icon: '🧠', auto: false }
@@ -3998,11 +4000,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (daysAgo === 0) fresh = '今天，它刚刚更新了定位！';
         else if (daysAgo === 1) fresh = '昨天，它还在路上。';
         else if (daysAgo <= 7) fresh = daysAgo + ' 天前，它留下了新的足迹。';
-        else fresh = '它正在一段安静的旅途中。';
+        else if (daysAgo <= 60) fresh = '它正在一段安静的旅途中。';
+        else fresh = '⚠️ 数据更新已暂停（最后定位 ' + (daysAgo >= 360 ? Math.floor(daysAgo/365) + ' 年前' : Math.floor(daysAgo/30) + ' 个月前') + '）';
         var latH = lastPt[0] >= 0 ? '°N' : '°S', lonH = lastPt[1] >= 0 ? '°E' : '°W';
         var locTxt = '<b>' + fmtN(Math.abs(lastPt[0])) + latH + ', ' + fmtN(Math.abs(lastPt[1])) + lonH + '</b>';
         dynEl.style.display = 'flex';
-        document.getElementById('todayIco').textContent = daysAgo === 0 ? '🌅' : (daysAgo <= 3 ? '🕊️' : '🌙');
+        document.getElementById('todayIco').textContent = daysAgo === 0 ? '🌅' : (daysAgo <= 3 ? '🕊️' : (daysAgo > 60 ? '⚠️' : '🌙'));
         document.getElementById('todayTitle').textContent = fresh;
         document.getElementById('todayText').innerHTML =
           '最新定位 ' + fmtD(lastTs) + ' · ' + locTxt + mv +
@@ -4303,7 +4306,7 @@ document.addEventListener('DOMContentLoaded', function() {
           var lts = ts[ts.length - 1];
           var _da2 = 0;
           try { _da2 = Math.max(0, Math.floor((Date.now() - new Date(lts.replace(' ', 'T')).getTime()) / 86400000)); } catch (e) {}
-          var _fresh2 = _da2 === 0 ? '今天，它刚刚更新了定位' : _da2 === 1 ? '昨天，它还在路上' : _da2 <= 7 ? _da2 + ' 天前，它留下了新的足迹' : '它正在一段安静的旅途中';
+          var _fresh2 = _da2 === 0 ? '今天，它刚刚更新了定位' : _da2 === 1 ? '昨天，它还在路上' : _da2 <= 7 ? _da2 + ' 天前，它留下了新的足迹' : _da2 <= 60 ? '它正在一段安静的旅途中' : '⚠️ 数据更新已暂停（最后定位 ' + (_da2 >= 360 ? Math.floor(_da2/365) + ' 年前' : Math.floor(_da2/30) + ' 个月前') + '）';
           var liveS2 = {
             lat: _sfmt(Math.abs(lpt[0])), latH: lpt[0] >= 0 ? '°N' : '°S',
             lon: _sfmt(Math.abs(lpt[1])), lonH: lpt[1] >= 0 ? '°E' : '°W',
@@ -4758,8 +4761,10 @@ document.addEventListener('DOMContentLoaded', function() {
   window.toggleFavPC = function (ck) {
     var k = 'fav_pc_' + (window._favAnimalId || '');
     var f = {}; try { f = JSON.parse(localStorage.getItem(k) || '{}'); } catch (e) {}
+    var isAdd = !f[ck];
     if (f[ck]) delete f[ck]; else f[ck] = 1;
     localStorage.setItem(k, JSON.stringify(f));
+    if (isAdd && window._completeTask) window._completeTask('postcard', 15);
     if (window.renderMinePC) window.renderMinePC();
   };
   // 明信片下载（canvas 生成 PNG）
