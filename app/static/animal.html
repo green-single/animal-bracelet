@@ -184,6 +184,25 @@ cursor: pointer; transition: all .15s ease;
 }
 .year-chip:hover { border-color: var(--accent); color: var(--accent); }
 .year-chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+/* 明信片大图 */
+.pcbig { display: none; position: fixed; inset: 0; z-index: 9998; background: radial-gradient(120% 100% at 50% 0%, rgba(24,32,28,.96), rgba(10,14,12,.98)); align-items: center; justify-content: center; padding: 18px; box-sizing: border-box; }
+.pcbig.active { display: flex; }
+.pcbig-card { position: relative; width: 92%; max-width: 400px; max-height: 92vh; overflow-y: auto; background: #FDF9EF; border-radius: 20px; box-shadow: 0 30px 90px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.06); animation: pcPop .4s cubic-bezier(.2,1.1,.35,1) both; }
+@keyframes pcPop { from { opacity: 0; transform: translateY(18px) scale(.94); } to { opacity: 1; transform: none; } }
+.pcbig-card::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: repeating-linear-gradient(90deg, rgba(190,150,90,.4) 0 11px, transparent 11px 22px); border-radius: 20px 20px 0 0; z-index: 2; }
+.pcbig-close { position: absolute; top: 14px; right: 14px; z-index: 5; width: 38px; height: 38px; border-radius: 50%; border: none; background: rgba(20,24,22,.55); color: #fff; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); box-shadow: 0 2px 10px rgba(0,0,0,.3); }
+.pcbig-photo { position: relative; height: 240px; overflow: hidden; background: #333; }
+.pcbig-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pcbig-photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(30,20,5,.5)); }
+.pcbig-body { padding: 18px 20px 16px; }
+.pcbig-place { font-size: 22px; font-weight: 800; color: #3E2C18; display: flex; align-items: center; gap: 8px; }
+.pcbig-sub { font-size: 12px; color: #A09170; margin-top: 6px; letter-spacing: .05em; }
+.pcbig-note { font-size: 15px; line-height: 2; margin-top: 12px; color: #4B3F2F; font-family: 'Kaiti SC', '楷体', serif; }
+.pcbig-foot { font-size: 11.5px; color: #B09A6F; margin-top: 12px; text-align: right; font-style: italic; letter-spacing: .05em; }
+.pcbig-acts { display: flex; gap: 12px; justify-content: center; margin-top: 16px; padding-top: 14px; border-top: 1.5px dashed rgba(190,150,90,.35); }
+.pcbig-fav, .pcbig-save { height: 42px; width: 42px; border-radius: 50%; border: 1.5px solid rgba(217,164,65,.7); background: #FFFDF6; font-size: 19px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,.12); transition: all .15s ease; }
+.pcbig-fav.on { border-color: #D9A441; background: linear-gradient(135deg, #FFF3D6, #FFE3A8); }
+.pcbig-fav:active, .pcbig-save:active { transform: scale(.92); }
 .lightbox {
 display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
 background: rgba(0,0,0,.94); z-index: 9999; justify-content: center; align-items: center;
@@ -808,7 +827,7 @@ padding: 10px 22px; border: none; border-radius: 22px; font-size: 13.5px; font-w
 .postcard .pc-foot { font-size: 10.5px; color: #B09A6F; margin-top: 9px; text-align: right; font-style: italic; letter-spacing: .04em; }
 .postcard .pc-acts { display: flex; gap: 8px; justify-content: flex-end; align-items: center; margin-top: 10px; padding-top: 9px; border-top: 1.5px dashed rgba(190,150,90,.3); }
 /* 收藏按钮：带边框的星星（可辨识） */
-.pc-fav, .pc-save { height: 30px; min-width: 30px; padding: 0 8px; border-radius: 15px; border: 1.5px solid rgba(217,164,65,.55); background: rgba(255,252,242,.95); font-size: 13px; font-weight: 700; color: #8A6A3C; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 3px; box-shadow: 0 1px 5px rgba(0,0,0,.06); transition: all .15s ease; }
+.pc-fav, .pc-save { height: 34px; width: 34px; border-radius: 50%; border: 1.5px solid rgba(217,164,65,.65); background: rgba(255,252,242,.98); font-size: 16px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.1); transition: all .15s ease; }
 .pc-fav.on { border-color: #D9A441; background: linear-gradient(135deg, #FFF3D6, #FFE3A8); color: #C07B1A; }
 .pc-fav:active, .pc-save:active { transform: scale(.94); }
 .letter-sec { margin-top: 16px; }
@@ -839,9 +858,13 @@ padding: 10px 22px; border: none; border-radius: 22px; font-size: 13.5px; font-w
 .letter-modal .lm-card { position: relative; width: 92%; max-width: 520px; max-height: 88vh; display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,.5); animation: lmPop .38s cubic-bezier(.2,1.1,.35,1) both; }
 @keyframes lmPop { from { opacity: 0; transform: scale(.86) translateY(22px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 .letter-modal .lm-close { position: absolute; top: 10px; right: 10px; z-index: 12; width: 34px; height: 34px; border-radius: 50%; border: none; background: rgba(0,0,0,.28); color: #fff; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.letter-modal .lm-stage { flex: 0 0 auto; padding: 44px 20px 40px; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #8A6A3C, #6E512B); min-height: 260px; }
+.letter-modal .lm-stage { flex: 0 0 auto; padding: 48px 20px 44px; display: flex; align-items: center; justify-content: center; background: radial-gradient(120% 90% at 50% 0%, #2E4A42 0%, #1D332D 55%, #14231F 100%); min-height: 264px; position: relative; overflow: hidden; }
+/* 星空点缀 */
+.lm-stage::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(1.2px 1.2px at 18% 22%, rgba(255,255,255,.55) 50%, transparent 51%), radial-gradient(1px 1px at 72% 30%, rgba(255,255,255,.4) 50%, transparent 51%), radial-gradient(1.4px 1.4px at 84% 68%, rgba(255,255,255,.35) 50%, transparent 51%), radial-gradient(1px 1px at 32% 76%, rgba(255,255,255,.45) 50%, transparent 51%), radial-gradient(1px 1px at 56% 12%, rgba(255,255,255,.3) 50%, transparent 51%), radial-gradient(1.2px 1.2px at 8% 56%, rgba(255,255,255,.3) 50%, transparent 51%); pointer-events: none; }
+/* 顶部小字 */
+.lm-stage::after { content: '· L U M I 的 来 信 ·'; position: absolute; top: 16px; left: 0; right: 0; text-align: center; font-size: 10px; letter-spacing: .5em; color: rgba(226,240,234,.55); font-weight: 600; font-family: Georgia, serif; pointer-events: none; }
 /* 大信封 */
-.lm-env { position: relative; width: 88%; max-width: 360px; min-height: 168px; background: linear-gradient(150deg, #F5E3C1, #EED3A6); border: 1.5px solid rgba(190,150,90,.55); border-radius: 12px; padding: 36px 24px 30px; cursor: pointer; box-shadow: 0 14px 36px rgba(0,0,0,.4); transition: transform .3s ease; box-sizing: border-box; }
+.lm-env { position: relative; width: 88%; max-width: 360px; min-height: 168px; background: linear-gradient(150deg, #F7E7C6, #EFD7A8); border: 1.5px solid rgba(226,186,110,.75); border-radius: 12px; padding: 36px 24px 30px; cursor: pointer; box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 18px 44px rgba(0,0,0,.5), 0 0 30px rgba(226,186,110,.12); transition: transform .3s ease; box-sizing: border-box; }
 .lm-env::after { content: ''; position: absolute; inset: 0; border-radius: 12px; background: repeating-linear-gradient(45deg, rgba(150,110,50,.05) 0 2px, transparent 2px 7px); pointer-events: none; }
 .lm-env:hover { transform: translateY(-2px) scale(1.01); }
 .lm-env .lm-env-flap { position: absolute; top: 0; left: 0; width: 100%; height: 68px; background: linear-gradient(180deg, #F0DDB8, #E2C692); clip-path: polygon(0 0, 100% 0, 50% 100%); transform-origin: top center; transition: transform .75s cubic-bezier(.34,1.3,.5,1); z-index: 3; border-bottom: 1px dashed rgba(190,150,90,.5); }
@@ -1633,7 +1656,20 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 <body>
   <div id="pageLoader"><div class="pl-radar"><span></span><span></span><span></span><i></i></div><div class="pl-text">正在追踪它的位置…</div></div>
   <!-- 照片灯箱（放在body开头，确保JS执行时元素存在） -->
-  <div class="lightbox" id="lightbox">
+  <div class="pcbig" id="pcBigOverlay" onclick="if(event.target===this)closePcBig()">
+  <div class="pcbig-card" id="pcBigCard">
+    <button class="pcbig-close" onclick="closePcBig()">✕</button>
+    <div class="pcbig-photo" id="pcBigPhoto"></div>
+    <div class="pcbig-body">
+      <div class="pcbig-place" id="pcBigPlace"></div>
+      <div class="pcbig-sub" id="pcBigSub"></div>
+      <div class="pcbig-note" id="pcBigNote"></div>
+      <div class="pcbig-foot" id="pcBigFoot"></div>
+      <div class="pcbig-acts"><span class="pcbig-fav" id="pcBigFav" onclick="event.stopPropagation();toggleFavPC(window._pcBigKey)">☆</span><span class="pcbig-save" onclick="event.stopPropagation();savePC(window._pcBigKey)">💾</span></div>
+    </div>
+  </div>
+</div>
+<div class="lightbox" id="lightbox">
     <div class="lightbox-spinner" id="lbSpinner"></div>
     <div class="lightbox-error" id="lbError" style="display:none;"></div>
     <button class="lightbox-close" id="lbClose">&times;</button>
@@ -4651,7 +4687,7 @@ document.addEventListener('DOMContentLoaded', function() {
           var _pcKey3 = 'pc_' + animalId, _cards3 = [];
           try { _cards3 = JSON.parse(localStorage.getItem(_pcKey3)) || []; } catch(e) {}
           window._favAnimalName = a.name || 'it';
-          var _pcPhoto = photos.length ? (photos[0].url || photos[0]) + '' : '';
+          var _pcPhoto = (a.photos && a.photos.length) ? (a.photos[0].url || a.photos[0]) + '' : (window.photos && window.photos.length ? (window.photos[0].url || window.photos[0]) + '' : '');
           window.renderMinePC = function () {
             var favPC = {};
             try { favPC = JSON.parse(localStorage.getItem('fav_pc_' + animalId) || '{}'); } catch (e) {}
@@ -4664,7 +4700,7 @@ document.addEventListener('DOMContentLoaded', function() {
               _cards3.forEach(function(cd) {
                 var ck = (cd.d || 0) + '_' + (cd.place || '');
                 if (favOnly && !favPC[ck]) return;
-                _pcHtml += '<div class="postcard' + (favPC[ck] ? ' faved' : '') + '"><div class="pc-photo"><img src="' + (_pcPhoto || '') + '" alt="" loading="lazy"><div class="pc-place" data-ico="' + (cd.ico || '📍') + '">' + (cd.place || '远方') + '</div><div class="pc-stamp">' + (cd.ico || '📍') + '<br>NEW<br>PLACE</div></div><div class="pc-body"><div class="pc-sub">' + (cd.date || '') + ' · 寄自 ' + (a.name || '它') + ' 的旅途</div><div class="pc-note">' + (cd.note || '') + '</div><div class="pc-foot">From the journey of ' + (a.name || '') + ' ✈️</div><div class="pc-acts"><span class="pc-fav' + (favPC[ck] ? ' on' : '') + '" onclick="event.stopPropagation();toggleFavPC(\'' + ck + '\')">' + (favPC[ck] ? '⭐ 已收藏' : '☆ 收藏') + '</span><span class="pc-save" onclick="event.stopPropagation();savePC(\'' + ck + '\')">💾 保存</span></div></div></div>';
+                _pcHtml += '<div class="postcard' + (favPC[ck] ? ' faved' : '') + '" onclick="openPcBig(\'' + ck + '\')"><div class="pc-photo"><img src="' + (_pcPhoto || '') + '" alt="" loading="lazy"><div class="pc-place" data-ico="' + (cd.ico || '📍') + '">' + (cd.place || '远方') + '</div><div class="pc-stamp">' + (cd.ico || '📍') + '<br>NEW<br>PLACE</div></div><div class="pc-body"><div class="pc-sub">' + (cd.date || '') + ' · 寄自 ' + (a.name || '它') + ' 的旅途</div><div class="pc-note">' + (cd.note || '') + '</div><div class="pc-foot">From the journey of ' + (a.name || '') + ' ✈️</div><div class="pc-acts"><span class="pc-fav' + (favPC[ck] ? ' on' : '') + '" onclick="event.stopPropagation();toggleFavPC(\'' + ck + '\')" title="收藏">' + (favPC[ck] ? '⭐' : '☆') + '</span><span class="pc-save" onclick="event.stopPropagation();savePC(\'' + ck + '\')" title="保存">💾</span></div></div></div>';
               });
             } else {
               _pcHtml = '<div style="font-size:12px;color:var(--sub);padding:12px 14px;border:1.5px dashed rgba(14,124,102,.3);border-radius:14px;line-height:1.7;">📮 还没有明信片。<br>当 <b>' + (a.name || '它') + '</b> 抵达一个新的地方，会自动给你寄来一张明信片，收藏在这里。最多 9 张。</div>';
@@ -4672,6 +4708,24 @@ document.addEventListener('DOMContentLoaded', function() {
             _pcWall.innerHTML = _pcHtml;
             _pcSec.style.display = 'block';
           };
+          window.openPcBig = function (ck) {
+            var cd = null;
+            _cards3.forEach(function (x) { var k = (x.d||0) + '_' + (x.place||''); if (k === ck) cd = x; });
+            if (!cd) return;
+            window._pcBigKey = ck;
+            var ov = document.getElementById('pcBigOverlay');
+            document.getElementById('pcBigPhoto').innerHTML = '<img src="' + (_pcPhoto||'') + '" alt="">';
+            document.getElementById('pcBigPlace').textContent = (cd.ico||'📍') + ' ' + (cd.place||'远方');
+            document.getElementById('pcBigSub').textContent = (cd.date||'') + ' · 寄自 ' + (a.name||'它') + ' 的旅途';
+            document.getElementById('pcBigNote').textContent = cd.note||'';
+            document.getElementById('pcBigFoot').textContent = 'From the journey of ' + (a.name||'') + ' ✈️';
+            var favPC = {}; try { favPC = JSON.parse(localStorage.getItem('fav_pc_' + animalId) || '{}'); } catch(e) {}
+            var fb = document.getElementById('pcBigFav');
+            fb.className = 'pcbig-fav' + (favPC[ck] ? ' on' : '');
+            fb.textContent = favPC[ck] ? '⭐' : '☆';
+            ov.classList.add('active');
+          };
+          window.closePcBig = function () { document.getElementById('pcBigOverlay').classList.remove('active'); };
           window.renderMinePC();
         }
       } catch(e) { console.log('postcard err', e); }
