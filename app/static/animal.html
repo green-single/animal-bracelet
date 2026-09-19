@@ -5416,6 +5416,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- ===== 雪主题：趴着睡觉的棕熊 ===== -->
 <div id="bearArt">
   <div id="bearZzz" style="display:none;position:absolute;top:-14px;right:-6px;font-size:13px;font-weight:800;color:rgba(235,245,255,.95);letter-spacing:2px;text-shadow:0 0 8px rgba(180,210,255,.6);font-family:Georgia,serif;white-space:nowrap;pointer-events:none;"><span class="z1">Z</span><span class="z2">z</span><span class="z3">z</span></div>
+  <div id="bearHeart" style="display:none;position:absolute;top:-16px;right:-8px;font-size:16px;pointer-events:none;filter:drop-shadow(0 0 6px rgba(255,140,160,.8));"><span style="display:inline-block;animation:heartFloat 1.6s ease-out infinite;">💗</span></div>
   <svg viewBox="0 0 200 120" width="170" height="102">
     <defs>
       <radialGradient id="bearFur" cx="42%" cy="35%" r="75%">
@@ -5439,26 +5440,28 @@ document.addEventListener('DOMContentLoaded', function() {
     <ellipse cx="176" cy="94" rx="7" ry="5" fill="#8A6140"/>
     <!-- 前腿（身前交叉） -->
     <ellipse cx="66" cy="92" rx="13" ry="9" fill="#5C3D24" transform="rotate(-8 66 92)"/>
-    <!-- 头（枕在前爪上） -->
-    <ellipse cx="46" cy="72" rx="26" ry="22" fill="url(#bearFur)"/>
-    <!-- 口鼻 -->
-    <ellipse cx="30" cy="80" rx="11" ry="8" fill="#6E4B2D"/>
-    <ellipse cx="27" cy="78" rx="5" ry="4" fill="#3E2A18"/>
-    <!-- 耳朵 -->
-    <ellipse cx="40" cy="54" rx="8" ry="8" fill="#7C5233"/>
-    <ellipse cx="40" cy="54" rx="4.5" ry="4.5" fill="#9A6B4A"/>
-    <ellipse cx="56" cy="52" rx="8" ry="8" fill="#7C5233"/>
-    <ellipse cx="56" cy="52" rx="4.5" ry="4.5" fill="#9A6B4A"/>
-    <!-- 眼睛：睡眼（闭）/ 醒眼（圆），class 切换 -->
-    <g class="bear-sleep-eyes">
-      <path d="M36 66 q3 2.5 6 0" stroke="#2A1B0F" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-      <path d="M50 65 q3 2.5 6 0" stroke="#2A1B0F" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-    </g>
-    <g class="bear-open-eyes" style="display:none;">
-      <circle cx="38" cy="65" r="3.1" fill="#2A1B0F"/>
-      <circle cx="39.2" cy="64" r="1" fill="#fff"/>
-      <circle cx="52" cy="64" r="3.1" fill="#2A1B0F"/>
-      <circle cx="53.2" cy="63" r="1" fill="#fff"/>
+    <!-- 头（枕在前爪上，g 组做歪头/抬头） -->
+    <g class="bear-head">
+      <ellipse cx="46" cy="72" rx="26" ry="22" fill="url(#bearFur)"/>
+      <!-- 口鼻 -->
+      <ellipse cx="30" cy="80" rx="11" ry="8" fill="#6E4B2D"/>
+      <ellipse cx="27" cy="78" rx="5" ry="4" fill="#3E2A18"/>
+      <!-- 耳朵 -->
+      <ellipse cx="40" cy="54" rx="8" ry="8" fill="#7C5233"/>
+      <ellipse cx="40" cy="54" rx="4.5" ry="4.5" fill="#9A6B4A"/>
+      <ellipse cx="56" cy="52" rx="8" ry="8" fill="#7C5233"/>
+      <ellipse cx="56" cy="52" rx="4.5" ry="4.5" fill="#9A6B4A"/>
+      <!-- 眼睛：睡眼（闭）/ 醒眼（圆），class 切换 -->
+      <g class="bear-sleep-eyes">
+        <path d="M36 66 q3 2.5 6 0" stroke="#2A1B0F" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <path d="M50 65 q3 2.5 6 0" stroke="#2A1B0F" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="bear-open-eyes" style="display:none;">
+        <circle cx="38" cy="65" r="3.1" fill="#2A1B0F"/>
+        <circle cx="39.2" cy="64" r="1" fill="#fff"/>
+        <circle cx="52" cy="64" r="3.1" fill="#2A1B0F"/>
+        <circle cx="53.2" cy="63" r="1" fill="#fff"/>
+      </g>
     </g>
     <!-- 背上的雪花 -->
     <circle cx="92" cy="70" r="1.6" fill="rgba(255,255,255,.85)"/>
@@ -5489,6 +5492,9 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
 @keyframes bearTail { 0%,100% { transform: rotate(12deg); } 50% { transform: rotate(26deg); } }
 #bearArt.blink .bear-open-eyes { display: none; }
 #bearArt.blink .bear-sleep-eyes { display: block; }
+/* 清醒歪头 */
+#bearArt.awake .bear-head { transform: translate(2px,-5px) rotate(-9deg); transform-origin: 60% 85%; transition: transform .7s cubic-bezier(.3,1.3,.4,1); }
+@keyframes heartFloat { 0% { transform: translateY(0) scale(.6); opacity: 0; } 22% { opacity: 1; transform: translateY(-6px) scale(1.1); } 100% { transform: translateY(-26px) scale(1); opacity: 0; } }
 @keyframes zFloat { 0% { transform: translateY(0) scale(.6); opacity: 0; } 18% { opacity: 1; } 100% { transform: translateY(-34px) scale(1.15); opacity: 0; } }
 #bearZzz .z1 { display: inline-block; animation: zFloat 1.5s ease-out infinite; }
 #bearZzz .z2 { display: inline-block; animation: zFloat 1.5s ease-out .5s infinite; }
@@ -5506,7 +5512,8 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
   bear.style.cursor = 'pointer';
   var zzz = document.getElementById('bearZzz');
   var state = 'sleep'; // sleep -> snore -> awake -> sleep
-  var snoreTimer = null, blinkTimer = null;
+  var snoreTimer = null, blinkTimer = null, autoSleepTimer = null;
+  var heart = document.getElementById('bearHeart');
 
   // Web Audio 鼾声（低频呼噜，点击触发不受自动播放限制）
   var actx = null;
@@ -5534,21 +5541,26 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
     state = 'sleep';
     bear.classList.remove('snoring', 'awake', 'blink');
     if (zzz) zzz.style.display = 'none';
+    if (heart) heart.style.display = 'none';
+    clearTimeout(autoSleepTimer);
   }
   function toSnore() {
     state = 'snore';
     bear.classList.add('snoring');
     bear.classList.remove('awake', 'blink');
     if (zzz) zzz.style.display = 'block';
+    if (heart) heart.style.display = 'none';
     snore();
     clearTimeout(snoreTimer);
     clearTimeout(blinkTimer);
+    clearTimeout(autoSleepTimer);
   }
   function toAwake() {
     state = 'awake';
     bear.classList.add('awake');
     bear.classList.remove('snoring', 'blink');
     if (zzz) zzz.style.display = 'none';
+    if (heart) heart.style.display = 'block';
     // 眨眼苏醒过程：闭眼眨2次 → 睁眼
     var n = 0;
     (function blinkCycle() {
@@ -5559,6 +5571,9 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
         if (n < 3) blinkTimer = setTimeout(blinkCycle, 380);
       }, 180);
     })();
+    // 8 秒后慢慢趴回去睡着
+    clearTimeout(autoSleepTimer);
+    autoSleepTimer = setTimeout(function () { toSleep(); }, 8000);
   }
 
   bear.addEventListener('click', function () {
