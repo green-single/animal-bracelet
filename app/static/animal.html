@@ -800,15 +800,25 @@ padding: 10px 22px; border: none; border-radius: 22px; font-size: 13.5px; font-w
 .letter-sec { margin-top: 16px; }
 .letter-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
 .letter-list { display: flex; flex-direction: column; gap: 8px; }
-.letter-item {
-border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px;
-background: var(--card); font-size: 12.5px; line-height: 1.7; color: #374151;
-}
-.letter-item.open { border-color: rgba(14,124,102,.4); background: linear-gradient(135deg, rgba(14,124,102,.05), rgba(14,124,102,.1)); }
-.letter-item .letter-head { display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
-.letter-item .letter-st { font-size: 11px; color: var(--sub); font-weight: 400; }
-.letter-item .letter-body { margin-top: 6px; }
-.letter-item.locked { opacity: .65; }
+.letter-item { position: relative; border-radius: 16px; overflow: hidden; background: linear-gradient(150deg, #F5E3C1, #EED3A6); border: 1px solid rgba(190,150,90,.45); box-shadow: 0 4px 14px rgba(0,0,0,.16); font-size: 12.5px; }
+/* 信封正面 */
+.letter-env { position: relative; padding: 16px 16px 14px 18px; cursor: pointer; min-height: 86px; box-sizing: border-box; }
+/* 封口 flap（可拆开） */
+.letter-env .env-flap { position: absolute; top: 0; left: 0; width: 100%; height: 44px; background: linear-gradient(180deg, #F0DDB8, #E2C692); clip-path: polygon(0 0, 100% 0, 50% 100%); transform-origin: top center; transition: transform .6s cubic-bezier(.34,1.3,.5,1); z-index: 3; border-bottom: 1px dashed rgba(190,150,90,.45); }
+.letter-item.open .env-flap { transform: rotateX(168deg); }
+/* 邮票 */
+.letter-env .env-stamp { position: absolute; top: 12px; right: 14px; width: 38px; height: 44px; background: #FFFDF6; border: 2px solid rgba(170,130,70,.55); box-shadow: inset 0 0 0 2px #FFFDF6, 0 1px 5px rgba(0,0,0,.18); display: flex; align-items: center; justify-content: center; font-size: 17px; border-radius: 3px; z-index: 4; }
+/* 信封正面文字 */
+.env-t { font-size: 14.5px; font-weight: 800; color: #5E421F; letter-spacing: .02em; }
+.env-st { font-size: 11.5px; color: #96723F; margin-top: 4px; font-weight: 600; }
+.env-from { font-size: 11px; color: #AB8B56; margin-top: 8px; font-style: italic; }
+/* 信纸 */
+.letter-item .letter-body { background: #FFFDF6; color: #3E342A; padding: 15px 17px; border-top: 1.5px dashed rgba(180,140,80,.45); font-size: 13px; line-height: 1.85; }
+.letter-item.locked { opacity: .72; filter: grayscale(.35); }
+.letter-item.locked .env-flap { display: none; }
+.letter-item.locked .env-stamp { filter: grayscale(.7); }
+.letter-fav { display: inline-block; margin: 8px 14px 10px; font-size: 16px; cursor: pointer; z-index: 5; position: relative; }
+.letter-fav.on { color: #F59E0B; }
 .msg-sec { margin-top: 18px; padding: 14px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
 .msg-title { font-size: 14.5px; font-weight: 700; margin-bottom: 8px; }
 .msg-sub { font-size: 11.5px; color: var(--sub); margin-bottom: 10px; }
@@ -1033,7 +1043,7 @@ transition: transform .15s ease;
   .sec-fav-btn.on { color: #B45309; border-color: #F59E0B; background: rgba(245,158,11,.12); }
   .letter-item .letter-head { cursor: pointer; }
   .letter-item .letter-body.hide { display: none; }
-  .letter-fav { margin-left: auto; padding: 0 4px; cursor: pointer; font-size: 14px; }
+  .letter-fav { position: absolute; bottom: 6px; right: 14px; z-index: 5; cursor: pointer; font-size: 16px; }
   .letter-fav.on { color: #F59E0B; }
   .pc-acts { position: absolute; right: 64px; top: 12px; display: flex; flex-direction: column; gap: 6px; }
   .pc-fav, .pc-save { width: 27px; height: 27px; border-radius: 50%; background: rgba(255,255,255,.9); border: 1px solid #eee4cd; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
@@ -1596,7 +1606,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 <header>
   <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
   <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
-  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.9</span>
+  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.10</span>
 </header>
 <div id="themePanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4000;width:min(240px,86vw);background:linear-gradient(165deg,#2C1D50,#1E1338);border:1px solid rgba(255,194,77,.35);border-radius:18px;padding:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);">
   <div style="font-size:13px;font-weight:800;color:#FFE9C4;margin-bottom:10px;">🎨 选择主题 · 挑一个你喜欢的夜色</div>
@@ -2044,16 +2054,6 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
     };
     var th = animalThemes[animalId] || animalThemes.noe;
     
-    // 起点标记：旅程从这里开始（动物图标）
-    var sMark = L.marker(smooth[0], {
-      icon: L.divIcon({
-        className: '',
-        html: '<div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,' + th.light + ',' + th.main + ');border:3px solid rgba(255,255,255,.95);box-shadow:0 0 18px ' + th.main + 'aa, 0 3px 10px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;font-size:15px;">' + th.emoji + '</div>',
-        iconSize: [34, 34], iconAnchor: [17, 17]
-      })
-    }).addTo(map);
-    trackLayers.push(sMark);
-    
     // ===== 1. 🪶 轨迹生长（默认，NatGeo风格）：线从起点逐渐画出 =====
     if (style === 'ant') {
       // 淡色底图轨迹（已完成的部分）
@@ -2236,6 +2236,9 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
     document.getElementById('trackBtn').classList.remove('active');
     if (lineLayer) lineLayer.setStyle({ opacity: 0 });
     if (pathLayer) pathLayer.setStyle({ opacity: 0 });
+    clearTrackLayers();
+    if (playMarker) playMarker.setOpacity(0);
+    var sw = document.querySelector('.track-style-switcher'); if (sw) sw.style.display = 'none';
     if (map && points.length) {
       map.setView([15, 10], 2, { animate: true });
       if (!worldMarker) {
@@ -2251,9 +2254,13 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
     document.getElementById('worldBtn').classList.remove('active');
     if (lineLayer) lineLayer.setStyle({ opacity: .55 });
     if (pathLayer) pathLayer.setStyle({ opacity: .95 });
+    if (worldMarker) { try { map.removeLayer(worldMarker); } catch(e){} worldMarker = null; }
+    if (playMarker) playMarker.setOpacity(1);
+    var sw = document.querySelector('.track-style-switcher'); if (sw) sw.style.display = 'flex';
     if (map && points.length) {
       map.fitBounds(L.latLngBounds(points).pad(0.12), { animate: true });
-      if (worldMarker) worldMarker.closeTooltip();
+      clearTrackLayers();
+      renderTrack(smoothPath(points.slice(0, idx + 1), 2), currentTrackStyle);
     }
   }
 
@@ -3151,8 +3158,8 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
             div.innerHTML =
               '<div class="story-chapter-header">' +
                 '<div class="story-chapter-num">' + (locked ? '🔒' : chapter.num) + '</div>' +
-                '<div class="story-chapter-title">' + chapter.title + '</div>' +
-                '<div class="story-chapter-time">' + chapter.time + '</div>' +
+                '<div class="story-chapter-title">' + (locked ? '？？？' : chapter.title) + '</div>' +
+                '<div class="story-chapter-time">' + (locked ? '· 待解锁' : chapter.time) + '</div>' +
               '</div>' +
               '<div class="story-chapter-content">' + chapter.content + '</div>' +
               (locked ? ('<div class="story-lock-hint">' + chapter.unlockHint + '</div>') : '');
@@ -4354,7 +4361,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
           }
           if (lv2) { try { window._hasNewLetter = true; } catch(e) {} }
-          if (lv2) liveHtml = '<div class="letter-item live"><div class="letter-head"><span>' + lv2.ico + ' ' + lv2.t + '</span><span class="letter-st">📬 今日来信</span></div><div class="letter-body">' + lv2.body + '</div></div>';
+          if (lv2) liveHtml = '<div class="letter-item open"><div class="letter-env"><div class="env-flap"></div><div class="env-stamp">' + lv2.ico + '</div><div class="env-t">' + lv2.t + '</div><div class="env-st">📬 今日来信 · 点击拆开</div><div class="env-from">来自 ' + (a.name || '它') + ' 的旅途</div></div><div class="letter-body hide">' + lv2.body + '</div></div>';
         } catch (e) { console.log('liveLetter err:', e); }
       }
       window._favAnimalId = animalId;
@@ -4366,11 +4373,11 @@ document.addEventListener('DOMContentLoaded', function() {
         letters.forEach(function (L, Lidx) {
           if (favOnly && !favL[Lidx]) return;
           if (days < 0) {
-            html += '<div class="letter-item locked"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">🔒 领养后解锁</span></div><div class="letter-body">' + (L.d === 0 ? '扫码领养它，这封信会立刻送到你手上。' : '扫码领养它，这封信会在第 ' + L.d + ' 天送到你手上。') + '</div></div>';
+            html += '<div class="letter-item locked"><div class="letter-env"><div class="env-stamp">' + L.ico + '</div><div class="env-t">' + L.t + '</div><div class="env-st">🔒 领养后解锁</div><div class="env-from">来自 ' + (a.name || '它') + '</div></div><div class="letter-body hide">' + (L.d === 0 ? '扫码领养它，这封信会立刻送到你手上。' : '扫码领养它，这封信会在第 ' + L.d + ' 天送到你手上。') + '</div></div>';
           } else if (days >= L.d) {
-            html += '<div class="letter-item open"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">💌 已送达</span></div><span class="letter-fav' + (favL[Lidx] ? ' on' : '') + '" onclick="event.stopPropagation();toggleFavLetter(' + Lidx + ')">' + (favL[Lidx] ? '⭐' : '☆') + '</span><div class="letter-body">' + L.body + '</div></div>';
+            html += '<div class="letter-item open"><div class="letter-env"><div class="env-flap"></div><div class="env-stamp">' + L.ico + '</div><div class="env-t">' + L.t + '</div><div class="env-st">💌 已送达 · 点击拆开</div><div class="env-from">来自 ' + (a.name || '它') + '</div></div><span class="letter-fav' + (favL[Lidx] ? ' on' : '') + '" onclick="event.stopPropagation();toggleFavLetter(' + Lidx + ')">' + (favL[Lidx] ? '⭐' : '☆') + '</span><div class="letter-body hide">' + L.body + '</div></div>';
           } else {
-            html += '<div class="letter-item locked"><div class="letter-head"><span>' + L.ico + ' ' + L.t + '</span><span class="letter-st">再陪伴 ' + (L.d - days) + ' 天</span></div><div class="letter-body">它正在远方为你攒一个故事，第 ' + L.d + ' 天准时送达。</div></div>';
+            html += '<div class="letter-item locked"><div class="letter-env"><div class="env-stamp">' + L.ico + '</div><div class="env-t">' + L.t + '</div><div class="env-st">🔒 再陪伴 ' + (L.d - days) + ' 天</div><div class="env-from">来自 ' + (a.name || '它') + '</div></div><div class="letter-body hide">它正在远方为你攒一个故事，第 ' + L.d + ' 天准时送达。</div></div>';
           }
         });
         letterList.innerHTML = html;
@@ -4732,10 +4739,13 @@ document.addEventListener('DOMContentLoaded', function() {
   };
   // 信：点击头部展开/收起单封
   document.addEventListener('click', function (e) {
-    var h = e.target && e.target.closest ? e.target.closest('.letter-head') : null;
+    var h = e.target && e.target.closest ? e.target.closest('.letter-env') : null;
     if (!h) return;
-    var b = h.parentElement ? h.parentElement.querySelector('.letter-body') : null;
-    if (b && b.classList) b.classList.toggle('hide');
+    var item = h.parentElement;
+    if (item && item.classList.contains('locked')) return;   // 未解锁的信封不能拆
+    var b = item ? item.querySelector('.letter-body') : null;
+    if (item) item.classList.add('open');
+    if (b && b.classList) { b.classList.toggle('hide'); if (!b.classList.contains('hide')) b.scrollIntoView({behavior:'smooth', block:'nearest'}); }
   });
   // 收藏过滤切换
   window.toggleFavOnly = function (kind) {
@@ -4825,12 +4835,9 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
   <div class="music-tip" id="musicTip" style="display:none;font-size:11.5px;color:rgba(245,237,216,.75);line-height:1.6;margin:-4px 2px 10px;">💝 这是 <b id="musicTipName" style="color:#F5C542;">它</b> 的专属之声——根据它的性格为你演奏。</div>
   <div class="music-grid">
-    <button class="music-opt soul" data-music="soul">💝 它的专属之声</button>
-    <button class="music-opt" data-music="piano">🎹 轻柔钢琴</button>
-    <button class="music-opt" data-music="nature">🌿 自然原野</button>
-    <button class="music-opt" data-music="lofi">🌙 夜晚 Lo-Fi</button>
-    <button class="music-opt" data-music="ambient">🌊 深海氛围</button>
+    <button class="music-opt soul" data-music="soul">💝 专属之声 · 温柔陪伴</button>
   </div>
+  <div style="font-size:11px;color:rgba(245,237,216,.6);line-height:1.7;margin-top:10px;text-align:center;">一段为它而作的温柔旋律：清晨的钢琴与微风，像它在远方轻轻呼唤你。</div>
   <div class="music-now" id="musicNow" style="font-size:11.5px;color:rgba(245,197,66,.85);margin-top:10px;text-align:center;display:none;">♪ 正在播放：<b id="musicNowName"></b></div>
   <button class="music-off" id="musicOff">🔇 关闭音乐</button>
 </div>
@@ -4863,6 +4870,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var AC = window.AudioContext || window.webkitAudioContext;
   var actx = null, master = null, timer = null, timers = [];
   var current = null;
+  var bgmAudio = null;
 
   function ensureCtx() {
     if (!actx) { actx = new AC(); master = actx.createGain(); master.gain.value = 0.16; master.connect(actx.destination); }
@@ -4871,6 +4879,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function stopMusic() {
     timers.forEach(clearInterval); timers = [];
     if (timer) { clearInterval(timer); timer = null; }
+    if (bgmAudio) { try { bgmAudio.pause(); bgmAudio.currentTime = 0; } catch(e){} }
     if (master && actx) { try { master.gain.cancelScheduledValues(actx.currentTime); master.gain.setValueAtTime(0.0001, actx.currentTime); } catch(e){} }
     current = null;
   }
@@ -4945,8 +4954,17 @@ document.addEventListener('DOMContentLoaded', function() {
   // ===== 动物专属灵魂之声：按动物性格定制 =====
   // Lumi（欧斑鸠）：温柔 深情 善良 纯真 顾家 → 温暖五声旋律+轻柔低音+偶尔咕咕
   function startSoul() {
-    if (currentAnimal === 'turtle' || !soulRunners[currentAnimal]) { soulRunners.turtle(); return; }
-    soulRunners[currentAnimal]();
+    // 真实氛围音乐：温柔钢琴+竖琴+微风，循环播放
+    if (timers.length) { timers.forEach(clearInterval); timers = []; }
+    if (timer) { clearInterval(timer); timer = null; }
+    if (master && actx) { try { master.gain.cancelScheduledValues(actx.currentTime); master.gain.setValueAtTime(0.0001, actx.currentTime); } catch(e){} }
+    if (!bgmAudio) {
+      bgmAudio = new Audio('/static/assets/music/lumi_bgm_web.wav');
+      bgmAudio.loop = true;
+      bgmAudio.volume = 0.8;
+    }
+    var p = bgmAudio.play();
+    if (p && p.catch) p.catch(function(){});
   }
   var soulRunners = {
     turtle: function() {
@@ -5044,7 +5062,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setActive();
     var now = document.getElementById('musicNow');
     var nowName = document.getElementById('musicNowName');
-    var names = { soul: '它的专属之声', piano: '轻柔钢琴', nature: '自然原野', lofi: '夜晚 Lo-Fi', ambient: '深海氛围' };
+    var names = { soul: '专属之声 · 温柔陪伴', piano: '轻柔钢琴', nature: '自然原野', lofi: '夜晚 Lo-Fi', ambient: '深海氛围' };
     if (now && nowName) { now.style.display = 'block'; nowName.textContent = names[type] || ''; }
   }
   function setActive() {
