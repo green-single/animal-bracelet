@@ -85,8 +85,8 @@ transition: all .18s ease; white-space: nowrap;
 }
 .view-btn:hover { border-color: var(--accent); color: var(--accent); }
 .view-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-.track-style-switcher { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; padding: 9px; background: rgba(26,17,48,.62); border: 1px solid rgba(255,194,77,.22); border-radius: 14px; }
-.style-btn { flex: 1 1 auto; min-width: 0; height: 40px; padding: 0 9px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); border-radius: 11px; color: rgba(235,238,245,.85); font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; white-space: nowrap; transition: all .2s ease; }
+.track-style-switcher { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; flex: 0 0 100%; box-sizing: border-box; margin: 10px 0 0; padding: 9px; background: rgba(26,17,48,.62); border: 1px solid rgba(255,194,90,.25); border-radius: 14px; }
+.style-btn { flex: 1 1 auto; min-width: 0; height: 40px; padding: 0 9px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); border-radius: 10px; color: rgba(255,255,255,.85); font-size: 12px; font-weight: 600; cursor: pointer; transition: all .18s ease; }
 .style-btn:hover { background: rgba(255,255,255,.12); transform: translateY(-1px); }
 .style-btn.active { background: rgba(245,197,66,.18); border-color: rgba(245,197,66,.55); color: #FFE9A8; box-shadow: 0 0 12px rgba(245,197,66,.15); }
 .style-btn.active { background: linear-gradient(135deg, #0E7C66, #10B981); box-shadow: 0 2px 10px rgba(14,124,102,0.5); transform: scale(1.1); }
@@ -745,8 +745,10 @@ header { padding: 8px 12px; gap: 8px; justify-content: flex-end; }
 .map-head .avatar { width: 50px; height: 50px; }
 .map-head .t { font-size: 18px; }
 .map-head .s { font-size: 12px; }
-.view-btns { gap: 5px; }
-.view-btn { padding: 7px 11px; font-size: 11.5px; }
+.view-btns { gap: 3px; }
+.view-btn { padding: 5px 8px; font-size: 10px; font-weight: 600; }
+.track-style-switcher { width: 100%; flex: 0 0 100%; box-sizing: border-box; margin: 8px 0 2px; }
+.style-btn { height: 32px; font-size: 11px; padding: 0 7px; }
 #map { height: 380px; }
 
 .code-search input { width: 92px; }
@@ -1594,7 +1596,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 <header>
   <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
   <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
-  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.6</span>
+  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.7</span>
 </header>
 <div id="themePanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4000;width:min(240px,86vw);background:linear-gradient(165deg,#2C1D50,#1E1338);border:1px solid rgba(255,194,77,.35);border-radius:18px;padding:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);">
   <div style="font-size:13px;font-weight:800;color:#FFE9C4;margin-bottom:10px;">🎨 选择主题 · 挑一个你喜欢的夜色</div>
@@ -1683,13 +1685,13 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
       <div class="view-btns">
         <button class="view-btn" id="worldBtn">🌍 世界</button>
         <button class="view-btn active" id="trackBtn">🐾 轨迹</button>
-        <div class="track-style-switcher">
-          <button class="style-btn active" data-style="ant">🪶 生长</button>
-          <button class="style-btn" data-style="dots">🎯 点阵</button>
-          <button class="style-btn" data-style="gradient">⚡ 速度</button>
-          <button class="style-btn" data-style="arrow">🔵 点迹</button>
-          <button class="style-btn" data-style="heat">🔥 热力</button>
-        </div>
+      </div>
+      <div class="track-style-switcher">
+        <button class="style-btn active" data-style="ant">🪶 生长</button>
+        <button class="style-btn" data-style="dots">🎯 点阵</button>
+        <button class="style-btn" data-style="gradient">⚡ 速度</button>
+        <button class="style-btn" data-style="arrow">🔵 点迹</button>
+        <button class="style-btn" data-style="heat">🔥 热力</button>
       </div>
     </div>
 
@@ -1894,7 +1896,8 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
       <div class="story-body" id="storyBody"></div>
     </div>
     <div class="photo-wall">
-      <div class="cap">她的照片 · Wikimedia Commons（CC 协议）</div>
+      <div class="cap">📸 它的照片 · 真实野外影像（Wikimedia Commons · CC 协议）</div>
+      <div class="cap-sub" style="font-size:11px;color:var(--sub);margin:-2px 0 10px;line-height:1.55;opacity:.9;">这些是它所在物种的真实照片，由不同观察者在野外拍摄；实时定位与迁徙轨迹来自追踪设备记录。照片用于认识它的模样。</div>
       <div class="photos" id="photos"></div>
     </div>
     <div class="note-block" id="dataNote"></div>
@@ -4320,6 +4323,9 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
               var _pcKey2 = 'pc_' + animalId, _cards = [];
               try { _cards = JSON.parse(localStorage.getItem(_pcKey2)) || []; } catch(e) {}
+              var _pcDup = false;
+              for (var _pi = 0; _pi < _cards.length; _pi++) { if (_cards[_pi] && _cards[_pi].place === curReg2.name) { _pcDup = true; break; } }
+              if (!_pcDup) {
               _cards.unshift({
                 place: curReg2.name,
                 date: liveS2.fmtD,
@@ -4328,6 +4334,7 @@ document.addEventListener('DOMContentLoaded', function() {
               });
               _cards = _cards.slice(0, 9);
               try { localStorage.setItem(_pcKey2, JSON.stringify(_cards)); } catch(e) {}
+              }
             } catch(e) {}
 
             try { localStorage.setItem('lr_' + animalId, curReg2.name); } catch (e) {}
@@ -4376,6 +4383,9 @@ document.addEventListener('DOMContentLoaded', function() {
             try { favPC = JSON.parse(localStorage.getItem('fav_pc_' + animalId) || '{}'); } catch (e) {}
             var favOnly = !!window._favOnlyPC;
             var _pcHtml = '';
+            var _seenPC = {}, _cards3u = [];
+            _cards3.forEach(function(cd){ var _ckx = (cd.d||0) + '_' + (cd.place||''); if (_seenPC[_ckx]) return; _seenPC[_ckx] = 1; _cards3u.push(cd); });
+            _cards3 = _cards3u;
             if (_cards3.length) {
               _cards3.forEach(function(cd) {
                 var ck = (cd.d || 0) + '_' + (cd.place || '');
