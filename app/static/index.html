@@ -241,6 +241,17 @@
 
 
 <script>
+  // —— PWA 桌面直达：独立窗口打开时，自动回到我的动物 ——
+  (function () {
+    try {
+      if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+        var _last = localStorage.getItem('lastAnimalId');
+        if (_last && _last !== 'koa' && location.pathname === '/') {
+          location.replace('/animal/' + _last);
+        }
+      }
+    } catch (e) {}
+  })();
 var PERSONA = {
   noe: { title: '归家的旅者', tagline: '家永远在等我。', emoji: '🤍' },
   turtle: { title: '温柔的信使', tagline: '咕……我还在这里。', emoji: '🕊️' },
