@@ -5325,17 +5325,30 @@ document.addEventListener('DOMContentLoaded', function() {
   // ===== 动物专属灵魂之声：按动物性格定制 =====
   // Lumi（欧斑鸠）：温柔 深情 善良 纯真 顾家 → 温暖五声旋律+轻柔低音+偶尔咕咕
   function startSoul() {
-    // 真实氛围音乐：温柔钢琴+竖琴+微风，循环播放
+    // 专属之声：先停旧声
     if (timers.length) { timers.forEach(clearInterval); timers = []; }
     if (timer) { clearInterval(timer); timer = null; }
     if (master && actx) { try { master.gain.cancelScheduledValues(actx.currentTime); master.gain.setValueAtTime(0.0001, actx.currentTime); } catch(e){} }
+    // Lumi（欧斑鸠）有真实录制音频（温柔钢琴+竖琴），其他动物用按性格定制的合成旋律
+    if (animalId === 'turtle') {
+      if (!bgmAudio) {
+        bgmAudio = new Audio('/static/assets/music/lumi_bgm_web.wav');
+        bgmAudio.loop = true;
+        bgmAudio.volume = 0.8;
+      }
+      var p = bgmAudio.play();
+      if (p && p.catch) p.catch(function(){});
+      return;
+    }
+    if (soulRunners[animalId]) { soulRunners[animalId](); return; }
+    // 回退：Lumi 音频
     if (!bgmAudio) {
       bgmAudio = new Audio('/static/assets/music/lumi_bgm_web.wav');
       bgmAudio.loop = true;
       bgmAudio.volume = 0.8;
     }
-    var p = bgmAudio.play();
-    if (p && p.catch) p.catch(function(){});
+    var p2 = bgmAudio.play();
+    if (p2 && p2.catch) p2.catch(function(){});
   }
   var soulRunners = {
     turtle: function() {
