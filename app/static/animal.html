@@ -5712,6 +5712,14 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
 })();
 </script>
 
+/* 深色主题：定位信息高亮（替代低对比 accent 绿字） */
+body[data-theme="pools"] .loc-info .t, body[data-theme="snow"] .loc-info .t,
+body[data-theme="desert"] .loc-info .t, body[data-theme="moon"] .loc-info .t { color: #F4F9FF !important; }
+body[data-theme="pools"] .loc-info .s, body[data-theme="snow"] .loc-info .s,
+body[data-theme="desert"] .loc-info .s, body[data-theme="moon"] .loc-info .s { color: #FFE9A8 !important; text-shadow: 0 1px 6px rgba(0,0,0,.35) !important; }
+body[data-theme="pools"] .loc-info .u, body[data-theme="snow"] .loc-info .u,
+body[data-theme="desert"] .loc-info .u, body[data-theme="moon"] .loc-info .u { color: #A8DCFF !important; text-shadow: 0 1px 6px rgba(0,0,0,.35) !important; }
+
 <!-- ===== 主题粒子系统（萤火/气泡/雪花/沙尘/光尘）+ 点击涟漪 ===== -->
 <canvas id="fireflyCanvas" style="position:fixed;inset:0;z-index:1;pointer-events:none;"></canvas>
 <style>#fireflyCanvas{opacity:.9}</style>
@@ -5803,8 +5811,27 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
         ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 4.5, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = 'rgba(255,255,255,' + (a * .7) + ')';
         ctx.beginPath(); ctx.arc(f.x - f.r * .5, f.y - f.r * .5, f.r * .4, 0, Math.PI * 2); ctx.fill();
+      } else if (f.type === 'fly') {
+        // 萤火：暖黄核心 + 双层柔光晕（像真实萤火虫的光）
+        var t0 = Math.max(0, a);
+        var grd = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * 10);
+        grd.addColorStop(0, 'rgba(' + col + ',' + (t0 * 1) + ')');
+        grd.addColorStop(.18, 'rgba(' + col + ',' + (t0 * .55) + ')');
+        grd.addColorStop(.5, 'rgba(' + col + ',' + (t0 * .18) + ')');
+        grd.addColorStop(1, 'rgba(' + col + ',0)');
+        ctx.fillStyle = grd;
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 10, 0, Math.PI * 2); ctx.fill();
+        // 第二层更柔的外晕
+        var grd2 = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * 16);
+        grd2.addColorStop(0, 'rgba(' + col + ',' + (t0 * .20) + ')');
+        grd2.addColorStop(1, 'rgba(' + col + ',0)');
+        ctx.fillStyle = grd2;
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 16, 0, Math.PI * 2); ctx.fill();
+        // 亮核
+        ctx.fillStyle = 'rgba(255,248,225,' + (t0 * .98) + ')';
+        ctx.beginPath(); ctx.arc(f.x - f.r * .18, f.y - f.r * .18, f.r * .55, 0, Math.PI * 2); ctx.fill();
       } else {
-        // 萤火/光尘：柔和光点（双发光核，更亮的呼吸感）
+        // 光尘：柔和光点（双发光核，更亮的呼吸感）
         var grd = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * 7);
         grd.addColorStop(0, 'rgba(' + col + ',' + (a * .95) + ')');
         grd.addColorStop(.35, 'rgba(' + col + ',' + (a * .35) + ')');
