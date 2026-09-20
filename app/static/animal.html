@@ -187,19 +187,33 @@ cursor: pointer; transition: all .15s ease;
 /* 明信片大图 */
 .pcbig { display: none; position: fixed; inset: 0; z-index: 9998; background: radial-gradient(120% 100% at 50% 0%, rgba(24,32,28,.96), rgba(10,14,12,.98)); align-items: center; justify-content: center; padding: 18px; box-sizing: border-box; }
 .pcbig.active { display: flex; }
-.pcbig-card { position: relative; width: 92%; max-width: 400px; max-height: 92vh; overflow-y: auto; background: #FDF9EF; border-radius: 20px; box-shadow: 0 30px 90px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.06); animation: pcPop .4s cubic-bezier(.2,1.1,.35,1) both; }
+.pcbig-card { position: relative; width: 92%; max-width: 400px; max-height: 92vh; overflow-y: auto; background:
+    radial-gradient(ellipse at 12% 8%, rgba(255,250,235,.6), transparent 42%),
+    radial-gradient(ellipse at 90% 95%, rgba(160,120,60,.14), transparent 46%),
+    linear-gradient(168deg, #F3E7C9 0%, #EBD9B0 38%, #E3CDA0 100%);
+    border-radius: 14px; box-shadow: 0 30px 90px rgba(0,0,0,.65), 0 0 0 1px rgba(120,90,40,.28), inset 0 0 0 3px rgba(255,255,255,.35); animation: pcPop .4s cubic-bezier(.2,1.1,.35,1) both; }
 @keyframes pcPop { from { opacity: 0; transform: translateY(18px) scale(.94); } to { opacity: 1; transform: none; } }
-.pcbig-card::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: repeating-linear-gradient(90deg, rgba(190,150,90,.4) 0 11px, transparent 11px 22px); border-radius: 20px 20px 0 0; z-index: 2; }
+/* 经典明信片饰边：四角圆点 + 上下邮票齿孔 */
+.pcbig-card::before { content: ''; position: absolute; left: 8px; right: 8px; top: 8px; height: 10px; background:
+    radial-gradient(circle 3px at 5px 5px, rgba(120,90,40,.5) 98%, transparent),
+    radial-gradient(circle 3px at 17px 5px, rgba(120,90,40,.5) 98%, transparent),
+    radial-gradient(circle 3px at 29px 5px, rgba(120,90,40,.5) 98%, transparent);
+    background-size: 12px 10px; background-repeat: repeat-x; opacity: .55; z-index: 3; pointer-events: none; }
+.pcbig-card::after { content: ''; position: absolute; left: 8px; right: 8px; bottom: 8px; height: 10px; background:
+    radial-gradient(circle 3px at 5px 5px, rgba(120,90,40,.5) 98%, transparent),
+    radial-gradient(circle 3px at 17px 5px, rgba(120,90,40,.5) 98%, transparent),
+    radial-gradient(circle 3px at 29px 5px, rgba(120,90,40,.5) 98%, transparent);
+    background-size: 12px 10px; background-repeat: repeat-x; opacity: .55; z-index: 3; pointer-events: none; }
 .pcbig-close { position: absolute; top: 14px; right: 14px; z-index: 5; width: 38px; height: 38px; border-radius: 50%; border: none; background: rgba(20,24,22,.55); color: #fff; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); box-shadow: 0 2px 10px rgba(0,0,0,.3); }
 .pcbig-photo { position: relative; height: 240px; overflow: hidden; background: #333; }
 .pcbig-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.pcbig-photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(30,20,5,.5)); }
-.pcbig-body { padding: 18px 20px 16px; }
-.pcbig-place { font-size: 22px; font-weight: 800; color: #3E2C18; display: flex; align-items: center; gap: 8px; }
-.pcbig-sub { font-size: 12px; color: #A09170; margin-top: 6px; letter-spacing: .05em; }
-.pcbig-note { font-size: 15px; line-height: 2; margin-top: 12px; color: #4B3F2F; font-family: 'Kaiti SC', '楷体', serif; }
-.pcbig-foot { font-size: 11.5px; color: #B09A6F; margin-top: 12px; text-align: right; font-style: italic; letter-spacing: .05em; }
-.pcbig-acts { display: flex; gap: 12px; justify-content: center; margin-top: 16px; padding-top: 14px; border-top: 1.5px dashed rgba(190,150,90,.35); }
+.pcbig-photo::after { content: '✈ 旅程邮戳 · 2026'; position: absolute; right: 12px; bottom: 12px; font-size: 11px; letter-spacing: .18em; color: rgba(255,244,214,.92); padding: 5px 12px; border: 1.6px solid rgba(255,244,214,.85); border-radius: 8px; transform: rotate(-6deg); background: rgba(30,20,5,.35); font-family: 'Kaiti SC','楷体',serif; }
+.pcbig-body { padding: 18px 20px 16px; background: linear-gradient(rgba(90,120,190,.10) 0, rgba(90,120,190,.10) 1px, transparent 1px), linear-gradient(180deg, #F7EFDA 0%, #F0E2C0 100%); background-size: 100% 30px, 100% 100%; border-radius: 0 0 10px 10px; }
+.pcbig-place { font-size: 22px; font-weight: 800; color: #3E2C18; display: flex; align-items: center; gap: 8px; background: rgba(255,252,240,.72); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(120,90,40,.2); }
+.pcbig-sub { font-size: 12px; color: #8A7350; margin-top: 6px; letter-spacing: .05em; padding-left: 10px; }
+.pcbig-note { font-size: 15px; line-height: 2; margin-top: 12px; color: #3E3A5C; font-family: 'Kaiti SC', '楷体', serif; padding-left: 10px; }
+.pcbig-foot { font-size: 11.5px; color: #8A7350; margin-top: 12px; text-align: right; font-style: italic; letter-spacing: .05em; padding: 0 10px; }
+.pcbig-acts { display: flex; gap: 12px; justify-content: center; margin-top: 14px; padding-top: 12px; border-top: 1.5px dashed rgba(120,90,40,.4); background: rgba(255,252,240,.5); border-radius: 0 0 14px 14px; }
 .pcbig-fav, .pcbig-save { height: 42px; width: 42px; border-radius: 50%; border: 1.5px solid rgba(217,164,65,.7); background: #FFFDF6; font-size: 19px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,.12); transition: all .15s ease; }
 .pcbig-fav.on { border-color: #D9A441; background: linear-gradient(135deg, #FFF3D6, #FFE3A8); }
 .pcbig-fav:active, .pcbig-save:active { transform: scale(.92); }
@@ -879,7 +893,11 @@ padding: 10px 22px; border: none; border-radius: 22px; font-size: 13.5px; font-w
 .lm-paper-wrap { flex: 1 1 auto; min-height: 0; display: none; flex-direction: column; background: #FFFDF6; position: relative; }
 .lm-paper-wrap.show { display: flex; animation: lmPaperIn .6s cubic-bezier(.2,1,.35,1) both; }
 @keyframes lmPaperIn { 0% { opacity: 0; transform: translateY(-14px) scale(.97); } 70% { opacity: 1; transform: translateY(3px) scale(1); } 100% { transform: translateY(0); } }
-.lm-paper { flex: 1 1 auto; overflow-y: auto; padding: 34px 26px 14px; color: #4A3A28; font-size: 15.5px; line-height: 2.15; letter-spacing: .02em; font-family: 'Kaiti SC', '楷体', 'STKaiti', 'LXGW WenKai', 'Noto Serif SC', serif; background: linear-gradient(rgba(176,148,92,.06) 0, rgba(176,148,92,.06) 1px, transparent 1px), linear-gradient(180deg, #FBF6E9 0, #F6ECD6 100%); background-size: 100% 34px, 100% 100%; }
+.lm-paper { flex: 1 1 auto; overflow-y: auto; padding: 38px 30px 20px; color: #4A3A28; font-size: 15.5px; line-height: 2.15; letter-spacing: .02em; font-family: 'Kaiti SC', '楷体', 'STKaiti', 'LXGW WenKai', 'Noto Serif SC', serif; background: linear-gradient(rgba(120,90,40,.07) 0, rgba(120,90,40,.07) 1px, transparent 1px), linear-gradient(180deg, #FBF6E9 0, #F4E8CE 100%); background-size: 100% 34px, 100% 100%; position: relative; }
+/* 信纸角落火漆章 */
+.lm-paper::after { content: '💗'; position: absolute; right: 18px; bottom: 26px; font-size: 30px; opacity: .5; transform: rotate(-14deg); filter: drop-shadow(0 2px 3px rgba(120,60,40,.3)); }
+/* 信纸顶部红封条 */
+.lm-paper::before { content: ''; position: absolute; left: 50%; top: 0; width: 120px; height: 14px; transform: translateX(-50%); background: linear-gradient(180deg, rgba(170,90,50,.5), rgba(170,90,50,.28)); border-radius: 0 0 8px 8px; }
 .lm-paper b { color: #8A5A2E; }
 .lm-paper-wrap { position: relative; }
 /* 纸张顶部折痕 */
@@ -5207,8 +5225,12 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="music-tip" id="musicTip" style="display:none;font-size:11.5px;color:rgba(245,237,216,.75);line-height:1.6;margin:-4px 2px 10px;">💝 这是 <b id="musicTipName" style="color:#F5C542;">它</b> 的专属之声——根据它的性格为你演奏。</div>
   <div class="music-grid">
     <button class="music-opt soul" data-music="soul">💝 专属之声 · 温柔陪伴</button>
+    <button class="music-opt piano" data-music="piano">🎹 轻柔钢琴</button>
+    <button class="music-opt nature" data-music="nature">🌿 自然原野</button>
+    <button class="music-opt lofi" data-music="lofi">🌙 夜晚 Lo-Fi</button>
+    <button class="music-opt ambient" data-music="ambient">🌊 深海氛围</button>
   </div>
-  <div style="font-size:11px;color:rgba(245,237,216,.6);line-height:1.7;margin-top:10px;text-align:center;">一段为它而作的温柔旋律：清晨的钢琴与微风，像它在远方轻轻呼唤你。</div>
+  <div style="font-size:11px;color:rgba(245,237,216,.6);line-height:1.7;margin-top:10px;text-align:center;">「专属之声」是它自己的歌；其他几种，是不同时刻陪你看它的心情。</div>
   <div class="music-now" id="musicNow" style="font-size:11.5px;color:rgba(245,197,66,.85);margin-top:10px;text-align:center;display:none;">♪ 正在播放：<b id="musicNowName"></b></div>
   <button class="music-off" id="musicOff">🔇 关闭音乐</button>
 </div>
