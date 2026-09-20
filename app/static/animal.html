@@ -1690,7 +1690,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 <header>
   <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
   <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
-  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.11</span>
+  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.17</span>
 </header>
 <div id="themePanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4000;width:min(240px,86vw);background:linear-gradient(165deg,#2C1D50,#1E1338);border:1px solid rgba(255,194,77,.35);border-radius:18px;padding:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);">
   <div style="font-size:13px;font-weight:800;color:#FFE9C4;margin-bottom:10px;">🎨 选择主题 · 挑一个你喜欢的夜色</div>
@@ -3000,12 +3000,13 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
               try {
                 var pKey = 'achPopped_' + animalId + '_' + ach;
                 if (!localStorage.getItem(pKey)) {
+                  // 先落标记：即使弹窗队列异常也绝不重复弹
+                  try { localStorage.setItem(pKey, '1'); } catch(e5) {}
                   var ico = item.querySelector('.achievement-icon');
                   var nm = item.querySelector('.achievement-name');
                   window._achQueue.push({ ico: ico ? ico.textContent : '🏅', name: nm ? nm.textContent : ach });
                   if (window._achQueue.length > 3) window._achQueue.splice(0, window._achQueue.length - 3);
                   window._achShowNext();
-                  try { localStorage.setItem(pKey, '1'); } catch(e5) {}
                 }
               } catch(e3) {}
             }
