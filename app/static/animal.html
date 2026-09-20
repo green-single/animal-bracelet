@@ -3869,11 +3869,10 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
           var slider = document.getElementById('tlSlider');
           slider.max = points.length - 1;
           slider.value = points.length - 1;
-          // 重绘地图
+          // 重绘地图（保持当前轨迹样式）
           if (map) {
-            if (lineLayer) map.removeLayer(lineLayer);
-            if (pathLayer) map.removeLayer(pathLayer);
-            lineLayer = L.polyline(smoothPath(points, 2), { color: '#8fb5ac', weight: 3, opacity: .55 }).addTo(map);
+            clearTrackLayers();
+            renderTrack(smoothPath(points.slice(0, idx + 1), 2), currentTrackStyle);
             map.fitBounds(L.latLngBounds(points).pad(0.12), {animate: true});
           }
           updateView();
@@ -3911,9 +3910,8 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
               slider.max = points.length - 1;
               slider.value = points.length - 1;
               if (map) {
-                if (lineLayer) map.removeLayer(lineLayer);
-                if (pathLayer) map.removeLayer(pathLayer);
-                lineLayer = L.polyline(smoothPath(points, 2), { color: '#8fb5ac', weight: 3, opacity: .55 }).addTo(map);
+                clearTrackLayers();
+                renderTrack(smoothPath(points.slice(0, idx + 1), 2), currentTrackStyle);
                 map.fitBounds(L.latLngBounds(points).pad(0.12), {animate: true});
               }
               updateView();
