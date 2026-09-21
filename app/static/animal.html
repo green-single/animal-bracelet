@@ -1853,7 +1853,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 
     <!-- 成就徽章系统 -->
     <div class="achievements-section">
-      <div class="achievements-title">成就徽章 <span class="ach-count-badge" id="achievementCount">0/16 已解锁</span></div>
+      <div class="achievements-title">成就徽章 <span class="ach-count-badge" id="achievementCount">0/21 已解锁</span></div>
       <div id="adoptNeedTip" style="display:none;margin:0 0 10px;padding:9px 13px;border-radius:12px;background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(139,92,246,.12));border:1px solid rgba(245,158,11,.3);color:#92400e;font-size:12.5px;line-height:1.6;">🔒 所有成就都要先领养它才会解锁——扫描手环二维码，让它成为你的专属动物，然后通过每天的陪伴和互动来收集徽章。<br><button id="findMyAnimalBtn" style="margin-top:7px;padding:6px 12px;border:none;border-radius:10px;background:linear-gradient(135deg,#F5C542,#E3A82B);color:#2A1E05;font-size:12px;font-weight:700;cursor:pointer;">🔑 我已经领养过了，找回它</button></div>
       <div class="achievements-grid" id="achievementsGrid">
         <!-- 🐣 初见 -->
@@ -1927,6 +1927,23 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
         <div class="achievement-item locked" data-ach="veteran">
           <div class="achievement-icon">⭐</div>
           <div class="achievement-name">传奇守护者</div>
+        </div>
+        <!-- 🎵 互动扩展 -->
+        <div class="achievement-item locked" data-ach="music">
+          <div class="achievement-icon">🎵</div>
+          <div class="achievement-name">音乐之友</div>
+        </div>
+        <div class="achievement-item locked" data-ach="pc3">
+          <div class="achievement-icon">📮</div>
+          <div class="achievement-name">明信片收藏家</div>
+        </div>
+        <div class="achievement-item locked" data-ach="letter1">
+          <div class="achievement-icon">✉️</div>
+          <div class="achievement-name">信使之约</div>
+        </div>
+        <div class="achievement-item locked" data-ach="talk3">
+          <div class="achievement-icon">💬</div>
+          <div class="achievement-name">留言家</div>
         </div>
       </div>
     </div>
@@ -2995,7 +3012,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
                 } catch(e2) {}
               }
               var count = document.querySelectorAll('.achievement-item.unlocked').length;
-              document.getElementById('achievementCount').textContent = count + '/16 已解锁';
+              document.getElementById('achievementCount').textContent = count + '/21 已解锁';
               // 解锁提示
               var toast = document.createElement('div');
               toast.style.cssText = 'position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:10000;background:linear-gradient(135deg,rgba(245,158,11,.95),rgba(139,92,246,.95));color:#fff;padding:12px 22px;border-radius:999px;font-size:14px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.35);animation:achPop .5s ease;pointer-events:none;';
@@ -4904,6 +4921,7 @@ document.addEventListener('DOMContentLoaded', function() {
           localStorage.setItem(mKey, JSON.stringify(msgs.slice(-100)));
           inp.value = '';
           renderMsgs();
+          if (msgs.length >= 3 && window._unlockAch) window._unlockAch('talk3', '留言家');
         };
       }
       renderMsgs();
@@ -5098,6 +5116,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   // ===== 全屏拆信模态 =====
   window.openLetterModal = function (idx) {
+    if (window._unlockAch) window._unlockAch('letter1', '信使之约');
     var key = (window._favAnimalId || '') + '_' + idx;
     var d = (window._letterBodies || {})[key];
     if (!d) return;
@@ -5181,6 +5200,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (f[ck]) delete f[ck]; else f[ck] = 1;
     localStorage.setItem(k, JSON.stringify(f));
     if (isAdd && window._completeTask) window._completeTask('postcard', 15);
+    if (isAdd) { var _fc = 0; for (var _fk in f) { if (f[_fk]) _fc++; } if (_fc >= 3 && window._unlockAch) window._unlockAch('pc3', '明信片收藏家'); }
     if (window.renderMinePC) window.renderMinePC();
   };
   // 明信片下载（canvas 生成 PNG）
@@ -5363,6 +5383,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Lumi（欧斑鸠）：温柔 深情 善良 纯真 顾家 → 温暖五声旋律+轻柔低音+偶尔咕咕
   function startSoul() {
     // 专属之声：先停旧声
+    if (window._unlockAch) window._unlockAch('music', '音乐之友');
     if (timers.length) { timers.forEach(clearInterval); timers = []; }
     if (timer) { clearInterval(timer); timer = null; }
     if (master && actx) { try { master.gain.cancelScheduledValues(actx.currentTime); master.gain.setValueAtTime(0.0001, actx.currentTime); } catch(e){} }
