@@ -1683,7 +1683,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
       <div class="pcbig-sub" id="pcBigSub"></div>
       <div class="pcbig-note" id="pcBigNote"></div>
       <div class="pcbig-foot" id="pcBigFoot"></div>
-      <div class="pcbig-acts"><span class="pcbig-fav" id="pcBigFav" onclick="event.stopPropagation();toggleFavPC(window._pcBigKey)">☆</span><span class="pcbig-save" onclick="event.stopPropagation();savePC(window._pcBigKey)">💾</span></div>
+      <div class="pcbig-acts"><span class="pcbig-fav" id="pcBigFav" onclick="event.stopPropagation();toggleFavPC(window._pcBigKey)" title="收藏">☆</span><span class="pcbig-save" onclick="event.stopPropagation();savePC(window._pcBigKey)" title="保存图片">💾</span></div>
     </div>
   </div>
 </div>
@@ -4647,8 +4647,12 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
               var _pcKey2 = 'pc_' + animalId, _cards = [];
               try { _cards = JSON.parse(localStorage.getItem(_pcKey2)) || []; } catch(e) {}
-              var _pcDup = false;
-              for (var _pi = 0; _pi < _cards.length; _pi++) { if (_cards[_pi] && _cards[_pi].place === curReg2.name) { _pcDup = true; break; } }
+              var _pcDup = false, _curRegTrim = String(curReg2.name || '').replace(/[\s·•,，、-]/g, '');
+              for (var _pi = 0; _pi < _cards.length; _pi++) {
+                if (!_cards[_pi]) continue;
+                var _oldTrim = String(_cards[_pi].place || '').replace(/[\s·•,，、-]/g, '');
+                if (_oldTrim === _curRegTrim || (_oldTrim && _curRegTrim && (_oldTrim.indexOf(_curRegTrim) >= 0 || _curRegTrim.indexOf(_oldTrim) >= 0))) { _pcDup = true; break; }
+              }
               if (!_pcDup) {
               _cards.unshift({
                 place: curReg2.name,
@@ -4711,7 +4715,18 @@ document.addEventListener('DOMContentLoaded', function() {
             var favOnly = !!window._favOnlyPC;
             var _pcHtml = '';
             var _seenPC = {}, _cards3u = [];
-            _cards3.forEach(function(cd){ var _ckx = (cd.d||0) + '_' + (cd.place||''); if (_seenPC[_ckx]) return; _seenPC[_ckx] = 1; _cards3u.push(cd); });
+            _cards3.forEach(function(cd){
+              var _pNorm = String(cd.place||'').replace(/[\s·•,，、-]/g, '');
+              var _dupK = null;
+              for (var _sk in _seenPC) {
+                if (_seenPC[_sk] && (_sk.indexOf(_pNorm) >= 0 || _pNorm.indexOf(_sk) >= 0)) { _dupK = _sk; break; }
+              }
+              if (_dupK !== null) {
+                if (_pNorm.length < _dupK.length) { delete _seenPC[_dupK]; _seenPC[_pNorm] = 1; _cards3u.push(cd); }
+                return;
+              }
+              _seenPC[_pNorm] = 1; _cards3u.push(cd);
+            });
             _cards3 = _cards3u;
             if (_cards3.length) {
               _cards3.forEach(function(cd) {
