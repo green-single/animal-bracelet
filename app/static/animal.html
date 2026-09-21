@@ -188,32 +188,31 @@ cursor: pointer; transition: all .15s ease;
 .pcbig { display: none; position: fixed; inset: 0; z-index: 9998; background: radial-gradient(120% 100% at 50% 0%, rgba(24,32,28,.96), rgba(10,14,12,.98)); align-items: center; justify-content: center; padding: 18px; box-sizing: border-box; }
 .pcbig.active { display: flex; }
 .pcbig-card { position: relative; width: 92%; max-width: 400px; max-height: 92vh; overflow-y: auto; background:
-    radial-gradient(ellipse at 12% 8%, rgba(255,250,235,.6), transparent 42%),
-    radial-gradient(ellipse at 90% 95%, rgba(160,120,60,.14), transparent 46%),
-    linear-gradient(168deg, #F3E7C9 0%, #EBD9B0 38%, #E3CDA0 100%);
-    border-radius: 14px; box-shadow: 0 30px 90px rgba(0,0,0,.65), 0 0 0 1px rgba(120,90,40,.28), inset 0 0 0 3px rgba(255,255,255,.35); animation: pcPop .4s cubic-bezier(.2,1.1,.35,1) both; }
+    radial-gradient(circle 2px at 18% 12%, rgba(255,232,170,.9) 98%, transparent),
+    radial-gradient(circle 1.5px at 68% 7%, rgba(255,255,255,.8) 98%, transparent),
+    radial-gradient(circle 1.5px at 86% 26%, rgba(255,224,150,.75) 98%, transparent),
+    radial-gradient(circle 2px at 34% 42%, rgba(255,255,255,.6) 98%, transparent),
+    radial-gradient(circle 1.5px at 76% 52%, rgba(255,232,170,.7) 98%, transparent),
+    radial-gradient(circle 1.5px at 12% 62%, rgba(255,255,255,.5) 98%, transparent),
+    radial-gradient(ellipse at 14% 8%, rgba(255,205,120,.16), transparent 48%),
+    radial-gradient(ellipse at 88% 92%, rgba(110,190,255,.10), transparent 52%),
+    linear-gradient(168deg, #0E1C31 0%, #142741 45%, #1B3A52 100%);
+    border-radius: 18px; box-shadow: 0 30px 90px rgba(0,0,0,.7), 0 0 0 1px rgba(218,182,120,.32), inset 0 0 0 3px rgba(255,224,160,.05); animation: pcPop .4s cubic-bezier(.2,1.1,.35,1) both; }
 @keyframes pcPop { from { opacity: 0; transform: translateY(18px) scale(.94); } to { opacity: 1; transform: none; } }
-/* 经典明信片饰边：四角圆点 + 上下邮票齿孔 */
-.pcbig-card::before { content: ''; position: absolute; left: 8px; right: 8px; top: 8px; height: 10px; background:
-    radial-gradient(circle 3px at 5px 5px, rgba(120,90,40,.5) 98%, transparent),
-    radial-gradient(circle 3px at 17px 5px, rgba(120,90,40,.5) 98%, transparent),
-    radial-gradient(circle 3px at 29px 5px, rgba(120,90,40,.5) 98%, transparent);
-    background-size: 12px 10px; background-repeat: repeat-x; opacity: .55; z-index: 3; pointer-events: none; }
-.pcbig-card::after { content: ''; position: absolute; left: 8px; right: 8px; bottom: 8px; height: 10px; background:
-    radial-gradient(circle 3px at 5px 5px, rgba(120,90,40,.5) 98%, transparent),
-    radial-gradient(circle 3px at 17px 5px, rgba(120,90,40,.5) 98%, transparent),
-    radial-gradient(circle 3px at 29px 5px, rgba(120,90,40,.5) 98%, transparent);
-    background-size: 12px 10px; background-repeat: repeat-x; opacity: .55; z-index: 3; pointer-events: none; }
+/* 明信片金框：顶部星语 + 金色细线内框 */
+.pcbig-card::before { content: '✦ 旅 途 星 光 ✦'; position: absolute; left: 0; right: 0; top: 4px; text-align: center; font-size: 10px; letter-spacing: 6px; color: rgba(255,226,160,.55); z-index: 2; pointer-events: none; }
+.pcbig-card::after { content: ''; position: absolute; inset: 8px; border: 1px solid rgba(218,182,120,.26); border-radius: 12px; pointer-events: none; }
 .pcbig-close { position: absolute; top: 14px; right: 14px; z-index: 5; width: 38px; height: 38px; border-radius: 50%; border: none; background: rgba(20,24,22,.55); color: #fff; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); box-shadow: 0 2px 10px rgba(0,0,0,.3); }
-.pcbig-photo { position: relative; height: 240px; overflow: hidden; background: #333; }
+.pcbig-photo { position: relative; height: 260px; overflow: hidden; margin: 14px 14px 0; border-radius: 14px; background: #1a2a3a; box-shadow: 0 6px 26px rgba(0,0,0,.55), 0 0 0 2px rgba(218,182,120,.55), 0 0 22px rgba(218,182,120,.22); }
 .pcbig-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .pcbig-photo::after { content: '✈ 旅程邮戳 · 2026'; position: absolute; right: 12px; bottom: 12px; font-size: 11px; letter-spacing: .18em; color: rgba(255,244,214,.92); padding: 5px 12px; border: 1.6px solid rgba(255,244,214,.85); border-radius: 8px; transform: rotate(-6deg); background: rgba(30,20,5,.35); font-family: 'Kaiti SC','楷体',serif; }
 .pcbig-body { padding: 18px 20px 16px; background: linear-gradient(rgba(90,120,190,.10) 0, rgba(90,120,190,.10) 1px, transparent 1px), linear-gradient(180deg, #F7EFDA 0%, #F0E2C0 100%); background-size: 100% 30px, 100% 100%; border-radius: 0 0 10px 10px; }
-.pcbig-place { font-size: 22px; font-weight: 800; color: #3E2C18; display: flex; align-items: center; gap: 8px; background: rgba(255,252,240,.72); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(120,90,40,.2); }
-.pcbig-sub { font-size: 12px; color: #8A7350; margin-top: 6px; letter-spacing: .05em; padding-left: 10px; }
+.pcbig-body { margin: 12px 14px 14px; padding: 16px 15px 10px; background: linear-gradient(168deg, rgba(255,250,238,.94), rgba(244,231,205,.92)); border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,.35), inset 0 0 0 1px rgba(190,150,80,.3); }
+.pcbig-place { font-size: 22px; font-weight: 800; color: #7A4E1B; display: flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 8px; background: linear-gradient(90deg, rgba(218,182,120,.25), rgba(218,182,120,.05)); border: 1px solid rgba(180,135,70,.35); }
+.pcbig-sub { font-size: 12px; color: #8A6B45; margin-top: 6px; letter-spacing: .05em; padding-left: 10px; }
 .pcbig-note { font-size: 15px; line-height: 2; margin-top: 12px; color: #3E3A5C; font-family: 'Kaiti SC', '楷体', serif; padding-left: 10px; }
 .pcbig-foot { font-size: 11.5px; color: #8A7350; margin-top: 12px; text-align: right; font-style: italic; letter-spacing: .05em; padding: 0 10px; }
-.pcbig-acts { display: flex; gap: 12px; justify-content: center; margin-top: 14px; padding-top: 12px; border-top: 1.5px dashed rgba(120,90,40,.4); background: rgba(255,252,240,.5); border-radius: 0 0 14px 14px; }
+.pcbig-acts { display: flex; gap: 12px; justify-content: center; margin: 12px 14px 14px; padding-top: 12px; border-top: 1.5px dashed rgba(180,135,70,.45); background: linear-gradient(168deg, rgba(255,250,238,.6), rgba(244,231,205,.5)); border-radius: 12px; }
 .pcbig-fav, .pcbig-save { height: 42px; width: 42px; border-radius: 50%; border: 1.5px solid rgba(217,164,65,.7); background: #FFFDF6; font-size: 19px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,.12); transition: all .15s ease; }
 .pcbig-fav.on { border-color: #D9A441; background: linear-gradient(135deg, #FFF3D6, #FFE3A8); }
 .pcbig-fav:active, .pcbig-save:active { transform: scale(.92); }
@@ -893,11 +892,21 @@ padding: 10px 22px; border: none; border-radius: 22px; font-size: 13.5px; font-w
 .lm-paper-wrap { flex: 1 1 auto; min-height: 0; display: none; flex-direction: column; background: #FFFDF6; position: relative; }
 .lm-paper-wrap.show { display: flex; animation: lmPaperIn .6s cubic-bezier(.2,1,.35,1) both; }
 @keyframes lmPaperIn { 0% { opacity: 0; transform: translateY(-14px) scale(.97); } 70% { opacity: 1; transform: translateY(3px) scale(1); } 100% { transform: translateY(0); } }
-.lm-paper { flex: 1 1 auto; overflow-y: auto; padding: 38px 30px 20px; color: #4A3A28; font-size: 15.5px; line-height: 2.15; letter-spacing: .02em; font-family: 'Kaiti SC', '楷体', 'STKaiti', 'LXGW WenKai', 'Noto Serif SC', serif; background: linear-gradient(rgba(120,90,40,.07) 0, rgba(120,90,40,.07) 1px, transparent 1px), linear-gradient(180deg, #FBF6E9 0, #F4E8CE 100%); background-size: 100% 34px, 100% 100%; position: relative; }
+.lm-paper { flex: 1 1 auto; overflow-y: auto; padding: 62px 30px 30px; color: #4A3A28; font-size: 15.5px; line-height: 2.15; letter-spacing: .02em; font-family: 'Kaiti SC', '楷体', 'STKaiti', 'LXGW WenKai', 'Noto Serif SC', serif; background:
+    radial-gradient(ellipse at 50% 0%, rgba(255,205,120,.20), transparent 52%),
+    linear-gradient(rgba(120,90,40,.07) 0, rgba(120,90,40,.07) 1px, transparent 1px),
+    linear-gradient(180deg, #FCF7EA 0, #F6ECD4 68%, #EEDDBE 100%);
+    background-size: 100% 34px, 100% 100%; position: relative; }
+/* 信纸题头：金色手写体 */
+.lm-paper::before { content: '✉  它 写 给 守 护 者 的 信  ✉'; position: absolute; top: 10px; left: 0; right: 0; text-align: center; font-size: 13px; font-weight: 700; letter-spacing: 5px; color: rgba(172,104,48,.85); z-index: 2; background: linear-gradient(90deg, transparent, rgba(255,222,160,.65), transparent); padding: 6px 0; }
+/* 信纸底部做旧 + 爪印落款 */
+.lm-paper::after { content: '💗  🐾'; position: absolute; right: 20px; bottom: 22px; font-size: 22px; opacity: .55; transform: rotate(-12deg); filter: drop-shadow(0 2px 3px rgba(120,60,40,.3)); }
 /* 信纸角落火漆章 */
 .lm-paper::after { content: '💗'; position: absolute; right: 18px; bottom: 26px; font-size: 30px; opacity: .5; transform: rotate(-14deg); filter: drop-shadow(0 2px 3px rgba(120,60,40,.3)); }
+/* 信纸落款 */
+.lm-sign-line { margin-top: 26px; text-align: right; font-size: 12.5px; color: #8A6B45; letter-spacing: .06em; padding-right: 6px; }
+.lm-head-line { display: none; }
 /* 信纸顶部红封条 */
-.lm-paper::before { content: ''; position: absolute; left: 50%; top: 0; width: 120px; height: 14px; transform: translateX(-50%); background: linear-gradient(180deg, rgba(170,90,50,.5), rgba(170,90,50,.28)); border-radius: 0 0 8px 8px; }
 .lm-paper b { color: #8A5A2E; }
 .lm-paper-wrap { position: relative; }
 /* 纸张顶部折痕 */
@@ -1708,7 +1717,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 <header>
   <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
   <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
-  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.24</span>
+  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.25</span>
 </header>
 <div id="themePanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4000;width:min(240px,86vw);background:linear-gradient(165deg,#2C1D50,#1E1338);border:1px solid rgba(255,194,77,.35);border-radius:18px;padding:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);">
   <div style="font-size:13px;font-weight:800;color:#FFE9C4;margin-bottom:10px;">🎨 选择主题 · 挑一个你喜欢的夜色</div>
@@ -5143,7 +5152,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('lmStamp').textContent = d.ico || '💌';
     document.getElementById('lmFrom').textContent = d.from || '';
     document.getElementById('lmStatus').textContent = '点击拆开';
-    document.getElementById('lmPaper').innerHTML = d.body || '';
+    document.getElementById('lmPaper').innerHTML = '<div class="lm-head-line"></div>' + (d.body || '') + '<div class="lm-sign-line">—— 来自 ' + (window._favAnimalName || '它') + ' 的旅途 · 永远爱你的它</div>';
     var env = document.getElementById('lmEnv');
     env.classList.remove('opening', 'gone');
     document.getElementById('lmPaperWrap').classList.remove('show');
