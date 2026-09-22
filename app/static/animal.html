@@ -5466,17 +5466,9 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
   <div class="music-tip" id="musicTip" style="display:none;font-size:11.5px;color:rgba(245,237,216,.75);line-height:1.6;margin:-4px 2px 10px;">💝 这是 <b id="musicTipName" style="color:#F5C542;">它</b> 的专属之声——根据它的性格为你演奏。</div>
   <div class="music-grid">
-    <button class="music-opt soul" data-music="soul">💝 专属之声 · 温柔陪伴</button>
-    <button class="music-opt record" data-music="record" id="musicOptRecord" style="display:none;">🎬 它的原声 · 一路同行</button>
-    <button class="music-opt piano" data-music="piano">🎹 轻柔钢琴</button>
-    <button class="music-opt nature" data-music="nature">🌿 自然原野</button>
-    <button class="music-opt lofi" data-music="lofi">🌙 夜晚 Lo-Fi</button>
-    <button class="music-opt ambient" data-music="ambient">🌊 深海氛围</button>
-    <button class="music-opt dawn" data-music="dawn">🌅 清晨鸟鸣</button>
-    <button class="music-opt camp" data-music="camp">🔥 黄昏营火</button>
-    <button class="music-opt lullaby" data-music="lullaby">🌟 星空摇篮曲</button>
+    <button class="music-opt record" data-music="record" id="musicOptRecord">🎬 它的原声 · 一路同行</button>
   </div>
-  <div style="font-size:11px;color:rgba(245,237,216,.6);line-height:1.7;margin-top:10px;text-align:center;">「专属之声」是它自己的歌；其他几种，是不同时刻陪你看它的心情。</div>
+  <div style="font-size:11px;color:rgba(245,237,216,.6);line-height:1.7;margin-top:10px;text-align:center;">它的原声，一路同行的歌。</div>
   <div class="music-now" id="musicNow" style="font-size:11.5px;color:rgba(245,197,66,.85);margin-top:10px;text-align:center;display:none;">♪ 正在播放：<b id="musicNowName"></b></div>
   <button class="music-off" id="musicOff">🔇 关闭音乐</button>
 </div>
@@ -5797,7 +5789,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
   var currentAnimal = typeof animalId !== 'undefined' ? animalId : '';
-  var runners = { soul: startSoul, record: startRecord, piano: startPiano, nature: startNature, lofi: startLoFi, ambient: startAmbient, dawn: startDawn, camp: startCamp, lullaby: startLullaby };
+  var runners = { record: startRecord };
   function play(type) {
     stopMusic();
     ensureCtx();
@@ -5808,7 +5800,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setActive();
     var now = document.getElementById('musicNow');
     var nowName = document.getElementById('musicNowName');
-    var names = { soul: '专属之声 · 温柔陪伴', record: '它的原声 · 一路同行', piano: '轻柔钢琴', nature: '自然原野', lofi: '夜晚 Lo-Fi', ambient: '深海氛围', dawn: '清晨鸟鸣', camp: '黄昏营火', lullaby: '星空摇篮曲' };
+    var names = { record: '它的原声 · 一路同行' };
     if (now && nowName) { now.style.display = 'block'; nowName.textContent = names[type] || ''; }
   }
   function setActive() {
@@ -5827,14 +5819,11 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('.music-opt').forEach(function(o){
     o.addEventListener('click', function(){ play(o.dataset.music); togglePanel(false); });
   });
-  // 原声按钮：仅 Lumi（turtle）显示（它的真实旅程录音）——用路径判断，避免作用域问题
-  if (/\/animal\/turtle(?:$|\/|\?)/.test(location.pathname)) {
-    var ro = document.getElementById('musicOptRecord');
-    if (ro) ro.style.display = 'block';
-  }
+  // 原声按钮：全局唯一音乐选项，直接可见
 
-  // 恢复上次选择
+  // 恢复上次选择（仅原声有效；旧版本其他选项一律清除）
   var saved = localStorage.getItem('bgm');
+  if (saved && saved !== 'record' && saved !== 'off') { localStorage.removeItem('bgm'); saved = null; }
   if (saved && saved !== 'off' && runners[saved]) {
     // 需用户手势才能播音频：首次点击页面任意处再启动
     var once = function(){ play(saved); document.removeEventListener('pointerdown', once); };
