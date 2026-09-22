@@ -976,6 +976,15 @@ padding: 10px 22px; border: none; border-radius: 22px; font-size: 13.5px; font-w
 /* 信纸落款 */
 .lm-sign-line { margin-top: 26px; text-align: right; font-size: 12.5px; color: #8A6B45; letter-spacing: .06em; padding-right: 6px; }
 .lm-head { text-align: center; margin: 0 0 14px; } .lm-head-title { font-size: 15px; font-weight: 800; letter-spacing: 5px; color: #8A5A2E; font-family: 'Kaiti SC','楷体',serif; } .lm-head-line { margin: 10px auto 8px; width: 82%; height: 1px; background: linear-gradient(90deg, transparent, rgba(180,135,70,.65), transparent); } .lm-head-date { font-size: 11px; color: #A9835A; letter-spacing: 2px; }
+.lm-info { display: flex; gap: 13px; align-items: center; margin: 2px 6px 18px; padding: 13px 15px; background: rgba(255,248,228,.72); border: 2px solid #7A5A2E; border-radius: 255px 18px 225px 18px / 18px 225px 18px 255px; transform: rotate(-.7deg); box-shadow: 3px 4px 0 rgba(122,90,46,.16); position: relative; }
+.lm-info-photo { width: 78px; height: 78px; border-radius: 50% 44% 56% 46% / 46% 56% 44% 52%; overflow: hidden; flex: 0 0 auto; border: 2.5px solid #6B4F28; transform: rotate(-2deg); box-shadow: 1px 2px 0 rgba(107,79,40,.25); }
+.lm-info-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lm-info-body { flex: 1 1 auto; min-width: 0; }
+.lm-info-place { font-size: 17px; font-weight: 700; color: #3E2A12; font-family: 'Kaiti SC','楷体','STKaiti',serif; letter-spacing: .05em; line-height: 1.5; }
+.lm-info-coord { font-size: 12.5px; color: #6B4F28; margin-top: 4px; font-family: Georgia, 'Times New Roman', serif; }
+.lm-info-meta { font-size: 13px; color: #8A5A2E; margin-top: 5px; font-weight: 700; font-family: 'Kaiti SC','楷体','STKaiti',serif; }
+/* 手绘小箭头/心 */
+.lm-info::after { content: '✍'; position: absolute; right: 10px; top: -11px; font-size: 17px; transform: rotate(-14deg); color: #8A5A2E; }
 /* 信纸顶部红封条 */
 .lm-paper b { color: #8A5A2E; }
 .lm-paper-wrap { position: relative; }
@@ -4781,6 +4790,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (e) { console.log('liveLetter err:', e); }
       }
       window._favAnimalId = animalId;
+    window._favAnimalData = a;
       window.renderMineLetters = function () {
         var html = liveHtml;
         var favL = {};
@@ -5240,6 +5250,20 @@ document.addEventListener('DOMContentLoaded', function() {
   function showLetterModal(d) {
     var m = document.getElementById('letterModal');
     if (!m) return;
+    try {
+      var dA = window._favAnimalData || {};
+      window._favAnimalPhotos = dA.photos || [];
+      window._favRegion = dA.region_label || (dA.name ? dA.name + ' 的旅途' : '它的旅途');
+      var pc = dA.points && dA.points.length ? dA.points[dA.points.length - 1] : null;
+      if (pc && pc.length >= 2) {
+        var ns = pc[0] >= 0 ? 'N' : 'S', ew = pc[1] >= 0 ? 'E' : 'W';
+        window._favCoord = Math.abs(pc[0]).toFixed(2) + '°' + ns + ', ' + Math.abs(pc[1]).toFixed(2) + '°' + ew;
+      } else window._favCoord = '';
+      window._favKm = dA.total_km || 0;
+      try { var _dn = dA.data_note || ''; var _mk = _dn.match(/([\d,]+)\s*km/); if (_mk) window._favKm = parseInt(_mk[1].replace(/,/g, ''), 10) || 0; } catch(e) {}
+      var dt = window._favAnimalData && window._favAnimalData.adoptedDate || (window._favAnimalId ? (function(){ try { var x = JSON.parse(localStorage.getItem('adopted_' + window._favAnimalId) || 'null'); return x && x.date; } catch(e) { return null; } })() : null);
+      window._favDays = dt ? Math.max(0, Math.floor((Date.now() - new Date(dt).getTime()) / 86400000)) : 0;
+    } catch(e) {}
     document.getElementById('lmTitle').textContent = d.t || '一封来自远方的信';
     document.getElementById('lmStamp').textContent = d.ico || '💌';
     document.getElementById('lmFrom').textContent = d.from || '';
@@ -5247,7 +5271,20 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('lmTo').textContent = '致 · 我的守护者';
     document.getElementById('lmPost').innerHTML = '<b>L U M I</b><i>✦</i>2026 · 爱琴海';
     document.getElementById('lmAddr').textContent = (window._favAnimalName || '它') + ' 的旅途 · 爱琴海';
-    document.getElementById('lmPaper').innerHTML = '<div class="lm-head"><div class="lm-head-title">✉ 它写给守护者的信 ✉</div><div class="lm-head-line"></div><div class="lm-head-date">' + (function(){try{var nd=new Date();return nd.getFullYear()+' 年 '+(nd.getMonth()+1)+' 月 '+nd.getDate()+' 日';}catch(e){return '';}})() + ' · 寄自远方</div></div>' + (d.body || '') + '<div class="lm-sign-line">—— 来自 ' + (window._favAnimalName || '它') + ' 的旅途 · 永远爱你的它</div>';
+    document.getElementById('lmPaper').innerHTML = '<div class="lm-head"><div class="lm-head-title">✉ 它写给守护者的信 ✉</div><div class="lm-head-line"></div><div class="lm-head-date">' + (function(){try{var nd=new Date();return nd.getFullYear()+' 年 '+(nd.getMonth()+1)+' 月 '+nd.getDate()+' 日';}catch(e){return '';}})() + ' · 寄自远方</div></div>' + (function(){
+        try {
+          var h = '';
+          var ph = (window._favAnimalPhotos && window._favAnimalPhotos.length) ? (window._favAnimalPhotos[0].url || window._favAnimalPhotos[0]) : '';
+          if (ph) h += '<div class="lm-info"><div class="lm-info-photo"><img src="' + ph + '" alt=""></div>';
+          else h += '<div class="lm-info">';
+          h += '<div class="lm-info-body">';
+          h += '<div class="lm-info-place">我正想着你，在迁徙的路上 ✍</div>';
+          h += '<div class="lm-info-coord">已飞 ' + (window._favKm || 0) + ' 公里' + (window._favCoord ? ' · ' + window._favCoord : '') + '</div>';
+          h += '<div class="lm-info-meta">与你相伴 ' + (window._favDays || 0) + ' 天 · 一切安好</div>';
+          h += '</div></div>';
+          return h;
+        } catch(e) { return ''; }
+      })() + (d.body || '') + '<div class="lm-sign-line">—— 来自 ' + (window._favAnimalName || '它') + ' 的旅途 · 永远爱你的它</div>';
     var env = document.getElementById('lmEnv');
     env.classList.remove('opening', 'gone');
     document.getElementById('lmPaperWrap').classList.remove('show');
