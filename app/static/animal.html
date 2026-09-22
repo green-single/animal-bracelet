@@ -1795,7 +1795,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 <header>
   <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
   <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
-  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.33</span>
+  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.34</span>
 </header>
 <div id="themePanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4000;width:min(240px,86vw);background:linear-gradient(165deg,#2C1D50,#1E1338);border:1px solid rgba(255,194,77,.35);border-radius:18px;padding:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);">
   <div style="font-size:13px;font-weight:800;color:#FFE9C4;margin-bottom:10px;">🎨 选择主题 · 挑一个你喜欢的夜色</div>
@@ -5404,6 +5404,9 @@ document.addEventListener('DOMContentLoaded', function() {
     <button class="music-opt nature" data-music="nature">🌿 自然原野</button>
     <button class="music-opt lofi" data-music="lofi">🌙 夜晚 Lo-Fi</button>
     <button class="music-opt ambient" data-music="ambient">🌊 深海氛围</button>
+    <button class="music-opt dawn" data-music="dawn">🌅 清晨鸟鸣</button>
+    <button class="music-opt camp" data-music="camp">🔥 黄昏营火</button>
+    <button class="music-opt lullaby" data-music="lullaby">🌟 星空摇篮曲</button>
   </div>
   <div style="font-size:11px;color:rgba(245,237,216,.6);line-height:1.7;margin-top:10px;text-align:center;">「专属之声」是它自己的歌；其他几种，是不同时刻陪你看它的心情。</div>
   <div class="music-now" id="musicNow" style="font-size:11.5px;color:rgba(245,197,66,.85);margin-top:10px;text-align:center;display:none;">♪ 正在播放：<b id="musicNowName"></b></div>
@@ -5517,6 +5520,84 @@ document.addEventListener('DOMContentLoaded', function() {
       note(f * 2.01, 1.2, 3.5, 0.08, 'sine');
       i++;
     }, 2400);
+  }
+
+  function startDawn() {
+    // 清晨鸟鸣：晨光琶音垫 + 多层鸟鸣（高音短促+颤音+回声）
+    var pad = [261.63, 329.63, 392.00, 523.25];
+    var i = 0;
+    timer = setInterval(function(){
+      var f = pad[i % pad.length];
+      note(f, 0, 2.8, 0.14, 'sine');
+      note(f * 1.5, 0.4, 2.2, 0.08, 'sine');
+      i++;
+    }, 1800);
+    timers.push(setInterval(function(){
+      var t = Math.random() * 0.4;
+      var base = 2400 + Math.random() * 2200;
+      // 主鸣
+      note(base, t, 0.10, 0.14, 'sine');
+      note(base * 1.06, t + 0.10, 0.09, 0.11, 'sine');
+      // 回声
+      note(base, t + 0.30, 0.08, 0.05, 'sine');
+      // 偶发长颤音
+      if (Math.random() < 0.35) {
+        for (var k = 0; k < 5; k++) note(base * (1 + k * 0.02), t + 0.05 + k * 0.06, 0.05, 0.06, 'sine');
+      }
+    }, 1500 + Math.random() * 1600));
+    timers.push(setInterval(function(){
+      // 远处溪流轻响（高频白噪短促）
+      var b = noiseBuf(0.5); var s = actx.createBufferSource(); s.buffer = b;
+      var lp = actx.createBiquadFilter(); lp.type = 'highpass'; lp.frequency.value = 4200;
+      var g = actx.createGain(); g.gain.value = 0.028;
+      s.connect(lp); lp.connect(g); g.connect(master); s.start();
+    }, 4200));
+  }
+  function startCamp() {
+    // 黄昏营火：篝火噼啪（低频白噪脉冲）+ 温暖民谣和弦分解（C-G-Am-F 感）
+    var ch = [261.63, 196.00, 220.00, 174.61, 329.63, 246.94, 261.63, 220.00];
+    var i = 0;
+    timer = setInterval(function(){
+      var f = ch[i % ch.length];
+      note(f, 0, 2.2, 0.20, 'triangle');
+      note(f * 2, 0.25, 1.2, 0.08, 'sine');
+      if (Math.random() < 0.3) note(f * 1.5, 0.35, 1.0, 0.06, 'sine');
+      i++;
+    }, 620);
+    // 篝火噼啪
+    timers.push(setInterval(function(){
+      var n = 1 + Math.floor(Math.random() * 3);
+      for (var k = 0; k < n; k++) {
+        var b = noiseBuf(0.08); var s = actx.createBufferSource(); s.buffer = b;
+        var lp = actx.createBiquadFilter(); lp.type = 'bandpass'; lp.frequency.value = 900 + Math.random() * 1800; lp.Q.value = 1.2;
+        var g = actx.createGain(); g.gain.setValueAtTime(0.001, actx.currentTime);
+        g.gain.linearRampToValueAtTime(0.12 + Math.random() * 0.1, actx.currentTime + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.10);
+        s.connect(lp); lp.connect(g); g.connect(master);
+        s.start(actx.currentTime + Math.random() * 0.25);
+      }
+    }, 260 + Math.random() * 500));
+  }
+  function startLullaby() {
+    // 星空摇篮曲：梦幻慢速琶音 + 高八度回响 + 柔和长音垫
+    var pad = [220.00, 261.63, 329.63, 392.00];
+    var i = 0;
+    timer = setInterval(function(){
+      var f = pad[i % pad.length];
+      // 主旋律（低音圆润）
+      note(f, 0, 3.2, 0.18, 'sine');
+      // 高八度星星回响
+      note(f * 4, 0.9, 2.4, 0.05, 'sine');
+      note(f * 4, 1.5, 2.0, 0.035, 'sine');
+      // 五度叠置
+      note(f * 1.5, 0.5, 2.8, 0.08, 'sine');
+      i++;
+    }, 2100);
+    // 极轻的背景风
+    var src = actx.createBufferSource(); src.buffer = noiseBuf(4); src.loop = true;
+    var lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 320;
+    var g = actx.createGain(); g.gain.value = 0.16;
+    src.connect(lp); lp.connect(g); g.connect(master); src.start();
   }
 
   // ===== 动物专属灵魂之声：按动物性格定制 =====
@@ -5633,7 +5714,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
   var currentAnimal = typeof animalId !== 'undefined' ? animalId : '';
-  var runners = { soul: startSoul, piano: startPiano, nature: startNature, lofi: startLoFi, ambient: startAmbient };
+  var runners = { soul: startSoul, piano: startPiano, nature: startNature, lofi: startLoFi, ambient: startAmbient, dawn: startDawn, camp: startCamp, lullaby: startLullaby };
   function play(type) {
     stopMusic();
     ensureCtx();
@@ -5644,7 +5725,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setActive();
     var now = document.getElementById('musicNow');
     var nowName = document.getElementById('musicNowName');
-    var names = { soul: '专属之声 · 温柔陪伴', piano: '轻柔钢琴', nature: '自然原野', lofi: '夜晚 Lo-Fi', ambient: '深海氛围' };
+    var names = { soul: '专属之声 · 温柔陪伴', piano: '轻柔钢琴', nature: '自然原野', lofi: '夜晚 Lo-Fi', ambient: '深海氛围', dawn: '清晨鸟鸣', camp: '黄昏营火', lullaby: '星空摇篮曲' };
     if (now && nowName) { now.style.display = 'block'; nowName.textContent = names[type] || ''; }
   }
   function setActive() {
