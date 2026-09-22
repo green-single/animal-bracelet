@@ -959,6 +959,8 @@ padding: 10px 22px; border: none; border-radius: 22px; font-size: 13.5px; font-w
 @keyframes lmEnvGone { to { opacity: 0; transform: translateY(-46px) scale(.88) rotate(2deg); } }
 /* 信纸 */
 .lm-paper-wrap { flex: 1 1 auto; min-height: 0; display: none; flex-direction: column; background: #FFFDF6; position: relative; }
+/* 拆信后：绿色舞台收起，信纸直接占满卡片 */
+.lm-card.opened .lm-stage { display: none; }
 .lm-paper-wrap.show { display: flex; animation: lmPaperIn .6s cubic-bezier(.2,1,.35,1) both; }
 @keyframes lmPaperIn { 0% { opacity: 0; transform: translateY(-14px) scale(.97); } 70% { opacity: 1; transform: translateY(3px) scale(1); } 100% { transform: translateY(0); } }
 .lm-paper { flex: 1 1 auto; overflow-y: auto; padding: 62px 30px 30px; color: #4A3A28; font-size: 15.5px; line-height: 2.15; letter-spacing: .02em; font-family: 'Kaiti SC', '楷体', 'STKaiti', 'LXGW WenKai', 'Noto Serif SC', serif; background:
@@ -5363,6 +5365,8 @@ document.addEventListener('DOMContentLoaded', function() {
         env.classList.add('gone');
         var pw = document.getElementById('lmPaperWrap');
         pw.classList.add('show');
+        var card = document.getElementById('lmCard');
+        if (card) card.classList.add('opened');
         var paper = document.getElementById('lmPaper');
         paper.scrollTop = 0;
       }, 720);
@@ -5376,6 +5380,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var env = document.getElementById('lmEnv');
     env.classList.remove('opening', 'gone');
     document.getElementById('lmPaperWrap').classList.remove('show');
+    var card = document.getElementById('lmCard');
+    if (card) card.classList.remove('opened');
   };
   // 收藏过滤切换
   window.toggleFavOnly = function (kind) {
