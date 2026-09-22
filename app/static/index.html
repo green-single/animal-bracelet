@@ -56,19 +56,38 @@
 
   /* Hero 区域 */
   .hero {
-    background: linear-gradient(135deg, #0f5e56, #1a8a7d);
-    border-radius: 22px; padding: 32px 24px; margin-bottom: 20px;
-    color: #fff; text-align: center; position: relative; overflow: hidden;
+    background:
+      radial-gradient(ellipse at 72% 18%, rgba(255,222,150,.5), transparent 46%),
+      radial-gradient(ellipse at 50% 120%, rgba(111,207,151,.12), transparent 55%),
+      linear-gradient(160deg, #0A1428 0%, #16294D 52%, #0D1A36 100%);
+    border: 1px solid rgba(245,197,66,.18);
+    border-radius: 26px; padding: 40px 24px 34px; margin-bottom: 20px;
+    color: #F7F3E8; text-align: center; position: relative; overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,.35), inset 0 0 60px rgba(245,197,66,.05);
   }
   .hero::before {
-    content: ''; position: absolute; top: -40px; right: -40px; width: 160px; height: 160px;
-    background: rgba(255,255,255,.08); border-radius: 50%;
+    content: ''; position: absolute; top: -80px; right: -60px; width: 260px; height: 260px;
+    background: radial-gradient(circle, rgba(255,220,150,.35), transparent 62%);
+    border-radius: 50%; pointer-events: none;
   }
   .hero::after {
-    content: ''; position: absolute; bottom: -60px; left: -30px; width: 140px; height: 140px;
-    background: rgba(255,255,255,.06); border-radius: 50%;
+    content: ''; position: absolute; bottom: -70px; left: -40px; width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(160,140,230,.14), transparent 60%);
+    border-radius: 50%; pointer-events: none;
   }
-  .hero-icon { font-size: 48px; margin-bottom: 12px; position: relative; z-index: 1; }
+  .hero-moon { position: relative; width: 132px; height: 132px; margin: 0 auto 16px; z-index: 2; }
+  .hero-moon-core {
+    position: absolute; top: 6px; right: 8px; width: 66px; height: 66px; border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%, #FFF3D6, #FFD88A 58%, #E8B65A);
+    box-shadow: 0 0 34px rgba(255,220,150,.85), 0 0 90px rgba(255,210,130,.35);
+  }
+  .hero-bird { position: absolute; left: 0; bottom: 2px; width: 118px; height: 62px; filter: drop-shadow(0 2px 6px rgba(0,0,0,.4)); }
+  .hero-star {
+    position: absolute; width: 4px; height: 4px; border-radius: 50%;
+    background: #FFF3D6; box-shadow: 0 0 8px #FFD88A;
+    animation: heroTwinkle 2.6s ease-in-out infinite;
+  }
+  @keyframes heroTwinkle { 0%,100% { opacity: .25; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.15); } }
   .hero h1 { font-size: 24px; margin-bottom: 10px; position: relative; z-index: 1; }
   .hero p { font-size: 14px; line-height: 1.7; opacity: .92; position: relative; z-index: 1; }
 
@@ -349,7 +368,8 @@ header { background: transparent !important; border-bottom: 1px solid rgba(245,1
 .brand { color: #F5EDD8 !important; }
 .brand small { color: #9FB0C8 !important; }
 
-.hero h1 { color: #FFE9A8 !important; text-shadow: 0 0 24px rgba(245,197,66,.35) !important; }
+.hero h1 { color: #FFF3D6 !important; text-shadow: 0 0 26px rgba(255,220,150,.5), 0 0 70px rgba(255,210,130,.2) !important; letter-spacing: .5px; }
+.hero-moon { filter: drop-shadow(0 0 12px rgba(255,220,150,.4)); }
 .hero p { color: #9FB0C8 !important; }
 .hero-icon { filter: drop-shadow(0 0 18px rgba(245,197,66,.45)); }
 
@@ -423,14 +443,26 @@ h2, .real-sec h2, .blind-sec h2, .demo-sec h2 { color: #FFE9A8 !important; }
 </header>
 <div id="pwaTip"><b>📲 把它装到桌面</b>，以后像 App 一样一键打开<br><span id="pwaTipHow"></span><button class="pwa-x" onclick="dismissPwaTip()">✕</button></div>
 <main>
-  <!-- Hero -->
+  <!-- Hero：月下斑鸠 -->
   <div class="hero">
-    <div class="hero-icon">🦩</div>
-    <h1>每一只动物，都有它的旅程</h1>
-    <p>扫描手环上的二维码，领养一只真实存在的动物，<br>跟随它的足迹，看世界有多大。</p>
+    <div class="hero-moon">
+      <div class="hero-moon-core"></div>
+      <svg class="hero-bird" viewBox="0 0 120 60" fill="none" aria-hidden="true">
+        <path d="M8 46 Q34 18 62 40 Q80 24 112 14 Q96 34 82 44 Q66 54 50 52 Q30 58 8 46 Z"
+          fill="rgba(18,26,46,0.88)" stroke="rgba(245,197,66,.75)" stroke-width="1.6"/>
+        <path d="M50 52 Q58 44 70 44" stroke="rgba(18,26,46,0.88)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M8 46 Q34 18 62 40 Q80 24 112 14" stroke="rgba(245,197,66,.5)" stroke-width="1" stroke-dasharray="3 4" fill="none"/>
+      </svg>
+      <div class="hero-star" style="left:12%;top:18%;animation-delay:0s"></div>
+      <div class="hero-star" style="left:76%;top:10%;animation-delay:1.2s"></div>
+      <div class="hero-star" style="left:88%;top:42%;animation-delay:2.1s"></div>
+      <div class="hero-star" style="left:6%;top:58%;animation-delay:.6s"></div>
+    </div>
+    <h1>月亮上停着一只<br>还没有名字的欧斑鸠</h1>
+    <p>让手机轻轻碰一下吊坠上的月亮——<br>它会告诉你它的名字与故事，<br>而你可以为它取一个新的。</p>
     <div class="code-search">
-      <input id="codeInput" placeholder="已有领养码？输入查看动物" maxlength="20">
-      <button id="codeGo" type="button">查询</button>
+      <input id="codeInput" placeholder="已有领养码？输入查看" maxlength="20">
+      <button id="codeGo" type="button">遇见它</button>
     </div>
   </div>
 
