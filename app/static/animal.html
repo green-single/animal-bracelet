@@ -1795,7 +1795,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 <header>
   <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
   <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
-  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.32</span>
+  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.33</span>
 </header>
 <div id="themePanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4000;width:min(240px,86vw);background:linear-gradient(165deg,#2C1D50,#1E1338);border:1px solid rgba(255,194,77,.35);border-radius:18px;padding:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);">
   <div style="font-size:13px;font-weight:800;color:#FFE9C4;margin-bottom:10px;">🎨 选择主题 · 挑一个你喜欢的夜色</div>
@@ -5679,6 +5679,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- ===== 雪主题：趴着睡觉的棕熊 ===== -->
 <div id="bearArt">
+  <div id="bearTip" style="display:none;position:absolute;top:-40px;left:0;max-width:150px;padding:7px 11px;border-radius:12px;background:rgba(248,252,255,.94);color:#3D5A80;font-size:12px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.22);pointer-events:none;white-space:normal;line-height:1.35;font-family:'PingFang SC','Microsoft YaHei',sans-serif;">呼…呼…</div>
   <div id="bearZzz" style="display:none;position:absolute;top:-14px;right:-6px;font-size:13px;font-weight:800;color:rgba(235,245,255,.95);letter-spacing:2px;text-shadow:0 0 8px rgba(180,210,255,.6);font-family:Georgia,serif;white-space:nowrap;pointer-events:none;"><span class="z1">Z</span><span class="z2">z</span><span class="z3">z</span></div>
   <div id="bearHeart" style="display:none;position:absolute;top:-16px;right:-8px;font-size:16px;pointer-events:none;filter:drop-shadow(0 0 6px rgba(255,140,160,.8));"><span style="display:inline-block;animation:heartFloat 1.6s ease-out infinite;">💗</span></div>
   <svg viewBox="0 0 200 120" width="170" height="102">
@@ -5737,10 +5738,12 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 <style>
 #bearArt {
-  position: fixed; left: 14px; bottom: 74px; z-index: 3; pointer-events: none;
+  position: fixed; left: 6px; bottom: 62px; z-index: 3; pointer-events: none;
   display: none; opacity: 0; transition: opacity 1.2s ease;
   filter: drop-shadow(0 6px 18px rgba(0,0,0,.35));
+  padding: 26px 22px 34px 10px;
 }
+#bearArt::before { content: ''; position: absolute; inset: 0; pointer-events: none; }
 body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
 /* 睡觉呼吸 */
 #bearArt svg { animation: bearBreathe 4.6s ease-in-out infinite; transform-origin: 50% 88%; }
@@ -5775,9 +5778,13 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
   bear.style.pointerEvents = 'auto';
   bear.style.cursor = 'pointer';
   var zzz = document.getElementById('bearZzz');
+  var tip = document.getElementById('bearTip');
   var state = 'sleep'; // sleep -> snore -> awake -> sleep
   var snoreTimer = null, blinkTimer = null, autoSleepTimer = null;
   var heart = document.getElementById('bearHeart');
+  var firstTap = true;
+  function sayTxt(txt) { if (tip) { tip.textContent = txt; tip.style.display = 'block'; } }
+  function hideTip() { if (tip) tip.style.display = 'none'; }
 
   // Web Audio 鼾声（低频呼噜，点击触发不受自动播放限制）
   var actx = null;
@@ -5806,7 +5813,10 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
     bear.classList.remove('snoring', 'awake', 'blink');
     if (zzz) zzz.style.display = 'none';
     if (heart) heart.style.display = 'none';
+    sayTxt('呼…又困啦 Zzz');
     clearTimeout(autoSleepTimer);
+    clearTimeout(snoreTimer); clearTimeout(blinkTimer);
+    setTimeout(hideTip, 2600);
   }
   function toSnore() {
     state = 'snore';
@@ -5815,9 +5825,11 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
     if (zzz) zzz.style.display = 'block';
     if (heart) heart.style.display = 'none';
     snore();
+    sayTxt('呼噜噜…别闹，让我再睡会儿 🐻');
     clearTimeout(snoreTimer);
     clearTimeout(blinkTimer);
     clearTimeout(autoSleepTimer);
+    setTimeout(hideTip, 3000);
   }
   function toAwake() {
     state = 'awake';
@@ -5825,6 +5837,8 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
     bear.classList.remove('snoring', 'blink');
     if (zzz) zzz.style.display = 'none';
     if (heart) heart.style.display = 'block';
+    sayTxt(firstTap ? '呜…是你唤醒我的呀 💗' : '又见面啦，今天也一起守着小鸟 💗');
+    firstTap = false;
     // 眨眼苏醒过程：闭眼眨2次 → 睁眼
     var n = 0;
     (function blinkCycle() {
@@ -5845,6 +5859,22 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
     else if (state === 'snore') { toAwake(); }
     else if (state === 'awake') { toSleep(); }
   });
+  // 进入雪主题首次显示引导气泡（几秒后自动收起）
+  var guideShown = false;
+  (function guide() {
+    try {
+      if (localStorage.getItem('bearGuideShown')) return;
+      var iv = setInterval(function () {
+        if (document.body.getAttribute('data-theme') === 'snow' && !guideShown) {
+          guideShown = true;
+          localStorage.setItem('bearGuideShown', '1');
+          sayTxt('嘿，轻轻戳我一下 🐾');
+          setTimeout(hideTip, 3200);
+          clearInterval(iv);
+        }
+      }, 800);
+    } catch(e) {}
+  })();
 })();
 </script>
 
