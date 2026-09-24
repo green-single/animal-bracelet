@@ -926,13 +926,13 @@ padding: 10px 22px; border: none; border-radius: 22px; font-size: 13.5px; font-w
 .letter-modal .lm-card { position: relative; width: 92%; max-width: 520px; max-height: 88vh; display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,.5); animation: lmPop .38s cubic-bezier(.2,1.1,.35,1) both; }
 @keyframes lmPop { from { opacity: 0; transform: scale(.86) translateY(22px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 .letter-modal .lm-close { position: absolute; top: 10px; right: 10px; z-index: 12; width: 34px; height: 34px; border-radius: 50%; border: none; background: rgba(0,0,0,.28); color: #fff; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.letter-modal .lm-stage { flex: 0 0 auto; padding: 48px 20px 44px; display: flex; align-items: center; justify-content: center; background: radial-gradient(120% 90% at 50% 0%, #2E4A42 0%, #1D332D 55%, #14231F 100%); min-height: 264px; position: relative; overflow: hidden; }
+.letter-modal .lm-stage { flex: 0 0 auto; padding: 26px 20px 24px; display: flex; align-items: center; justify-content: center; background: radial-gradient(120% 90% at 50% 0%, #2E4A42 0%, #1D332D 55%, #14231F 100%); min-height: 0; position: relative; overflow: hidden; }
 /* 星空点缀 */
 .lm-stage::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(1.2px 1.2px at 18% 22%, rgba(255,255,255,.55) 50%, transparent 51%), radial-gradient(1px 1px at 72% 30%, rgba(255,255,255,.4) 50%, transparent 51%), radial-gradient(1.4px 1.4px at 84% 68%, rgba(255,255,255,.35) 50%, transparent 51%), radial-gradient(1px 1px at 32% 76%, rgba(255,255,255,.45) 50%, transparent 51%), radial-gradient(1px 1px at 56% 12%, rgba(255,255,255,.3) 50%, transparent 51%), radial-gradient(1.2px 1.2px at 8% 56%, rgba(255,255,255,.3) 50%, transparent 51%); pointer-events: none; }
 /* 顶部小字 */
 .lm-stage::after { content: '· L U M I 的 来 信 ·'; position: absolute; top: 16px; left: 0; right: 0; text-align: center; font-size: 10px; letter-spacing: .5em; color: rgba(226,240,234,.55); font-weight: 600; font-family: Georgia, serif; pointer-events: none; }
 /* 大信封 */
-.lm-env { position: relative; width: 88%; max-width: 360px; min-height: 196px; background: linear-gradient(150deg, #F8EAD0, #F0D9AC); border: 1.5px solid rgba(226,186,110,.8); border-radius: 12px; padding: 40px 24px 30px; cursor: pointer; box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 18px 44px rgba(0,0,0,.5), 0 0 30px rgba(226,186,110,.14); transition: transform .3s ease; box-sizing: border-box; }
+.lm-env { position: relative; width: 86%; max-width: 340px; min-height: 158px; background: linear-gradient(150deg, #F8EAD0, #F0D9AC); border: 1.5px solid rgba(226,186,110,.8); border-radius: 12px; padding: 28px 22px 22px; cursor: pointer; box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 14px 34px rgba(0,0,0,.45), 0 0 26px rgba(226,186,110,.14); transition: transform .3s ease; box-sizing: border-box; }
 /* 信封纹理线 */
 .lm-env::before { content: ''; position: absolute; left: 12px; right: 12px; top: 12px; bottom: 12px; border: 1px dashed rgba(196,152,80,.4); border-radius: 8px; pointer-events: none; z-index: 1; }
 /* 收件人手写体 */
@@ -1813,7 +1813,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 <header>
   <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
   <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
-  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.37</span>
+  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.43</span>
 </header>
 <div id="themePanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4000;width:min(240px,86vw);background:linear-gradient(165deg,#2C1D50,#1E1338);border:1px solid rgba(255,194,77,.35);border-radius:18px;padding:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);">
   <div style="font-size:13px;font-weight:800;color:#FFE9C4;margin-bottom:10px;">🎨 选择主题 · 挑一个你喜欢的夜色</div>
