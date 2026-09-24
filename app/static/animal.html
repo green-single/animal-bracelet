@@ -188,7 +188,7 @@ cursor: pointer; transition: all .15s ease;
 .pcbig { display: none; position: fixed; inset: 0; z-index: 9998; background: radial-gradient(120% 100% at 50% 0%, rgba(14,20,17,.992), rgba(6,9,8,.998)); align-items: center; justify-content: center; padding: 18px; box-sizing: border-box; }
 .pcbig.active { display: flex; }
 .pcbig-card { position: relative; width: 92%; max-width: 400px; max-height: 92vh; overflow-y: auto; background:
-    linear-gradient(rgba(255,252,242,.06), rgba(255,250,236,.16)),
+    linear-gradient(rgba(255,255,255,.04), rgba(255,252,244,.22)),
     url('/static/assets/img/pc_bg_watercolor.jpg') center/cover no-repeat;
     border-radius: 16px; box-shadow: 0 26px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(170,130,70,.30), inset 0 0 0 4px rgba(255,255,255,.55); animation: pcPop .4s cubic-bezier(.2,1.1,.35,1) both; }
 @keyframes pcPop { from { opacity: 0; transform: translateY(18px) scale(.94); } to { opacity: 1; transform: none; } }
@@ -260,9 +260,9 @@ cursor: pointer; transition: all .15s ease;
 .pc-stamp-in b { font-size: 8px; letter-spacing: 1px; color: #7A5A2E; font-weight: 800; }
 .pc-stamp-in i { font-size: 17px; font-style: normal; line-height: 1; }
 .pc-stamp-in em { font-size: 9px; font-style: normal; color: #A9835A; }
-.pcbig-photo::after { content: '✈ 旅程邮戳 · 2026'; position: absolute; left: 12px; right: auto; bottom: 12px; font-size: 11px; letter-spacing: .18em; color: rgba(255,244,214,.92); padding: 5px 12px; border: 1.6px solid rgba(255,244,214,.85); border-radius: 8px; transform: rotate(-6deg); background: rgba(30,20,5,.35); font-family: 'Kaiti SC','楷体',serif; }
+.pcbig-photo { position: relative; height: 248px; width: calc(100% - 56t: 12px; right: auto; bottom: 12px; font-size: 11px; letter-spacing: .18em; color: rgba(255,244,214,.92); padding: 5px 12px; border: 1.6px solid rgba(255,244,214,.85); border-radius: 8px; transform: rotate(-6deg); background: rgba(30,20,5,.35); font-family: 'Kaiti SC','楷体',serif; }
 .pcbig-body { padding: 18px 20px 16px; background: linear-gradient(rgba(90,120,190,.10) 0, rgba(90,120,190,.10) 1px, transparent 1px), linear-gradient(180deg, #F7EFDA 0%, #F0E2C0 100%); background-size: 100% 30px, 100% 100%; border-radius: 0 0 10px 10px; }
-.pcbig-body { margin: 16px 10px 12px; padding: 16px 14px 12px; background: rgba(255,253,246,.92); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); border-radius: 12px; box-shadow: inset 0 0 0 1px rgba(190,150,80,.28); }
+.pcbig-body { margin: 16px 10px 12px; padding: 16px 14px 12px; background: rgba(255,252,244,.74); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); border-radius: 12px; box-shadow: inset 0 0 0 1px rgba(190,150,80,.30); }
 .pcbig-place { font-size: 22px; font-weight: 800; color: #7A4E1B; display: flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 8px; background: linear-gradient(90deg, rgba(218,182,120,.25), rgba(218,182,120,.05)); border: 1px solid rgba(180,135,70,.35); }
 .pcbig-sub { font-size: 12px; color: #8A6B45; margin-top: 6px; letter-spacing: .05em; padding-left: 10px; }
 .pcbig-note { font-size: 15px; line-height: 2; margin-top: 12px; color: #3E3A5C; font-family: 'Kaiti SC', '楷体', serif; padding-left: 10px; }
@@ -1842,19 +1842,19 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
     <div class="tab-view tab-story" id="tabStory"></div>
     <div class="tab-view tab-ach" id="tabAch"></div>
     <div class="tab-view tab-mine" id="tabMine">
+  <div class="mine-section" id="pcSection">
+    <div class="sec-head" onclick="toggleSec('pc')">
+      <span>🎑 明信片收藏</span>
+      <span class="sec-extra"><button class="sec-fav-btn" id="pcFavBtn" onclick="event.stopPropagation();toggleFavOnly('pc')">☆ 全部</button><span class="sec-arrow" id="pcArrow">▾</span></span>
+    </div>
+    <div class="sec-body hide" id="pcBody"><div class="pc-wall" id="postcardWall"></div></div>
+  </div>
   <div class="mine-section" id="letterSection">
     <div class="sec-head" onclick="toggleSec('letter')">
       <span>💌 写给守护者的信</span>
       <span class="sec-extra"><button class="sec-fav-btn" id="letterFavBtn" onclick="event.stopPropagation();toggleFavOnly('letter')">☆ 全部</button><span class="sec-arrow" id="letterArrow">▾</span></span>
     </div>
     <div class="sec-body" id="letterBody"><div class="letter-list" id="letterList"></div></div>
-  </div>
-  <div class="mine-section" id="pcSection">
-    <div class="sec-head" onclick="toggleSec('pc')">
-      <span>🎑 明信片收藏</span>
-      <span class="sec-extra"><button class="sec-fav-btn" id="pcFavBtn" onclick="event.stopPropagation();toggleFavOnly('pc')">☆ 全部</button><span class="sec-arrow" id="pcArrow">▸</span></span>
-    </div>
-    <div class="sec-body hide" id="pcBody"><div class="pc-wall" id="postcardWall"></div></div>
   </div>
   <div class="mine-section" id="msgSection">
     <div class="sec-head" onclick="toggleSec('msg')">
