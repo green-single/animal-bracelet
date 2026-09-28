@@ -978,7 +978,7 @@ padding: 10px 22px; border: none; border-radius: 22px; font-size: 13.5px; font-w
 .lm-paper::after { content: '💗'; position: absolute; right: 18px; bottom: 26px; font-size: 30px; opacity: .5; transform: rotate(-14deg); filter: drop-shadow(0 2px 3px rgba(120,60,40,.3)); }
 /* 信纸落款 */
 .lm-sign-line { margin-top: 26px; text-align: right; font-size: 12.5px; color: #8A6B45; letter-spacing: .06em; padding-right: 6px; }
-.lm-greet { text-align: left; margin: 4px 4px 2px; } .lm-greet-to { font-size: 23px; font-weight: 700; color: #6E4A26; font-family: 'Kaiti SC','楷体','LXGW WenKai',serif; letter-spacing: 4px; } .lm-greet-to em { font-style: normal; font-size: 15px; color: #A9835A; letter-spacing: 1px; margin-left: 6px; } .lm-greet-hello { margin-top: 8px; font-size: 15px; color: #8A6744; letter-spacing: 2px; } .lm-greet-line { margin: 14px 0 6px; height: 1px; background: linear-gradient(90deg, rgba(180,135,70,.55), rgba(180,135,70,.08), transparent); }
+.lm-greet { text-align: left; margin: 4px 4px 2px; } .lm-greet { text-align: center; margin: 8px 4px 4px; } .lm-greet-to { font-size: 21px; font-weight: 600; color: #6E4A26; font-family: 'Kaiti SC','楷体','STKaiti','LXGW WenKai','Noto Serif SC',serif; letter-spacing: 3px; line-height: 1.7; } .lm-greet-to em { display: block; font-style: normal; font-size: 14px; font-weight: 400; color: #A9835A; letter-spacing: 7px; margin-top: 4px; opacity: .8; } .lm-greet-hello { margin-top: 10px; font-size: 15px; color: #8A6744; letter-spacing: 2px; line-height: 1.8; } .lm-greet-line { margin: 14px 0 6px; height: 1px; background: linear-gradient(90deg, rgba(180,135,70,.55), rgba(180,135,70,.08), transparent); }
 .lm-head { text-align: center; margin: 0 0 14px; } .lm-head-title { font-size: 15px; font-weight: 800; letter-spacing: 5px; color: #8A5A2E; font-family: 'Kaiti SC','楷体',serif; } .lm-head-line { margin: 10px auto 8px; width: 82%; height: 1px; background: linear-gradient(90deg, transparent, rgba(180,135,70,.65), transparent); } .lm-head-date { font-size: 11px; color: #A9835A; letter-spacing: 2px; }
 .lm-info { display: flex; gap: 13px; align-items: center; margin: 2px 6px 18px; padding: 13px 15px; background: rgba(255,248,228,.72); border: 2px solid #7A5A2E; border-radius: 255px 18px 225px 18px / 18px 225px 18px 255px; transform: rotate(-.7deg); box-shadow: 3px 4px 0 rgba(122,90,46,.16); position: relative; }
 .lm-info-photo { width: 78px; height: 78px; border-radius: 50% 44% 56% 46% / 46% 56% 44% 52%; overflow: hidden; flex: 0 0 auto; border: 2.5px solid #6B4F28; transform: rotate(-2deg); box-shadow: 1px 2px 0 rgba(107,79,40,.25); }
@@ -1819,7 +1819,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 <header>
   <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
   <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
-  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.48</span>
+  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.49</span>
 </header>
 <div id="themePanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4000;width:min(240px,86vw);background:linear-gradient(165deg,#2C1D50,#1E1338);border:1px solid rgba(255,194,77,.35);border-radius:18px;padding:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);">
   <div style="font-size:13px;font-weight:800;color:#FFE9C4;margin-bottom:10px;">🎨 选择主题 · 挑一个你喜欢的夜色</div>
@@ -4928,6 +4928,11 @@ document.addEventListener('DOMContentLoaded', function() {
             _cards3.forEach(function (x) { var k = (x.d||0) + '_' + (x.place||''); if (k === ck) cd = x; });
             if (!cd) return;
             window._pcBigKey = ck;
+            // 明信片背景轮换：3张手绘水彩斑鸠背景
+            var pcBgs = ['/static/assets/img/pc_bg_olive.jpg', '/static/assets/img/pc_bg_wheat.jpg', '/static/assets/img/pc_bg_moon.jpg'];
+            var h = 0; for (var bi = 0; bi < ck.length; bi++) h = (h * 31 + ck.charCodeAt(bi)) >>> 0;
+            var pcc = document.getElementById('pcBigCard');
+            if (pcc) pcc.style.background = 'linear-gradient(rgba(255,255,255,.04), rgba(255,252,244,.22)), url(\'' + pcBgs[h % pcBgs.length] + '\') center/cover no-repeat';
             var ov = document.getElementById('pcBigOverlay');
             document.getElementById('pcBigPhoto').innerHTML = '<img src="' + (_pcPhoto||'') + '" alt=""><span class="pc-stamp-in"><b>MOVEBANK</b><i>🕊</i><em>LUMI · 0.80</em></span>';
             document.getElementById('pcBigPlace').textContent = (cd.ico||'📍') + ' ' + (cd.place||'远方');
@@ -5480,8 +5485,11 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="music-grid">
     <button class="music-opt record" data-music="record" id="musicOptRecord">🎬 它的原声 · 一路同行</button>
     <button class="music-opt piano2" data-music="piano2" id="musicOptPiano2">🎹 钢琴新编 · 温柔重现</button>
+    <button class="music-opt themepiano" data-music="themepiano" id="musicOptThemePiano">🎹 钢琴低语 · 林间温柔</button>
+    <button class="music-opt themeguitar" data-music="themeguitar" id="musicOptThemeGuitar">🎸 电吉他 · 晨光灵动</button>
+    <button class="music-opt themeethereal" data-music="themeethereal" id="musicOptThemeEthereal">🌙 空灵氛围 · 星河漫游</button>
   </div>
-  <div style="font-size:11px;color:rgba(245,237,216,.6);line-height:1.7;margin-top:10px;text-align:center;">它的原声，一路同行的歌；钢琴新编，是另一种温柔。</div>
+  <div style="font-size:11px;color:rgba(245,237,216,.6);line-height:1.7;margin-top:10px;text-align:center;">每个主题都有专属旋律：森林听钢琴低语，源泉听星河空灵，雪原听原声，沙漠听电吉他，月光听温柔重现。</div>
   <div class="music-now" id="musicNow" style="font-size:11.5px;color:rgba(245,197,66,.85);margin-top:10px;text-align:center;display:none;">♪ 正在播放：<b id="musicNowName"></b></div>
   <button class="music-off" id="musicOff">🔇 关闭音乐</button>
 </div>
@@ -5705,6 +5713,32 @@ document.addEventListener('DOMContentLoaded', function() {
     if (p && p.catch) p.catch(function(){});
   }
 
+  function playThemeAudio(src) {
+    if (window._unlockAch) window._unlockAch('music', '音乐之友');
+    if (timers.length) { timers.forEach(clearInterval); timers = []; }
+    if (timer) { clearInterval(timer); timer = null; }
+    if (master && actx) { try { master.gain.cancelScheduledValues(actx.currentTime); master.gain.setValueAtTime(0.0001, actx.currentTime); } catch(e){} }
+    if (!bgmAudio) {
+      bgmAudio = new Audio(src);
+      bgmAudio.loop = true;
+      bgmAudio.volume = 0.7;
+    }
+    var p = bgmAudio.play();
+    if (p && p.catch) p.catch(function(){});
+  }
+  function startThemePiano() {
+    // 钢琴低语：钢琴主奏，去除萨克斯，温柔深情（森林主题）
+    playThemeAudio('/static/assets/music/theme_piano.mp3');
+  }
+  function startThemeGuitar() {
+    // 电吉他：钢琴骨架 + 电吉他点缀，轻快灵动（沙漠主题）
+    playThemeAudio('/static/assets/music/theme_guitar.mp3');
+  }
+  function startThemeEthereal() {
+    // 空灵氛围：钢琴+长音弦乐+竖琴风铃，梦幻星空（源泉主题）
+    playThemeAudio('/static/assets/music/theme_ethereal.mp3');
+  }
+
   function startSoul() {
     // 专属之声：先停旧声
     if (window._unlockAch) window._unlockAch('music', '音乐之友');
@@ -5817,7 +5851,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
   var currentAnimal = typeof animalId !== 'undefined' ? animalId : '';
-  var runners = { record: startRecord, piano2: startPiano2 };
+  var runners = { record: startRecord, piano2: startPiano2, themepiano: startThemePiano, themeguitar: startThemeGuitar, themeethereal: startThemeEthereal };
   function play(type) {
     stopMusic();
     ensureCtx();
@@ -5828,7 +5862,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setActive();
     var now = document.getElementById('musicNow');
     var nowName = document.getElementById('musicNowName');
-    var names = { record: '它的原声 · 一路同行', piano2: '钢琴新编 · 温柔重现' };
+    var names = { record: '它的原声 · 一路同行', piano2: '钢琴新编 · 温柔重现', themepiano: '钢琴低语 · 林间温柔', themeguitar: '电吉他 · 晨光灵动', themeethereal: '空灵氛围 · 星河漫游' };
     if (now && nowName) { now.style.display = 'block'; nowName.textContent = names[type] || ''; }
   }
   function setActive() {
@@ -5851,7 +5885,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 恢复上次选择（仅原声有效；旧版本其他选项一律清除）
   var saved = localStorage.getItem('bgm');
-  if (saved && saved !== 'record' && saved !== 'off') { localStorage.removeItem('bgm'); saved = null; }
+  if (saved && saved !== 'record' && saved !== 'piano2' && saved !== 'themepiano' && saved !== 'themeguitar' && saved !== 'themeethereal' && saved !== 'off') { localStorage.removeItem('bgm'); saved = null; }
   if (saved && saved !== 'off' && runners[saved]) {
     // 需用户手势才能播音频：首次点击页面任意处再启动
     var once = function(){ play(saved); document.removeEventListener('pointerdown', once); };
@@ -5998,6 +6032,14 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
   0%, 100% { opacity: .45; }
   50% { opacity: .85; }
 }
+#deerArt.deer-hop svg { animation: deerHop .55s ease-in-out 1; }
+@keyframes deerHop {
+  0%, 100% { transform: translateY(0) scale(1); }
+  35% { transform: translateY(-16px) scale(1.04, .96); }
+  60% { transform: translateY(0) scale(.97, 1.04); }
+}
+#deerArt .deer-ears { transition: transform .3s ease; }
+#deerArt.deer-hop .deer-ears { transform: scale(1.08); }
 /* 耳廓狐：耳朵轻摆 + 点击竖耳摇尾 */
 #foxArt svg { animation: foxBreathe 4.8s ease-in-out infinite; transform-origin: 50% 90%; }
 @keyframes foxBreathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.01, 1.004); } }
@@ -6260,7 +6302,7 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
 <script>
 (function () {
   // ===== 主题角色：点击互动（猫头鹰/水母/耳廓狐） =====
-  ['owlArt','jellyArt','foxArt'].forEach(function(id){
+  ['owlArt','jellyArt','foxArt','deerArt'].forEach(function(id){
     var el = document.getElementById(id);
     if (!el) return;
     el.style.pointerEvents = 'auto';
@@ -6270,7 +6312,7 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
       if (tip) { tip.style.display = 'block'; setTimeout(function(){ tip.style.display = 'none'; }, 3000); }
       el.classList.remove('flap','glow','pop');
       void el.offsetWidth;
-      el.classList.add(id === 'owlArt' ? 'flap' : id === 'jellyArt' ? 'glow' : 'pop');
+      el.classList.add(id === 'owlArt' ? 'flap' : id === 'jellyArt' ? 'glow' : id === 'deerArt' ? 'deer-hop' : 'pop');
       setTimeout(function(){ el.classList.remove('flap','glow','pop'); }, 1200);
     });
   });
@@ -6830,6 +6872,12 @@ body[data-theme="desert"] .loc-info .u, body[data-theme="moon"] .loc-info .u { c
       var t = opt.getAttribute('data-theme');
       document.body.setAttribute('data-theme', t);
       try { localStorage.setItem('ori_theme', t); } catch (e) {}
+      // 主题联动音乐：每个主题专属旋律
+      var themeMusic = { forest: 'themepiano', pools: 'themeethereal', snow: 'record', desert: 'themeguitar', moon: 'piano2' };
+      var tm = themeMusic[t];
+      if (tm && typeof play === 'function') {
+        try { play(tm); } catch (e) {}
+      }
       panel.style.display = 'none';
     });
   });
