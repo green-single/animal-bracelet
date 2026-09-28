@@ -1819,7 +1819,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 <header>
   <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
   <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
-  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.47</span>
+  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.48</span>
 </header>
 <div id="themePanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4000;width:min(240px,86vw);background:linear-gradient(165deg,#2C1D50,#1E1338);border:1px solid rgba(255,194,77,.35);border-radius:18px;padding:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);">
   <div style="font-size:13px;font-weight:800;color:#FFE9C4;margin-bottom:10px;">🎨 选择主题 · 挑一个你喜欢的夜色</div>
@@ -6294,11 +6294,17 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
   function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
   resize();
   window.addEventListener('resize', resize);
+
+  // 主题粒子配置：每个主题专属形状
   var CFG = {
-    forest: { max: 14, rate: 0.03, colors: ['255,214,120', '255,236,180', '240,190,90'], kind: 'leaf' },
-    pools:  { max: 16, rate: 0.035, colors: ['120,235,220', '150,255,235', '90,210,255'], kind: 'bubble' },
-    desert: { max: 18, rate: 0.04, colors: ['255,196,120', '235,170,100', '255,224,160'], kind: 'sand' },
-    moon:   { max: 14, rate: 0.03, colors: ['235,240,255', '255,255,255', '210,220,255'], kind: 'dust' }
+    // 金辉森林：金色落叶（带叶脉，旋转飘落）
+    forest: { max: 18, rate: 0.04, colors: ['255,208,110', '255,232,170', '240,185,85'], kind: 'leaf' },
+    // 源泉之夜：荧光水母泡（上浮，触须摆动）
+    pools:  { max: 16, rate: 0.035, colors: ['120,235,220', '150,255,235', '95,210,255'], kind: 'jelly' },
+    // 晨曦沙漠：金沙粒（斜飘带拖尾）
+    desert: { max: 22, rate: 0.05, colors: ['255,200,130', '238,175,105', '255,228,165'], kind: 'sand' },
+    // 月光静谧：四角星尘（闪烁眨眼）
+    moon:   { max: 18, rate: 0.04, colors: ['235,242,255', '255,255,255', '205,218,255'], kind: 'star' }
   };
   function activeTheme() {
     var t = document.body.getAttribute('data-theme') || 'forest';
@@ -6309,17 +6315,24 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
     var col = cfg.colors[Math.floor(Math.random() * cfg.colors.length)];
     var p = {
       x: Math.random() * W,
-      y: -20 - Math.random() * 80,
-      r: 1.5 + Math.random() * 2.6,
+      y: -20 - Math.random() * 100,
+      r: 2 + Math.random() * 3,
       c: col,
       ph: Math.random() * Math.PI * 2,
       sp: 0.015 + Math.random() * 0.02,
-      tw: 0.6 + Math.random() * 0.4
+      tw: 0.6 + Math.random() * 0.4,
+      rot: Math.random() * Math.PI,
+      vrot: (Math.random() - .5) * 0.06
     };
-    if (t === 'desert') { p.vy = 0.3 + Math.random() * 0.4; p.vx = (Math.random() - .3) * .5; p.r = 1 + Math.random() * 1.8; }
-    else if (t === 'pools') { p.vy = -0.25 - Math.random() * 0.3; p.r = 2 + Math.random() * 3; }
-    else if (t === 'forest') { p.vy = 0.25 + Math.random() * 0.3; p.vx = (Math.random() - .5) * .4; }
-    else { p.vy = 0.12 + Math.random() * 0.2; p.r = 1.2 + Math.random() * 1.8; }
+    if (t === 'desert') {
+      p.vy = 0.4 + Math.random() * 0.5; p.vx = 0.4 + Math.random() * 0.5; p.r = 1 + Math.random() * 1.8;
+    } else if (t === 'pools') {
+      p.y = H - 30 - Math.random() * 50; p.vy = -0.22 - Math.random() * 0.26; p.r = 4.5 + Math.random() * 3.5;
+    } else if (t === 'forest') {
+      p.vy = 0.2 + Math.random() * 0.28; p.vx = (Math.random() - .5) * .35; p.r = 2.2 + Math.random() * 2.6;
+    } else { // moon
+      p.vy = 0.1 + Math.random() * 0.18; p.r = 1.5 + Math.random() * 2.2;
+    }
     return p;
   }
   function active() { return !!activeTheme(); }
@@ -6328,6 +6341,90 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
     var t = document.body.getAttribute('data-theme');
     if (t !== lastTheme) { lastTheme = t; cv.style.display = active() ? 'block' : 'none'; ps = []; }
   }, 500);
+
+  // 绘制函数：每个主题专属
+  function drawLeaf(p, a, t) {
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    // 叶子形状
+    ctx.fillStyle = 'rgba(' + p.c + ',' + (a * .98) + ')';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, p.r * 1.8, p.r * .95, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // 叶脉
+    ctx.strokeStyle = 'rgba(150,100,40,' + (a * .6) + ')';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(-p.r * 1.5, 0); ctx.lineTo(p.r * 1.5, 0);
+    ctx.moveTo(-p.r * .8, -p.r * .55); ctx.lineTo(-p.r * .4, p.r * .45);
+    ctx.moveTo(p.r * .6, -p.r * .5); ctx.lineTo(p.r * .9, p.r * .4);
+    ctx.stroke();
+    ctx.restore();
+  }
+  function drawJelly(p, a, t) {
+    ctx.save(); ctx.translate(p.x, p.y);
+    // 伞体（半圆）
+    ctx.fillStyle = 'rgba(' + p.c + ',' + (a * .88) + ')';
+    ctx.beginPath(); ctx.arc(0, 0, p.r, Math.PI, 0); ctx.closePath(); ctx.fill();
+    // 伞体边缘高光
+    ctx.strokeStyle = 'rgba(' + p.c + ',' + (a * .9) + ')';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.arc(0, 0, p.r, Math.PI, 0); ctx.stroke();
+    // 触须（摆动）
+    ctx.strokeStyle = 'rgba(' + p.c + ',' + (a * .85) + ')';
+    ctx.lineWidth = 0.9;
+    for (var k = 0; k < 4; k++) {
+      var bx = -p.r * .7 + k * p.r * .46;
+      ctx.beginPath();
+      ctx.moveTo(bx, p.r * .1);
+      ctx.quadraticCurveTo(bx + Math.sin(p.ph * 2 + k) * 3, p.r * .9, bx + Math.sin(p.ph * 2 + k + 1) * 4, p.r * 1.6);
+      ctx.stroke();
+    }
+    // 内部光点
+    ctx.fillStyle = 'rgba(255,255,255,' + (a * .75) + ')';
+    ctx.beginPath(); ctx.arc(p.r * .25, -p.r * .25, p.r * .18, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+  function drawSand(p, a, t) {
+    // 金沙粒 + 拖尾
+    ctx.strokeStyle = 'rgba(' + p.c + ',' + (a * .45) + ')';
+    ctx.lineWidth = Math.max(0.8, p.r * .5);
+    ctx.beginPath();
+    ctx.moveTo(p.x - p.vx * 5, p.y - p.vy * 5);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(' + p.c + ',' + (a * .95) + ')';
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+    // 微光晕
+    var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 2.5);
+    glow.addColorStop(0, 'rgba(' + p.c + ',' + (a * .2) + ')');
+    glow.addColorStop(1, 'rgba(' + p.c + ',0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 2.5, 0, Math.PI * 2); ctx.fill();
+  }
+  function drawStar(p, a, t) {
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.ph * .3);
+    // 四角星光
+    ctx.fillStyle = 'rgba(' + p.c + ',' + (a * .95) + ')';
+    ctx.beginPath();
+    var s = p.r;
+    ctx.moveTo(0, -s * 2.2);
+    ctx.lineTo(s * .45, -s * .45);
+    ctx.lineTo(s * 2.2, 0);
+    ctx.lineTo(s * .45, s * .45);
+    ctx.lineTo(0, s * 2.2);
+    ctx.lineTo(-s * .45, s * .45);
+    ctx.lineTo(-s * 2.2, 0);
+    ctx.lineTo(-s * .45, -s * .45);
+    ctx.closePath();
+    ctx.fill();
+    // 光晕
+    var glow = ctx.createRadialGradient(0, 0, 0, 0, 0, s * 3);
+    glow.addColorStop(0, 'rgba(' + p.c + ',' + (a * .4) + ')');
+    glow.addColorStop(1, 'rgba(' + p.c + ',0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(0, 0, s * 3, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
   (function loop() {
     requestAnimationFrame(loop);
     var t = activeTheme();
@@ -6337,29 +6434,21 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
     ctx.clearRect(0, 0, W, H);
     for (var i = ps.length - 1; i >= 0; i--) {
       var p = ps[i];
-      p.ph += p.sp; p.y += p.vy; p.x += p.vx || 0;
-      if (t === 'pools') { if (p.y < -30) ps.splice(i, 1); }
-      else if (p.y > H + 30) { ps.splice(i, 1); continue; }
+      p.ph += p.sp; p.rot += p.vrot; p.y += p.vy; p.x += p.vx || 0;
+      if (t === 'pools') { if (p.y < -40) ps.splice(i, 1); }
+      else if (p.y > H + 40 || p.x > W + 40) { ps.splice(i, 1); continue; }
       var a = p.tw * (0.5 + 0.5 * Math.sin(p.ph * 2));
+      // 先画光晕（通用）
       var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 4);
-      glow.addColorStop(0, 'rgba(' + p.c + ',' + (a * .5) + ')');
+      glow.addColorStop(0, 'rgba(' + p.c + ',' + (a * .55) + ')');
       glow.addColorStop(1, 'rgba(' + p.c + ',0)');
       ctx.fillStyle = glow;
       ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2); ctx.fill();
-      if (cfg.kind === 'leaf' || cfg.kind === 'bubble') {
-        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.ph * .6);
-        ctx.strokeStyle = 'rgba(' + p.c + ',' + (a * .9) + ')';
-        ctx.lineWidth = Math.max(0.8, p.r * .3);
-        ctx.beginPath();
-        if (cfg.kind === 'leaf') {
-          ctx.ellipse(0, 0, p.r * 1.6, p.r * .8, 0, 0, Math.PI * 2);
-        } else {
-          ctx.arc(0, 0, p.r, 0, Math.PI * 2);
-          ctx.moveTo(p.r, 0); ctx.arc(0, 0, p.r * .45, 0, Math.PI * 2);
-        }
-        ctx.stroke();
-        ctx.restore();
-      }
+      // 专属形状
+      if (cfg.kind === 'leaf') drawLeaf(p, a, t);
+      else if (cfg.kind === 'jelly') drawJelly(p, a, t);
+      else if (cfg.kind === 'sand') drawSand(p, a, t);
+      else drawStar(p, a, t);
     }
   })();
 })();
