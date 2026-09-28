@@ -1819,7 +1819,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 <header>
   <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
   <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
-  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.46</span>
+  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.47</span>
 </header>
 <div id="themePanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4000;width:min(240px,86vw);background:linear-gradient(165deg,#2C1D50,#1E1338);border:1px solid rgba(255,194,77,.35);border-radius:18px;padding:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);">
   <div style="font-size:13px;font-weight:800;color:#FFE9C4;margin-bottom:10px;">🎨 选择主题 · 挑一个你喜欢的夜色</div>
@@ -5948,7 +5948,7 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
 /* 清醒歪头 */
 #bearArt.awake .bear-head { transform: translate(2px,-5px) rotate(-9deg); transform-origin: 60% 85%; transition: transform .7s cubic-bezier(.3,1.3,.4,1); }
 /* ===== 主题专属角色 ===== */
-#owlArt, #jellyArt, #foxArt {
+#owlArt, #jellyArt, #foxArt, #deerArt {
   position: fixed; z-index: 3; pointer-events: none;
   display: none; opacity: 0; transition: opacity 1.2s ease;
   filter: drop-shadow(0 6px 18px rgba(0,0,0,.35));
@@ -5957,13 +5957,16 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
 body[data-theme="forest"] #owlArt { display: block; opacity: .94; right: 8px; bottom: 60px; }
 body[data-theme="pools"] #jellyArt { display: block; opacity: .90; left: 8px; bottom: 58px; }
 body[data-theme="desert"] #foxArt { display: block; opacity: .94; left: 8px; bottom: 56px; }
+body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bottom: 56px; }
 @media (max-width: 480px) {
   #owlArt svg { width: 136px; height: 93px; }
   #jellyArt svg { width: 124px; height: 99px; }
   #foxArt svg { width: 138px; height: 82px; }
+  #deerArt svg { width: 150px; height: 110px; }
   body[data-theme="forest"] #owlArt { right: 4px; bottom: 54px; }
   body[data-theme="pools"] #jellyArt { left: 4px; bottom: 52px; }
   body[data-theme="desert"] #foxArt { left: 4px; bottom: 50px; }
+  body[data-theme="moon"] #deerArt { right: 4px; bottom: 50px; }
 }
 /* 猫头鹰：呼吸 + 偶发眨眼 */
 #owlArt svg { animation: owlBreathe 4.2s ease-in-out infinite; transform-origin: 50% 90%; }
@@ -5982,6 +5985,19 @@ body[data-theme="desert"] #foxArt { display: block; opacity: .94; left: 8px; bot
 @keyframes jellyTent { 0%,100% { transform: rotate(0); } 50% { transform: rotate(6deg); } }
 #jellyArt.glow svg { animation: jellyGlow 1.1s ease-in-out 1; }
 @keyframes jellyGlow { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.5) drop-shadow(0 0 14px rgba(140,240,255,.9)); } }
+/* 月光小鹿：呼吸 + 偶发眨眼 + 鹿角微光 */
+#deerArt svg { animation: deerBreathe 5s ease-in-out infinite; transform-origin: 50% 92%; }
+@keyframes deerBreathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.012, 1.005); }
+}
+#deerArt.blink .deer-eyes { opacity: 0; transition: opacity .08s; }
+#deerArt .deer-eyes { transition: opacity .2s; }
+#deerArt .deer-halo { animation: deerHalo 6s ease-in-out infinite; transform-origin: 50% 50%; }
+@keyframes deerHalo {
+  0%, 100% { opacity: .45; }
+  50% { opacity: .85; }
+}
 /* 耳廓狐：耳朵轻摆 + 点击竖耳摇尾 */
 #foxArt svg { animation: foxBreathe 4.8s ease-in-out infinite; transform-origin: 50% 90%; }
 @keyframes foxBreathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.01, 1.004); } }
@@ -6199,6 +6215,47 @@ body[data-theme="desert"] #foxArt { display: block; opacity: .94; left: 8px; bot
     <ellipse cx="46" cy="108" rx="12" ry="8" fill="#B07B45"/>
   </svg>
 </div>
+  <div id="deerArt">
+    <div class="rol-tip" style="display:none;position:absolute;top:-40px;right:-6px;max-width:180px;padding:7px 11px;border-radius:12px;background:rgba(235,240,255,.96);color:#3D4A63;font-size:12px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.25);pointer-events:none;white-space:normal;line-height:1.35;font-family:'PingFang SC','Microsoft YaHei',sans-serif;">月光下，我一直在这里守着你 🦌</div>
+    <svg viewBox="0 0 220 150" width="188" height="128">
+      <defs>
+        <radialGradient id="deerFur" cx="45%" cy="40%" r="75%">
+          <stop offset="0%" stop-color="#F4F0F8"/>
+          <stop offset="55%" stop-color="#D8D2E4"/>
+          <stop offset="100%" stop-color="#A9A0BE"/>
+        </radialGradient>
+        <radialGradient id="deerGlow" cx="50%" cy="50%" r="60%">
+          <stop offset="0%" stop-color="rgba(190,205,255,.6)"/>
+          <stop offset="100%" stop-color="rgba(190,205,255,0)"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="116" cy="126" rx="64" ry="18" fill="rgba(120,130,170,.25)"/>
+      <ellipse cx="112" cy="112" rx="46" ry="30" fill="url(#deerFur)"/>
+      <path class="deer-halo" d="M112 96 a54 46 0 1 1 -2 0z" fill="url(#deerGlow)"/>
+      <ellipse cx="104" cy="120" rx="30" ry="22" fill="url(#deerFur)"/>
+      <ellipse cx="120" cy="128" rx="26" ry="17" fill="#C4BAD8"/>
+      <ellipse cx="108" cy="116" rx="9" ry="6" fill="#C4BAD8"/>
+      <g class="deer-ears">
+        <ellipse cx="82" cy="88" rx="11" ry="17" fill="#C4BAD8" transform="rotate(-16 82 88)"/>
+        <ellipse cx="132" cy="88" rx="11" ry="17" fill="#C4BAD8" transform="rotate(16 132 88)"/>
+        <ellipse cx="82" cy="92" rx="6" ry="10" fill="#EFE8F7" transform="rotate(-16 82 92)"/>
+        <ellipse cx="132" cy="92" rx="6" ry="10" fill="#EFE8F7" transform="rotate(16 132 92)"/>
+      </g>
+      <g class="deer-antlers">
+        <path d="M88 74 L78 44 L66 30 M78 44 L70 34 M78 44 L88 32" stroke="#E8E2F2" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M136 74 L146 44 L158 30 M146 44 L154 34 M146 44 L136 32" stroke="#E8E2F2" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="deer-eyes">
+        <circle cx="94" cy="100" r="3.6" fill="#3D4A63"/>
+        <circle cx="126" cy="100" r="3.6" fill="#3D4A63"/>
+        <circle cx="95" cy="99" r="1.1" fill="#fff"/>
+        <circle cx="127" cy="99" r="1.1" fill="#fff"/>
+      </g>
+      <path d="M106 104 q4 3 8 0" stroke="#3D4A63" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <ellipse cx="112" cy="112" rx="3" ry="4" fill="#B08FB8"/>
+    </svg>
+  </div>
+
 
 <script>
 (function () {
@@ -6227,6 +6284,87 @@ body[data-theme="desert"] #foxArt { display: block; opacity: .94; left: 8px; bot
   }, 5200);
 })();
 </script>
+<canvas id="themeFxOverlay" style="position:fixed;inset:0;z-index:5;pointer-events:none;display:none;"></canvas>
+<script>
+(function () {
+  var cv = document.getElementById('themeFxOverlay');
+  if (!cv) return;
+  var ctx = cv.getContext('2d');
+  var W = 0, H = 0, ps = [];
+  function resize() { W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  var CFG = {
+    forest: { max: 14, rate: 0.03, colors: ['255,214,120', '255,236,180', '240,190,90'], kind: 'leaf' },
+    pools:  { max: 16, rate: 0.035, colors: ['120,235,220', '150,255,235', '90,210,255'], kind: 'bubble' },
+    desert: { max: 18, rate: 0.04, colors: ['255,196,120', '235,170,100', '255,224,160'], kind: 'sand' },
+    moon:   { max: 14, rate: 0.03, colors: ['235,240,255', '255,255,255', '210,220,255'], kind: 'dust' }
+  };
+  function activeTheme() {
+    var t = document.body.getAttribute('data-theme') || 'forest';
+    return CFG[t] ? t : null;
+  }
+  function spawn(t) {
+    var cfg = CFG[t];
+    var col = cfg.colors[Math.floor(Math.random() * cfg.colors.length)];
+    var p = {
+      x: Math.random() * W,
+      y: -20 - Math.random() * 80,
+      r: 1.5 + Math.random() * 2.6,
+      c: col,
+      ph: Math.random() * Math.PI * 2,
+      sp: 0.015 + Math.random() * 0.02,
+      tw: 0.6 + Math.random() * 0.4
+    };
+    if (t === 'desert') { p.vy = 0.3 + Math.random() * 0.4; p.vx = (Math.random() - .3) * .5; p.r = 1 + Math.random() * 1.8; }
+    else if (t === 'pools') { p.vy = -0.25 - Math.random() * 0.3; p.r = 2 + Math.random() * 3; }
+    else if (t === 'forest') { p.vy = 0.25 + Math.random() * 0.3; p.vx = (Math.random() - .5) * .4; }
+    else { p.vy = 0.12 + Math.random() * 0.2; p.r = 1.2 + Math.random() * 1.8; }
+    return p;
+  }
+  function active() { return !!activeTheme(); }
+  var lastTheme = document.body.getAttribute('data-theme');
+  setInterval(function () {
+    var t = document.body.getAttribute('data-theme');
+    if (t !== lastTheme) { lastTheme = t; cv.style.display = active() ? 'block' : 'none'; ps = []; }
+  }, 500);
+  (function loop() {
+    requestAnimationFrame(loop);
+    var t = activeTheme();
+    if (!t) { ctx.clearRect(0, 0, W, H); return; }
+    var cfg = CFG[t];
+    if (ps.length < cfg.max && Math.random() < cfg.rate) ps.push(spawn(t));
+    ctx.clearRect(0, 0, W, H);
+    for (var i = ps.length - 1; i >= 0; i--) {
+      var p = ps[i];
+      p.ph += p.sp; p.y += p.vy; p.x += p.vx || 0;
+      if (t === 'pools') { if (p.y < -30) ps.splice(i, 1); }
+      else if (p.y > H + 30) { ps.splice(i, 1); continue; }
+      var a = p.tw * (0.5 + 0.5 * Math.sin(p.ph * 2));
+      var glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 4);
+      glow.addColorStop(0, 'rgba(' + p.c + ',' + (a * .5) + ')');
+      glow.addColorStop(1, 'rgba(' + p.c + ',0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2); ctx.fill();
+      if (cfg.kind === 'leaf' || cfg.kind === 'bubble') {
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.ph * .6);
+        ctx.strokeStyle = 'rgba(' + p.c + ',' + (a * .9) + ')';
+        ctx.lineWidth = Math.max(0.8, p.r * .3);
+        ctx.beginPath();
+        if (cfg.kind === 'leaf') {
+          ctx.ellipse(0, 0, p.r * 1.6, p.r * .8, 0, 0, Math.PI * 2);
+        } else {
+          ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+          ctx.moveTo(p.r, 0); ctx.arc(0, 0, p.r * .45, 0, Math.PI * 2);
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  })();
+})();
+</script>
+
 
 <!-- ===== 雪花飘过层（snow 主题：少量大雪花从地图上方飘过） ===== -->
 <canvas id="snowOverlay" style="position:fixed;inset:0;z-index:6;pointer-events:none;display:none;"></canvas>
