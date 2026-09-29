@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2064%2064%27%3E%3Crect%20width%3D%2764%27%20height%3D%2764%27%20rx%3D%2714%27%20fill%3D%27%231b4332%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2722%27%20fill%3D%27none%27%20stroke%3D%27%2340916c%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%2713%27%20fill%3D%27none%27%20stroke%3D%27%2374c69d%27%20stroke-width%3D%273%27%2F%3E%3Ccircle%20cx%3D%2732%27%20cy%3D%2732%27%20r%3D%275%27%20fill%3D%27%23d8f3dc%27%2F%3E%3Cpath%20d%3D%27M32%2032%20L45%2018%27%20stroke%3D%27%23d8f3dc%27%20stroke-width%3D%273%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fsvg%3E">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <link rel="manifest" id="manifestLink" href="/manifest.json">
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <meta name="theme-color" content="#12796F">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1357,6 +1358,11 @@ document.addEventListener('click', function(e) {
 // 注册 Service Worker（推送通知用；纯网络模式，不缓存页面/照片）
 if ('serviceWorker' in navigator) {
   try {
+    var mLink = document.getElementById('manifestLink');
+    if (mLink) {
+      var mSlug = (location.pathname.match(/\/animal\/([^\/]+)/) || [,''])[1] || '';
+      if (mSlug) mLink.setAttribute('href', '/manifest.json?animal=' + mSlug);
+    }
     navigator.serviceWorker.register('/sw.js').catch(function() {});
   } catch(e) {}
 }
@@ -1817,9 +1823,19 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 </div>
 
 <header>
-  <button id="pushBtn" type="button" title="有新足迹时通知我">🔔</button>
+  <button id="pushBtn" type="button" title="消息与提醒设置">🔔</button>
+   <div id="msgPanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4002;width:min(290px,84vw);background:linear-gradient(165deg,#1E3A2F,#14281F);border:1px solid rgba(150,220,180,.35);border-radius:18px;box-shadow:0 16px 50px rgba(0,0,0,.5);padding:16px 18px;font-family:inherit;">
+     <div style="font-size:14px;font-weight:700;color:#EAF6EE;margin-bottom:12px;">🔔 消息与陪伴</div>
+     <label style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);cursor:pointer;">
+       <input type="checkbox" id="optFootprint" style="width:18px;height:18px;accent-color:#4FC38A;"> <span style="font-size:13px;color:#DFF3E6;">有新足迹时通知我 <span style="color:rgba(220,240,230,.55);font-size:11px;">（系统推送）</span></span>
+     </label>
+     <label style="display:flex;align-items:center;gap:10px;padding:10px 0;cursor:pointer;">
+       <input type="checkbox" id="optDaily" style="width:18px;height:18px;accent-color:#4FC38A;"> <span style="font-size:13px;color:#DFF3E6;">每天带给她一句话 <span style="color:rgba(220,240,230,.55);font-size:11px;">（每日陪伴卡片）</span></span>
+     </label>
+     <div style="font-size:11px;color:rgba(220,240,230,.5);margin-top:10px;line-height:1.5;">开启后，每天第一次打开会收到它的一句悄悄话。</div>
+   </div>
   <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
-  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.50</span>
+  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.51</span>
 </header>
 <div id="themePanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4000;width:min(240px,86vw);background:linear-gradient(165deg,#2C1D50,#1E1338);border:1px solid rgba(255,194,77,.35);border-radius:18px;padding:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);">
   <div style="font-size:13px;font-weight:800;color:#FFE9C4;margin-bottom:10px;">🎨 选择主题 · 挑一个你喜欢的夜色</div>
@@ -5182,6 +5198,70 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   };
 })();
+
+// ===== 🔔 消息与陪伴面板 =====
+(function(){
+  var pBtn = document.getElementById('pushBtn');
+  var panel = document.getElementById('msgPanel');
+  var optFoot = document.getElementById('optFootprint');
+  var optDaily = document.getElementById('optDaily');
+  if (!pBtn || !panel) return;
+  var dailyKey = 'dailyMsg_' + (location.pathname.match(/\/animal\/([^\/]+)/)||[,''])[1];
+  var dailyOn = localStorage.getItem(dailyKey) === '1';
+
+  function syncOpts(){
+    if (optFoot) optFoot.checked = pBtn.classList.contains('on');
+    if (optDaily) optDaily.checked = dailyOn;
+  }
+  syncOpts();
+  if (optDaily){
+    optDaily.addEventListener('change', function(){
+      dailyOn = optDaily.checked;
+      try { localStorage.setItem(dailyKey, dailyOn ? '1' : '0'); } catch(e){}
+      if (dailyOn) showDailyCard();
+    });
+  }
+  function togglePanel(){
+    var show = panel.style.display !== 'block';
+    panel.style.display = show ? 'block' : 'none';
+    if (show) syncOpts();
+  }
+  pBtn.onclick = function(e){
+    e.preventDefault(); e.stopPropagation();
+    togglePanel();
+  };
+  document.addEventListener('click', function(e){
+    if (panel.style.display === 'block' && !panel.contains(e.target) && e.target.id !== 'pushBtn')
+      panel.style.display = 'none';
+  });
+  var roleName = { turtle:'Lumi', herringgull:'Silver', honeybuzzard:'Mel', noe:'Noé', redkite:'Athos' }[(location.pathname.match(/\/animal\/([^\/]+)/)||[,''])[1]] || '它';
+  var dailyLines = [
+    '今天也要记得，我一直在云上望着你。',
+    '风从很远的地方带来你的消息，我都收到了。',
+    '无论你走到哪里，我的翅膀都朝着你的方向。',
+    '想你了，所以今天飞得格外轻快。',
+    '每一公里，都是我走向你的一点心意。'
+  ];
+  function showDailyCard(){
+    var old = document.getElementById('dailyMsgCard');
+    if (old) old.remove();
+    var d = document.createElement('div');
+    d.id = 'dailyMsgCard';
+    d.style.cssText = 'position:fixed;left:50%;top:22%;transform:translateX(-50%);z-index:4003;width:min(320px,88vw);background:linear-gradient(160deg,#FFFDF6,#F7F1E3);border:1px solid rgba(210,180,120,.4);border-radius:20px;box-shadow:0 18px 60px rgba(0,0,0,.35);padding:24px 22px;text-align:center;font-family:inherit;';
+    d.innerHTML = '<div style="font-size:30px;margin-bottom:8px;">💌</div><div style="font-size:15px;font-weight:700;color:#4A3F2B;margin-bottom:10px;">' + roleName + ' 的悄悄话</div><div style="font-size:14px;color:#6B5D44;line-height:1.7;">' + (dailyLines[Math.floor(Math.random()*dailyLines.length)]) + '</div><button id="dailyMsgClose" style="margin-top:16px;padding:8px 26px;border:none;border-radius:99px;background:#D9B98A;color:#3D3226;font-size:13px;font-weight:700;cursor:pointer;">收下啦</button>';
+    document.body.appendChild(d);
+    document.getElementById('dailyMsgClose').onclick = function(){ d.remove(); };
+    setTimeout(function(){ if (d.parentNode) d.remove(); }, 12000);
+  }
+  if (dailyOn) {
+    var today = new Date().toDateString();
+    var seen = localStorage.getItem(dailyKey + '_seen');
+    if (seen !== today) {
+      setTimeout(showDailyCard, 1800);
+      try { localStorage.setItem(dailyKey + '_seen', today); } catch(e){}
+    }
+  }
+})();
 </script>
 
 
@@ -6032,6 +6112,13 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
   50% { opacity: .85; }
 }
 #deerArt.deer-hop img { animation: deerHop .55s ease-in-out 1; }
+#deerArt.deer-spin img { animation: deerSpin 1.1s ease-in-out 1; }
+@keyframes deerSpin {
+  0% { transform: rotate(0deg) scale(1); }
+  35% { transform: rotate(120deg) scale(1.08, .94); }
+  70% { transform: rotate(240deg) scale(.96, 1.06); }
+  100% { transform: rotate(360deg) scale(1); }
+}
 @keyframes deerHop {
   0%, 100% { transform: translateY(0) scale(1); }
   35% { transform: translateY(-16px) scale(1.04, .96); }
@@ -6190,18 +6277,33 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
 <script>
 (function () {
   // ===== 主题角色：点击互动（猫头鹰/水母/耳廓狐） =====
-  ['owlArt','jellyArt','foxArt','deerArt'].forEach(function(id){
+  window._roleLines = {
+  owlArt: ['咕咕…夜里由我守护你 🌙','夜色越深，我的眼睛越亮','林间每一阵风，我都替你听过','月亮升起来了，该睡觉啦','我数过每一颗星星，它们都在'],
+  jellyArt: ['咕噜噜…一起潜入深海吧 🌊','海流把我带到你身边','发光是为了在黑夜里遇见你','水母不会说话，但会轻轻发光','今夜的海面，平静得像你的梦'],
+  foxArt: ['嗷呜~ 沙丘是我的王国 🦊','风里传来你靠近的声音','我把脚印留在沙丘上等你','耳朵竖起来啦，有故事要讲给你','沙漠的星星，比别处更亮'],
+  deerArt: ['月光下，我一直在这里守着你 🦌','转个圈圈给你看～','鹿角上的萤火虫，是为你点的灯','月圆的时候，我会想起你','森林深处，有一片只属于我们的月光'],
+  bearArt: ['呼…睡得真香 zzz','雪落在我身上，也不觉得冷','等春天醒来，再陪你散步','我的呼噜声，是大地的摇篮曲']
+};
+['owlArt','jellyArt','foxArt','deerArt'].forEach(function(id){
     var el = document.getElementById(id);
     if (!el) return;
     el.style.pointerEvents = 'auto';
     el.style.cursor = 'pointer';
     el.addEventListener('click', function(){
       var tip = el.querySelector('.rol-tip');
-      if (tip) { tip.style.display = 'block'; setTimeout(function(){ tip.style.display = 'none'; }, 3000); }
-      el.classList.remove('flap','glow','pop');
+      if (tip) {
+        var lines = window._roleLines && window._roleLines[id] ? window._roleLines[id] : null;
+        if (lines && lines.length) {
+          var pick = lines[Math.floor(Math.random() * lines.length)];
+          tip.textContent = pick;
+        }
+        tip.style.display = 'block';
+        setTimeout(function(){ tip.style.display = 'none'; }, 3200);
+      }
+      el.classList.remove('flap','glow','pop','deer-hop','deer-spin');
       void el.offsetWidth;
-      el.classList.add(id === 'owlArt' ? 'flap' : id === 'jellyArt' ? 'glow' : id === 'deerArt' ? 'deer-hop' : 'pop');
-      setTimeout(function(){ el.classList.remove('flap','glow','pop'); }, 1200);
+      el.classList.add(id === 'owlArt' ? 'flap' : id === 'jellyArt' ? 'glow' : id === 'deerArt' ? 'deer-spin' : 'pop');
+      setTimeout(function(){ el.classList.remove('flap','glow','pop','deer-hop','deer-spin'); }, 1400);
     });
   });
   // 猫头鹰偶发眨眼

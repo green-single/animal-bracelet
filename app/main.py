@@ -17,10 +17,11 @@
 import hashlib
 import json
 import os
+import re
 import secrets
 
 from fastapi import FastAPI, Form, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
@@ -38,8 +39,20 @@ PHOTOS_DIR = os.path.join(STATIC_DIR, "assets", "photos")
 
 
 @app.get("/manifest.json")
-def manifest():
-    return FileResponse(os.path.join(STATIC_DIR, "manifest.json"), headers=_NO_CACHE_HEADERS)
+def manifest(animal: str = ""):
+    """动态 manifest：带 ?animal=<slug> 时，start_url 指向对应动物页（装桌面直接打开它）"""
+    import json as _json
+    base = os.path.join(STATIC_DIR, "manifest.json")
+    try:
+        with open(base, encoding="utf-8") as f:
+            m = _json.load(f)
+        if animal:
+            safe = re.sub(r"[^a-zA-Z0-9_-]", "", animal)[:40]
+            m["start_url"] = "/animal/" + safe
+            m["id"] = "/animal/" + safe
+        return Response(_json.dumps(m, ensure_ascii=False), media_type="application/manifest+json", headers=_NO_CACHE_HEADERS)
+    except Exception:
+        return FileResponse(base, headers=_NO_CACHE_HEADERS)
 
 
 @app.get("/icons/{name}")
