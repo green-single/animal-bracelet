@@ -236,17 +236,6 @@ def admin_logout():
 
 # ---------- API ----------
 
-@app.get("/api/demo/codes")
-def api_demo_codes():
-    """本地演示：返回当前未使用的领养码（部署上线后建议删除或加鉴权）。"""
-    conn = database.get_conn()
-    rows = conn.execute(
-        "SELECT code FROM claim_codes WHERE status = 'unused' ORDER BY code LIMIT 5"
-    ).fetchall()
-    conn.close()
-    return {"codes": [r["code"] for r in rows]}
-
-
 # 在售动物白名单：公共接口只暴露这些；未上架/下架/预留盲盒的动物一律隐藏
 ON_SALE_ANIMALS = {"turtle", "herringgull", "honeybuzzard", "noe", "redkite"}
 
