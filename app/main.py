@@ -149,7 +149,7 @@ def _page(path: str):
 @app.get("/")
 def index(request: Request):
     my = request.cookies.get("my_animal")
-    if my:
+    if my and my in ON_SALE_ANIMALS:
         try:
             conn = database.get_conn()
             row = conn.execute("SELECT id FROM animals WHERE id = ?", (my,)).fetchone()
@@ -168,8 +168,8 @@ def claim_page(code: str):
 
 @app.get("/animal/{animal_id}")
 def animal_page(animal_id: str):
-    # 示例动物已下架：服务端同样屏蔽，防止直接输 URL 访问
-    if animal_id == "koa":
+    # 非在售动物（下架/未上架/预留盲盒）一律屏蔽：直接输 URL 也访问不到
+    if animal_id not in ON_SALE_ANIMALS:
         return RedirectResponse("/", status_code=302)
     return _page(os.path.join(STATIC_DIR, "animal.html"))
 
@@ -247,13 +247,17 @@ def api_demo_codes():
     return {"codes": [r["code"] for r in rows]}
 
 
+# 在售动物白名单：公共接口只暴露这些；未上架/下架/预留盲盒的动物一律隐藏
+ON_SALE_ANIMALS = {"turtle", "herringgull", "honeybuzzard", "noe", "redkite"}
+
+
 @app.get("/api/animals")
 def api_animals():
     conn = database.get_conn()
     rows = conn.execute("SELECT * FROM animals ORDER BY created_at").fetchall()
     conn.close()
-    # 示例动物 koa 已下架，不再出现在任何公开列表
-    return {"animals": [_animal_row(r) for r in rows if r["id"] != "koa"]}
+    # 只返回在售白名单；未上架/预留盲盒动物不在任何公开列表出现
+    return {"animals": [_animal_row(r) for r in rows if r["id"] in ON_SALE_ANIMALS]}
 
 
 @app.get("/api/admin/stats")
@@ -287,7 +291,7 @@ def api_claim_status(code: str):
         (code,),
     ).fetchone()
     conn.close()
-    if row is None or row["animal_id"] == "koa":
+    if row is None or row["animal_id"] not in ON_SALE_ANIMALS:
         raise HTTPException(status_code=404, detail="领养码不存在")
     animal = {
         "id": row["animal_id"],
@@ -311,7 +315,7 @@ def api_claim(code: str, claim_req: ClaimRequest = None):
 
     conn = database.get_conn()
     row = conn.execute("SELECT * FROM claim_codes WHERE code = ?", (code,)).fetchone()
-    if row is None or row["animal_id"] == "koa":
+    if row is None or row["animal_id"] not in ON_SALE_ANIMALS:
         conn.close()
         raise HTTPException(status_code=404, detail="领养码不存在")
     if row["status"] == "claimed":
@@ -331,6 +335,8 @@ def api_claim(code: str, claim_req: ClaimRequest = None):
 @app.get("/api/animal/{animal_id}/latest")
 def api_animal_latest(animal_id: str):
     """轻量接口：只返回动物名 + 最新定位时间（页面轮询用，避免全量下载）"""
+    if animal_id not in ON_SALE_ANIMALS:
+        raise HTTPException(status_code=404, detail="动物不存在")
     conn = database.get_conn()
     row = conn.execute("SELECT name FROM animals WHERE id=?", (animal_id,)).fetchone()
     if row is None:
@@ -345,7 +351,7 @@ def api_animal_latest(animal_id: str):
 
 @app.get("/api/animal/{animal_id}")
 def api_animal(animal_id: str):
-    if animal_id == "koa":
+    if animal_id not in ON_SALE_ANIMALS:
         raise HTTPException(status_code=404, detail="动物不存在")
     conn = database.get_conn()
     row = conn.execute("SELECT * FROM animals WHERE id = ?", (animal_id,)).fetchone()
