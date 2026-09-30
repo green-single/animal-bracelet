@@ -6834,6 +6834,7 @@ body[data-theme="desert"] .loc-info .u, body[data-theme="moon"] .loc-info .u { c
           }));
         } catch(e) {}
         try { document.cookie = 'my_animal=' + aid + '; path=/; max-age=31536000; SameSite=Lax'; } catch(e) {}
+        try { localStorage.setItem('lastAnimalId', aid); } catch(e) {}
         if (aid === (window._animalData && window._animalData.a ? window._animalData.a.id : null)) {
           msg.textContent = '✅ 找到啦！正在回到它的世界…'; msg.style.color = '#7EC8A5';
           setTimeout(function(){ location.reload(); }, 700);
