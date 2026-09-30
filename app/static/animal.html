@@ -5564,12 +5564,11 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="music-tip" id="musicTip" style="display:none;font-size:11.5px;color:rgba(245,237,216,.75);line-height:1.6;margin:-4px 2px 10px;">💝 这是 <b id="musicTipName" style="color:#F5C542;">它</b> 的专属之声——根据它的性格为你演奏。</div>
   <div class="music-grid">
     <button class="music-opt record" data-music="record" id="musicOptRecord">🎬 它的原声 · 一路同行</button>
+    <button class="music-opt themeorig" data-music="themeorig" id="musicOptThemeOrig">🎵 旅途新声 · 相伴出发</button>
     <button class="music-opt piano2" data-music="piano2" id="musicOptPiano2">🎹 钢琴新编 · 温柔重现</button>
-    <button class="music-opt themepiano" data-music="themepiano" id="musicOptThemePiano">🎹 钢琴低语 · 林间温柔</button>
-    <button class="music-opt themeguitar" data-music="themeguitar" id="musicOptThemeGuitar">🎸 电吉他 · 晨光灵动</button>
     <button class="music-opt themeethereal" data-music="themeethereal" id="musicOptThemeEthereal">🌙 空灵氛围 · 星河漫游</button>
   </div>
-  <div style="font-size:11px;color:rgba(245,237,216,.6);line-height:1.7;margin-top:10px;text-align:center;">每个主题都有专属旋律：森林听钢琴低语，源泉听星河空灵，雪原听原声，沙漠听电吉他，月光听温柔重现。</div>
+  <div style="font-size:11px;color:rgba(245,237,216,.6);line-height:1.7;margin-top:10px;text-align:center;">每个主题都有专属旋律：森林听旅途新声，源泉听星河空灵，雪原听原声，沙漠听星河空灵，月光听温柔重现。</div>
   <div class="music-now" id="musicNow" style="font-size:11.5px;color:rgba(245,197,66,.85);margin-top:10px;text-align:center;display:none;">♪ 正在播放：<b id="musicNowName"></b></div>
   <button class="music-off" id="musicOff">🔇 关闭音乐</button>
 </div>
@@ -5805,13 +5804,9 @@ document.addEventListener('DOMContentLoaded', function() {
     var p = bgmAudio.play();
     if (p && p.catch) p.catch(function(){});
   }
-  function startThemePiano() {
-    // 钢琴低语：钢琴主奏，去除萨克斯，温柔深情（森林主题）
-    playThemeAudio('/static/assets/music/theme_piano.mp3');
-  }
-  function startThemeGuitar() {
-    // 电吉他：钢琴骨架 + 电吉他点缀，轻快灵动（沙漠主题）
-    playThemeAudio('/static/assets/music/theme_guitar.mp3');
+  function startThemeOrig() {
+    // 旅途新声：真实原声音乐（森林主题）
+    playThemeAudio('/static/assets/music/theme_orig.mp3');
   }
   function startThemeEthereal() {
     // 空灵氛围：钢琴+长音弦乐+竖琴风铃，梦幻星空（源泉主题）
@@ -5930,7 +5925,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
   var currentAnimal = typeof animalId !== 'undefined' ? animalId : '';
-  var runners = { record: startRecord, piano2: startPiano2, themepiano: startThemePiano, themeguitar: startThemeGuitar, themeethereal: startThemeEthereal };
+  var runners = { record: startRecord, themeorig: startThemeOrig, piano2: startPiano2, themeethereal: startThemeEthereal };
   function play(type) {
     stopMusic();
     ensureCtx();
@@ -5941,7 +5936,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setActive();
     var now = document.getElementById('musicNow');
     var nowName = document.getElementById('musicNowName');
-    var names = { record: '它的原声 · 一路同行', piano2: '钢琴新编 · 温柔重现', themepiano: '钢琴低语 · 林间温柔', themeguitar: '电吉他 · 晨光灵动', themeethereal: '空灵氛围 · 星河漫游' };
+    var names = { record: '它的原声 · 一路同行', themeorig: '旅途新声 · 相伴出发', piano2: '钢琴新编 · 温柔重现', themeethereal: '空灵氛围 · 星河漫游' };
     if (now && nowName) { now.style.display = 'block'; nowName.textContent = names[type] || ''; }
   }
   function setActive() {
@@ -5964,7 +5959,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 恢复上次选择（仅原声有效；旧版本其他选项一律清除）
   var saved = localStorage.getItem('bgm');
-  if (saved && saved !== 'record' && saved !== 'piano2' && saved !== 'themepiano' && saved !== 'themeguitar' && saved !== 'themeethereal' && saved !== 'off') { localStorage.removeItem('bgm'); saved = null; }
+  if (saved && saved !== 'record' && saved !== 'themeorig' && saved !== 'piano2' && saved !== 'themeethereal' && saved !== 'off') { localStorage.removeItem('bgm'); saved = null; }
   if (saved && saved !== 'off' && runners[saved]) {
     // 需用户手势才能播音频：首次点击页面任意处再启动
     var once = function(){ play(saved); document.removeEventListener('pointerdown', once); };
@@ -6881,7 +6876,7 @@ body[data-theme="desert"] .loc-info .u, body[data-theme="moon"] .loc-info .u { c
       document.body.setAttribute('data-theme', t);
       try { localStorage.setItem('ori_theme', t); } catch (e) {}
       // 主题联动音乐：每个主题专属旋律
-      var themeMusic = { forest: 'themepiano', pools: 'themeethereal', snow: 'record', desert: 'themeguitar', moon: 'piano2' };
+      var themeMusic = { forest: 'themeorig', pools: 'themeethereal', snow: 'record', desert: 'themeethereal', moon: 'piano2' };
       var tm = themeMusic[t];
       if (tm && typeof play === 'function') {
         try { play(tm); } catch (e) {}
