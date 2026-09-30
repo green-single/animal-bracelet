@@ -2194,6 +2194,8 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
     </div>
   </div>
 
+<script src="/static/assets/js/three.min.js"></script>
+<script src="/static/assets/js/deer3d.js"></script>
 <script src="/static/assets/lib/leaflet.js"></script>
 <script src="/static/assets/lib/leaflet-ant-path.js"></script>
 <script>
@@ -6071,7 +6073,10 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
 body[data-theme="forest"] #owlArt { display: block; opacity: .94; right: 8px; bottom: 60px; }
 body[data-theme="pools"] #jellyArt { display: block; opacity: .90; left: 8px; bottom: 58px; }
 body[data-theme="desert"] #foxArt { display: block; opacity: .94; left: 8px; bottom: 56px; }
+#deer3dBox { display: none; }
 body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bottom: 56px; }
+body[data-theme="moon"] #deer3dBox { display: block; }
+body[data-theme="moon"] #deer2dImg { display: none; }
 @media (max-width: 480px) {
   #owlArt img { width: 136px; height: 93px; }
   #jellyArt img { width: 124px; height: 99px; }
@@ -6285,7 +6290,8 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
 </div>
   <div id="deerArt">
     <div class="rol-tip" style="display:none;position:absolute;top:-40px;right:-6px;max-width:180px;padding:7px 11px;border-radius:12px;background:rgba(235,240,255,.96);color:#3D4A63;font-size:12px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.25);pointer-events:none;white-space:normal;line-height:1.35;font-family:'PingFang SC','Microsoft YaHei',sans-serif;">月光下，我一直在这里守着你 🦌</div>
-    <img src="/static/assets/img/role_deer.png" width="188" height="128" alt="" style="display:block;border-radius:18px;">
+    <img id="deer2dImg" src="/static/assets/img/role_deer.png" width="188" height="128" alt="" style="border-radius:18px;">
+    <div id="deer3dBox" style="width:150px;height:150px;position:relative;pointer-events:none;"></div>
   </div>
 
 
@@ -6317,10 +6323,15 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
       }
       el.classList.remove('flap','glow','pop','deer-hop','deer-spin');
       void el.offsetWidth;
-      var acts = { owlArt:['flap','flap','glow'], jellyArt:['glow','glow','flap'], foxArt:['pop','burrow'], deerArt:['deer-spin','deer-leap','deer-spin'] };
-      var pick = (acts[id] || ['pop'])[Math.floor(Math.random() * (acts[id] || ['pop']).length)];
-      el.classList.add(pick);
-      setTimeout(function(){ el.classList.remove('flap','glow','pop','burrow','deer-hop','deer-spin','deer-leap'); }, 1500);
+      if (id === 'deerArt' && window.Deer3D && Deer3D.isReady) {
+        var d3a = ['spin','leap','spin'];
+        Deer3D[d3a[Math.floor(Math.random() * d3a.length)]]();
+      } else {
+        var acts = { owlArt:['flap','flap','glow'], jellyArt:['glow','glow','flap'], foxArt:['pop','burrow'], deerArt:['deer-spin','deer-leap','deer-spin'] };
+        var pick = (acts[id] || ['pop'])[Math.floor(Math.random() * (acts[id] || ['pop']).length)];
+        el.classList.add(pick);
+        setTimeout(function(){ el.classList.remove('flap','glow','pop','burrow','deer-hop','deer-spin','deer-leap'); }, 1500);
+      }
     });
   });
   // 猫头鹰偶发眨眼
