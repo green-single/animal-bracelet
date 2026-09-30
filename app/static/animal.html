@@ -1835,7 +1835,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
      <div style="font-size:11px;color:rgba(220,240,230,.5);margin-top:10px;line-height:1.5;">开启后，每天第一次打开会收到它的一句悄悄话。</div>
    </div>
   <button id="musicBtn" type="button" title="背景音乐" style="margin-left:4px;">🎵</button>
-  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.53</span>
+  <button id="themeBtn" type="button" title="切换主题" style="margin-left:4px;">🎨</button><span id="verTag" style="font-size:9px;color:rgba(255,233,168,.55);margin-left:4px;letter-spacing:.5px;">v5.52</span>
 </header>
 <div id="themePanel" style="display:none;position:fixed;right:14px;top:56px;z-index:4000;width:min(240px,86vw);background:linear-gradient(165deg,#2C1D50,#1E1338);border:1px solid rgba(255,194,77,.35);border-radius:18px;padding:14px;box-shadow:0 16px 50px rgba(0,0,0,.5);">
   <div style="font-size:13px;font-weight:800;color:#FFE9C4;margin-bottom:10px;">🎨 选择主题 · 挑一个你喜欢的夜色</div>
@@ -6063,7 +6063,6 @@ body[data-theme="snow"] #bearArt { display: block; opacity: .92; }
 /* ===== 主题专属角色 ===== */
 #owlArt, #jellyArt, #foxArt, #deerArt {
   position: fixed; z-index: 3; pointer-events: none;
-  perspective: 420px;
   display: none; opacity: 0; transition: opacity 1.2s ease;
   filter: drop-shadow(0 6px 18px rgba(0,0,0,.35));
   padding: 26px 22px 30px 12px;
@@ -6122,11 +6121,10 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
   100% { transform: translateY(0) scale(1) rotate(0); }
 }
 @keyframes deerSpin {
-  0%   { transform: perspective(420px) rotateY(0deg)   translateZ(0)    scale(1); }
-  25%  { transform: perspective(420px) rotateY(90deg)  translateZ(46px) scale(.82, .98); }
-  50%  { transform: perspective(420px) rotateY(180deg) translateZ(0)    scale(1); }
-  75%  { transform: perspective(420px) rotateY(270deg) translateZ(46px) scale(.82, .98); }
-  100% { transform: perspective(420px) rotateY(360deg) translateZ(0)    scale(1); }
+  0% { transform: rotate(0deg) scale(1); }
+  35% { transform: rotate(120deg) scale(1.08, .94); }
+  70% { transform: rotate(240deg) scale(.96, 1.06); }
+  100% { transform: rotate(360deg) scale(1); }
 }
 @keyframes deerHop {
   0%, 100% { transform: translateY(0) scale(1); }
