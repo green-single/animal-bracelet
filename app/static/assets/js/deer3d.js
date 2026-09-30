@@ -1,94 +1,103 @@
-/* 3D 小鹿模型（Three.js r128，程序化建模，Ori2 发光风格）
+/* 3D 小鹿 v2：原 2D 插画 → 3D 立体视差卡片
+   方案：保留 role_deer.png 插画形象，用多层厚度卡片 + 双层视差 + Ori2 发光，
+   转圈时能看到立体厚度与前后层次，跳跃/呼吸保留。
    挂载到 #deer3dBox；暴露 window.Deer3D = { spin(), leap(), idle(), isReady }
-   加载失败时 isReady=false（调用方降级到 2D 图片动画） */
+   贴图加载失败时 isReady=false（调用方降级到 2D 图片动画） */
 (function(){
   if (typeof THREE === 'undefined') return; // three.min.js 未加载则直接跳过
   var deerScene, deerCamera, deerRenderer, deerGroup, deerBox;
-  var deerAnim = null, spinProg = 0, leapProg = 0, t = 0, clock;
-  var ready = false;
+  var deerAnim = null, leapProg = 0, t = 0, clock;
+  var ready = false, started = false;
 
   function init() {
     deerBox = document.getElementById('deer3dBox');
     if (!deerBox || deerBox.dataset.init) return;
     deerBox.dataset.init = '1';
 
-    deerScene = new THREE.Scene();
-    deerCamera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-    deerCamera.position.set(0, 1.1, 5.4);
-    deerCamera.lookAt(0, 0.75, 0);
-
     var bw = deerBox.clientWidth || 150;
     var bh = deerBox.clientHeight || 150;
     deerBox.style.width = bw + 'px'; deerBox.style.height = bh + 'px';
+
+    deerScene = new THREE.Scene();
+    deerCamera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+    deerCamera.position.set(0, 0.1, 6.0);
+    deerCamera.lookAt(0, 0, 0);
+
     deerRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     deerRenderer.setSize(bw, bh);
     deerRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     deerBox.appendChild(deerRenderer.domElement);
 
-    // 灯光：暖主光 + 冷补光
-    deerScene.add(new THREE.HemisphereLight(0xffe9c8, 0x8a9cff, 0.9));
-    var key = new THREE.DirectionalLight(0xffd9a0, 1.0); key.position.set(3, 5, 4); deerScene.add(key);
+    // 灯光：暖主光 + 冷补光（保留 Ori2 氛围）
+    deerScene.add(new THREE.HemisphereLight(0xffe9c8, 0x8a9cff, 1.0));
+    var key = new THREE.DirectionalLight(0xffd9a0, 1.1); key.position.set(3, 5, 4); deerScene.add(key);
     var fill = new THREE.PointLight(0x9ab0ff, 0.6, 12); fill.position.set(-3, 2, -2); deerScene.add(fill);
 
     deerGroup = new THREE.Group();
-    function mat(color, emissive, emInt) {
-      return new THREE.MeshStandardMaterial({ color: color, roughness: .55, metalness: .1, emissive: emissive || 0x000000, emissiveIntensity: emInt || 0 });
+
+    // ===== 加载原插画作为贴图 =====
+    var loader = new THREE.TextureLoader();
+    loader.crossOrigin = 'anonymous';
+    loader.load('/static/assets/img/role_deer.png', function(tex){
+      tex.anisotropy = Math.min(4, deerRenderer.capabilities ? deerRenderer.capabilities.getMaxAnisotropy() : 2);
+      tex.minFilter = THREE.LinearFilter;
+      buildDeer(tex);
+    }, undefined, function(){
+      // 贴图加载失败 → 降级 2D（isReady 保持 false）
+      if (window.console) console.warn('deer3d: 贴图加载失败，降级 2D');
+      ready = false;
+    });
+  }
+
+  function buildDeer(tex) {
+    var W = 1.55, H = 1.55; // 方形插画（原图 720x720）
+
+    // 正面主卡：原插画
+    var mainMat = new THREE.MeshBasicMaterial({
+      map: tex, transparent: true, alphaTest: 0.06,
+      depthWrite: false, side: THREE.DoubleSide
+    });
+    var main = new THREE.Mesh(new THREE.PlaneGeometry(W, H), mainMat);
+    deerGroup.add(main);
+
+    // 厚度层：z 方向叠 7 层（形成立体纸雕厚度，转圈可见）
+    var layerMat = new THREE.MeshBasicMaterial({
+      map: tex, transparent: true, alphaTest: 0.06,
+      depthWrite: false, side: THREE.DoubleSide
+    });
+    var N = 7, depth = 0.34;
+    for (var i = 1; i < N; i++) {
+      var z = (i / (N - 1) - 0.5) * depth;
+      var layer = new THREE.Mesh(new THREE.PlaneGeometry(W, H), layerMat);
+      layer.position.z = z;
+      deerGroup.add(layer);
     }
-    var bodyMat = mat(0xd9c9a8, 0x6b4a2a, .12);
-    var darkMat = mat(0x8a6f4e, 0x3a2a18, .15);
-    var antlerMat = mat(0xd9b98a, 0x8a6a35, .35);
 
-    // 身体
-    var body = new THREE.Mesh(new THREE.SphereGeometry(0.62, 24, 18), bodyMat);
-    body.scale.set(1.32, 0.9, 0.82); body.position.y = 0.95; deerGroup.add(body);
+    // 背面补光层：半透明暖光，让背面也有层次
+    var backMat = new THREE.MeshBasicMaterial({
+      color: 0xffe9c8, transparent: true, opacity: 0.28,
+      side: THREE.DoubleSide, depthWrite: false
+    });
+    var back = new THREE.Mesh(new THREE.PlaneGeometry(W * 1.02, H * 1.02), backMat);
+    back.position.z = -depth / 2 - 0.02;
+    deerGroup.add(back);
 
-    // 腿
-    function leg(x, z) {
-      var l = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.1, 0.6, 10), darkMat);
-      l.position.set(x, 0.3, z); return l;
-    }
-    deerGroup.add(leg(-0.32, 0.24)); deerGroup.add(leg(0.32, 0.24));
-    deerGroup.add(leg(-0.3, -0.26)); deerGroup.add(leg(0.3, -0.26));
+    // 轮廓光晕：略大的淡金发光面（Ori2 风格，很淡）
+    var glowMat = new THREE.MeshBasicMaterial({
+      color: 0xffd9a0, transparent: true, opacity: 0.14,
+      side: THREE.DoubleSide, depthWrite: false
+    });
+    var glow = new THREE.Mesh(new THREE.PlaneGeometry(W * 1.14, H * 1.14), glowMat);
+    glow.position.z = -depth / 2 - 0.04;
+    deerGroup.add(glow);
 
-    // 脖子
-    var neck = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.17, 0.52, 12), bodyMat);
-    neck.position.set(0.55, 1.16, 0); neck.rotation.z = -0.6; deerGroup.add(neck);
-
-    // 头
-    var head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 18, 14), bodyMat);
-    head.position.set(0.9, 1.52, 0); head.scale.set(0.9, 0.82, 0.78); deerGroup.add(head);
-
-    // 口鼻
-    var snout = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 10), darkMat);
-    snout.position.set(1.1, 1.46, 0); snout.scale.set(1, 0.8, 0.8); deerGroup.add(snout);
-
-    // 耳朵
-    function ear(x) {
-      var e = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.2, 10), bodyMat);
-      e.position.set(x, 1.74, 0); e.rotation.z = x > 0 ? 0.25 : -0.25; return e;
-    }
-    deerGroup.add(ear(0.86)); deerGroup.add(ear(1.1));
-
-    // 鹿角
-    function antler(x) {
-      var g = new THREE.Group();
-      var main = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.04, 0.34, 8), antlerMat); main.position.y = 0.17;
-      var br = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.03, 0.18, 8), antlerMat); br.position.set(0.07, 0.33, 0); br.rotation.z = -0.5;
-      g.add(main); g.add(br); g.position.set(x, 1.6, 0); return g;
-    }
-    deerGroup.add(antler(-0.06)); deerGroup.add(antler(0.06));
-
-    // 尾巴
-    var tail = new THREE.Mesh(new THREE.SphereGeometry(0.06, 10, 8), bodyMat);
-    tail.position.set(-0.72, 1.15, 0); deerGroup.add(tail);
-
-    // 萤火虫光点
-    for (var i = 0; i < 24; i++) {
-      var p = new THREE.Mesh(new THREE.SphereGeometry(0.02 + Math.random()*0.03, 6, 6),
-        new THREE.MeshBasicMaterial({ color: 0xffe9a8, transparent: true, opacity: .85 }));
+    // 萤火虫光点（漂浮，增强月光氛围）
+    for (var i = 0; i < 18; i++) {
+      var p = new THREE.Mesh(new THREE.SphereGeometry(0.022 + Math.random()*0.03, 6, 6),
+        new THREE.MeshBasicMaterial({ color: 0xffe9a8, transparent: true, opacity: .8 }));
       var a = Math.random() * Math.PI * 2;
-      var r = 0.9 + Math.random() * 1.6;
-      p.position.set(Math.cos(a)*r, 0.4 + Math.random()*1.8, Math.sin(a)*r);
+      var r = 0.95 + Math.random() * 1.5;
+      p.position.set(Math.cos(a)*r, -0.6 + Math.random()*1.6, Math.sin(a)*r);
       deerScene.add(p);
     }
 
@@ -102,19 +111,23 @@
     requestAnimationFrame(animate);
     var dt = clock.getDelta(); t += dt;
     if (deerAnim === 'spin') {
-      deerGroup.rotation.y += dt * 3.4;
-      deerGroup.position.y = 0.15 + Math.sin(deerGroup.rotation.y) * 0.12;
+      // 绕 Y 轴立体旋转：正/背面都是插画，侧面可见厚度层
+      deerGroup.rotation.y += dt * 3.2;
+      deerGroup.position.y = Math.sin(deerGroup.rotation.y) * 0.1;
       if (deerGroup.rotation.y >= Math.PI*2) { deerGroup.rotation.y = 0; deerAnim = null; }
     } else if (deerAnim === 'leap') {
       leapProg += dt * 1.6;
       if (leapProg >= 1) { leapProg = 0; deerGroup.position.y = 0; deerGroup.rotation.x = 0; deerAnim = null; }
       else {
-        deerGroup.position.y = Math.sin(leapProg * Math.PI) * 1.2;
-        deerGroup.rotation.x = Math.sin(leapProg * Math.PI) * -0.25;
+        deerGroup.position.y = Math.sin(leapProg * Math.PI) * 1.1;
+        deerGroup.rotation.x = Math.sin(leapProg * Math.PI) * -0.18;
       }
     } else {
-      deerGroup.position.y = Math.sin(t * 2.4) * 0.035;
-      deerGroup.scale.y = 1 + Math.sin(t * 2.4) * 0.012;
+      // 待机：呼吸浮动 + 极轻微俯仰（有生命感）
+      deerGroup.position.y = Math.sin(t * 2.2) * 0.05;
+      deerGroup.rotation.z = Math.sin(t * 1.3) * 0.03;
+      deerGroup.scale.y = 1 + Math.sin(t * 2.2) * 0.015;
+      deerGroup.scale.x = 1 - Math.sin(t * 2.2) * 0.01;
     }
     if (deerRenderer && deerCamera) deerRenderer.render(deerScene, deerCamera);
   }
@@ -127,7 +140,7 @@
     state: function(){ return { ready: ready, anim: deerAnim, rotY: deerGroup ? deerGroup.rotation.y : 0, posY: deerGroup ? deerGroup.position.y : 0 }; }
   };
 
-  // 容器可见时初始化（moon 主题显示时）：MutationObserver + 兜底轮询
+  // 容器可见时初始化：MutationObserver + 兜底轮询
   function tryInit() {
     if (ready || !document.body) { setTimeout(tryInit, 300); return; }
     if (!deerBox) deerBox = document.getElementById('deer3dBox');
