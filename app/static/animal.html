@@ -6315,7 +6315,7 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
       }
       el.classList.remove('flap','glow','pop','deer-hop','deer-spin');
       void el.offsetWidth;
-      var acts = { owlArt:['flap','flap','glow'], jellyArt:['glow','glow','flap'], foxArt:['pop','burrow'], deerArt:['deer-spin','deer-leap','deer-spin'] };
+      var acts = { owlArt:['flap','flap','glow'], jellyArt:['glow','glow','flap'], foxArt:['pop','burrow'], deerArt:['deer-leap','deer-hop'] };
       var pick = (acts[id] || ['pop'])[Math.floor(Math.random() * (acts[id] || ['pop']).length)];
       el.classList.add(pick);
       setTimeout(function(){ el.classList.remove('flap','glow','pop','burrow','deer-hop','deer-spin','deer-leap'); }, 1500);
