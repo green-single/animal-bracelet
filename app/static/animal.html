@@ -91,6 +91,10 @@ transition: all .18s ease; white-space: nowrap; min-height: 42px; display: inlin
 .style-btn:hover { background: rgba(255,255,255,.12); transform: translateY(-1px); }
 .style-btn.active { background: rgba(245,197,66,.18); border-color: rgba(245,197,66,.55); color: #FFE9A8; box-shadow: 0 0 12px rgba(245,197,66,.15); }
 .style-btn.active { background: linear-gradient(135deg, #0E7C66, #10B981); box-shadow: 0 2px 10px rgba(14,124,102,0.5); transform: scale(1.1); }
+.map-layer-switch{position:absolute;top:10px;right:10px;z-index:1100;display:flex;gap:3px;background:rgba(10,18,32,.78);border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:3px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 6px 18px rgba(0,0,0,.35);}
+.mls-btn{border:none;background:transparent;color:#C9D6E3;font-size:11.5px;font-weight:600;padding:8px 11px;border-radius:9px;cursor:pointer;min-height:36px;line-height:1;transition:background .18s,color .18s;}
+.mls-btn.active{background:rgba(245,197,66,.22);color:#FFE9A8;}
+.mls-btn:active{transform:scale(.94);}
 #map { height: 430px; background: #dfe8ea; }
 .loc-bar {
 display: flex; align-items: center; gap: 12px; padding: 13px 18px;
@@ -106,7 +110,7 @@ box-shadow: 0 2px 8px rgba(14,124,102,.35);
 .loc-info { flex: 1 1 220px; min-width: 0; }
 .loc-info .t { font-size: 13.5px; font-weight: 700; color: #FBF4E8; }
 .loc-info .s { font-size: 12.5px; color: #FFE9A8; margin-top: 3px; line-height: 1.5; font-weight: 600; }
-.loc-info .u { font-size: 11px; color: var(--accent); margin-top: 4px; font-weight: 600; }
+.loc-info .u { font-size: 11px; color: #6EE7C8; margin-top: 4px; font-weight: 600; }
 .loc-info .u::before { content: '↻ '; }
 .tl-sec { padding: 8px 18px 18px; }
 .tl-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -137,7 +141,7 @@ width: 100%; height: 118px; object-fit: cover; display: block; background: rgba(
 transition: opacity .25s ease;
 }
 .scene-body { padding: 12px 14px; display: flex; flex-direction: column; justify-content: center; }
-.scene-body .k { font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: .05em; }
+.scene-body .k { font-size: 11px; color: #6EE7C8; font-weight: 700; letter-spacing: .05em; }
 .scene-body .v { font-size: 13.5px; font-weight: 700; margin-top: 4px; line-height: 1.5; }
 .scene-body .c { font-size: 10.5px; color: var(--sub); margin-top: 5px; line-height: 1.5; }
 .stats-sec { padding: 0 18px 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
@@ -1934,7 +1938,12 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
       </div>
     </div>
 
-    <div id="map"><div id="mapPlaceholder" style="padding:22px;color:var(--sub);font-size:13px;">地图加载中…</div></div>
+    <div id="map" style="position:relative;"><div id="mapPlaceholder" style="padding:22px;color:var(--sub);font-size:13px;">地图加载中…</div>
+      <div class="map-layer-switch" id="mapLayerSwitch" style="display:none;">
+        <button class="mls-btn active" data-src="0">🛰️ 卫星</button>
+        <button class="mls-btn" data-src="2">🗺️ 街道</button>
+      </div>
+    </div>
 
     <div class="loc-bar">
       <div class="loc-pin">📍</div>
@@ -1942,7 +1951,7 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
         <div class="t" id="locRegion">当前区域：加载中…</div>
         <div class="s" id="locDetail">—</div>
         <div class="u" id="locUpdate">—</div>
-        <div class="u" id="locMoved" style="color:#58E0B6;font-weight:600;">—</div>
+        <div class="u" id="locMoved" style="color:#7FF2DA;font-weight:600;">—</div>
       </div>
     </div>
 
@@ -2597,9 +2606,20 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
       { name: 'Carto', url: 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', att: '© CARTO' },
     ];
     var srcIdx = 0, tileErrors = 0, activeLayers = [];
+    // 手动底图选择：null=自动兜底；否则固定用户所选源
+    var mapSrcChoice = null;
     function clearLayers() {
       activeLayers.forEach(function (l) { map.removeLayer(l); });
       activeLayers = [];
+    }
+    function syncLayerBtns() {
+      var mls = document.getElementById('mapLayerSwitch');
+      if (!mls) return;
+      var cur = (mapSrcChoice !== null) ? mapSrcChoice : srcIdx;
+      var mapGroup = (cur === 0 || cur === 1) ? 0 : 2;
+      mls.querySelectorAll('.mls-btn').forEach(function (b) {
+        b.classList.toggle('active', parseInt(b.dataset.src, 10) === mapGroup);
+      });
     }
     function addTiles() {
       clearLayers();
@@ -2610,19 +2630,34 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
         activeLayers.push(l);
         l.addTo(map);
       });
-      // 兜底：6 秒内没有任何瓦片加载成功（请求挂起），强制换源
+      // 兜底：15 秒内没有任何瓦片加载成功（请求挂起）→ 自动换源（仅未手动选择时）
       var stuck = setTimeout(function () {
-        if (srcIdx < tileSources.length - 1) { srcIdx++; addTiles(); }
+        if (mapSrcChoice === null && srcIdx < tileSources.length - 1) { srcIdx++; addTiles(); }
       }, 15000);
-      activeLayers[0].once('load', function () { clearTimeout(stuck); });
+      activeLayers[0].once('load', function () { clearTimeout(stuck); syncLayerBtns(); });
       activeLayers[0].on('tileerror', function () {
         tileErrors++;
-        if (tileErrors >= 3 && srcIdx < tileSources.length - 1) {
+        if (tileErrors >= 3 && mapSrcChoice === null && srcIdx < tileSources.length - 1) {
           tileErrors = 0; clearTimeout(stuck); srcIdx++; addTiles();
         }
       });
+      syncLayerBtns();
     }
     addTiles();
+    // 手动底图切换（卫星/街道），移动端同样可点
+    var mlsBox = document.getElementById('mapLayerSwitch');
+    if (mlsBox) {
+      mlsBox.style.display = 'flex';
+      mlsBox.querySelectorAll('.mls-btn').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var want = parseInt(b.dataset.src, 10);
+          mapSrcChoice = want;
+          tileErrors = 0;
+          srcIdx = want;
+          addTiles();
+        });
+      });
+    }
 
     lineLayer = L.polyline(smoothPath(points, 2), {
       color: '#8fb5ac', weight: 2, opacity: .35, dashArray: '5,8'
@@ -3216,13 +3251,24 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
               try {
                 var pKey = 'achPopped_' + animalId + '_' + ach;
                 if (!localStorage.getItem(pKey)) {
-                  // 先落标记：即使弹窗队列异常也绝不重复弹
-                  try { localStorage.setItem(pKey, '1'); } catch(e5) {}
-                  var ico = item.querySelector('.achievement-icon');
-                  var nm = item.querySelector('.achievement-name');
-                  window._achQueue.push({ ico: ico ? ico.textContent : '🏅', name: nm ? nm.textContent : ach });
-                  if (window._achQueue.length > 3) window._achQueue.splice(0, window._achQueue.length - 3);
-                  window._achShowNext();
+                  // 初次相遇：只在"刚领养成功"的会话里弹出（领养分支写入 justAdopted 标记）；
+                  // 平时进入页面只显示解锁状态、绝不弹窗，避免"每次进去都初见"
+                  var _canPop = true;
+                  if (ach === 'first') {
+                    var _ja = null;
+                    try { _ja = sessionStorage.getItem('justAdopted_' + animalId); } catch(e9) {}
+                    if (_ja !== '1') { _canPop = false; }
+                    else { try { sessionStorage.removeItem('justAdopted_' + animalId); } catch(e8) {} }
+                  }
+                  if (_canPop) {
+                    // 先落标记：即使弹窗队列异常也绝不重复弹
+                    try { localStorage.setItem(pKey, '1'); } catch(e5) {}
+                    var ico = item.querySelector('.achievement-icon');
+                    var nm = item.querySelector('.achievement-name');
+                    window._achQueue.push({ ico: ico ? ico.textContent : '🏅', name: nm ? nm.textContent : ach });
+                    if (window._achQueue.length > 3) window._achQueue.splice(0, window._achQueue.length - 3);
+                    window._achShowNext();
+                  }
                 }
               } catch(e3) {}
             }
@@ -6828,6 +6874,7 @@ body[data-theme="desert"] .loc-info .u, body[data-theme="moon"] .loc-info .u { c
             date: new Date().toISOString(), code: code, nickname: ''
           }));
         } catch(e) {}
+        try { sessionStorage.setItem('justAdopted_' + aid, '1'); } catch(e) {}
         try { document.cookie = 'my_animal=' + aid + '; path=/; max-age=31536000; SameSite=Lax'; } catch(e) {}
         try { localStorage.setItem('lastAnimalId', aid); } catch(e) {}
         if (aid === (window._animalData && window._animalData.a ? window._animalData.a.id : null)) {

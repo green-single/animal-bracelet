@@ -677,6 +677,7 @@
               nickname: ''
             }));
           } catch(e) {}
+          try { sessionStorage.setItem('justAdopted_' + animalData.id, '1'); } catch(e) {}
           try { document.cookie = 'my_animal=' + animalData.id + '; path=/; max-age=31536000; SameSite=Lax'; } catch(e) {}
           location.href = '/animal/' + animalData.id;
         });
@@ -815,6 +816,7 @@
                   nickname: nickname
                 }));
               } catch(e) {}
+              try { sessionStorage.setItem('justAdopted_' + animalData.id, '1'); } catch(e) {}
               try { document.cookie = 'my_animal=' + animalData.id + '; path=/; max-age=31536000; SameSite=Lax'; } catch(e) {}
             } else {
               btn.disabled = false;

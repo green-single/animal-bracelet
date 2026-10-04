@@ -580,6 +580,7 @@ function goByCode() {
           date: new Date().toISOString(), code: code, nickname: ''
         }));
       } catch(e) {}
+      try { sessionStorage.setItem('justAdopted_' + d.animal.id, '1'); } catch(e) {}
       try { document.cookie = 'my_animal=' + d.animal.id + '; path=/; max-age=31536000; SameSite=Lax'; } catch(e) {}
       location.href = '/animal/' + d.animal.id;
     } else { throw new Error('no animal'); }
