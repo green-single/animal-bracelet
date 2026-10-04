@@ -6153,19 +6153,12 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
   50% { opacity: .85; }
 }
 #deerArt.deer-hop img { animation: deerHop .55s ease-in-out 1; }
-#deerArt.deer-spin img { animation: deerSpin 1.1s ease-in-out 1; }
 #deerArt.deer-leap img { animation: deerLeap 1s cubic-bezier(.3,1.3,.5,1) 1; }
 @keyframes deerLeap {
   0% { transform: translateY(0) scale(1); }
   45% { transform: translateY(-46px) scale(1.12,.88) rotate(-4deg); }
   70% { transform: translateY(2px) scale(.9,1.12) rotate(2deg); }
   100% { transform: translateY(0) scale(1) rotate(0); }
-}
-@keyframes deerSpin {
-  0% { transform: rotate(0deg) scale(1); }
-  35% { transform: rotate(120deg) scale(1.08, .94); }
-  70% { transform: rotate(240deg) scale(.96, 1.06); }
-  100% { transform: rotate(360deg) scale(1); }
 }
 @keyframes deerHop {
   0%, 100% { transform: translateY(0) scale(1); }
@@ -6335,7 +6328,7 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
   owlArt: ['咕咕…夜里由我守护你 🌙','夜色越深，我的眼睛越亮','林间每一阵风，我都替你听过','月亮升起来了，该睡觉啦','我数过每一颗星星，它们都在','昨夜替你守住了一场好梦','风从远方捎来你的消息，我收到了','树的年轮里，藏着我们的时光'],
   jellyArt: ['咕噜噜…一起潜入深海吧 🌊','海流把我带到你身边','发光是为了在黑夜里遇见你','水母不会说话，但会轻轻发光','今夜的海面，平静得像你的梦','我随洋流漂了很久，才遇见你','深海里最亮的那点光，是为你亮的','别怕黑，我一直浮在你身边'],
   foxArt: ['叽叽~ 沙丘由我看守 🦔','我在地下挖了一条通向你的隧道','沙丘的日落，比蜂蜜还甜','风沙再大，我也听得见你的脚步','我的小窝里，给你留了一角','今天又巡视了一圈沙丘，一切安好','土拨鼠的快乐很简单：晒晒太阳看看你','要是累了，就来我的洞里躲躲风'],
-  deerArt: ['月光下，我一直在这里守着你 🦌','转个圈圈给你看～','鹿角上的萤火虫，是为你点的灯','月圆的时候，我会想起你','森林深处，有一片只属于我们的月光','想一跃而起，跳过所有的烦恼','晨雾散开时，我在等你醒来','我踏过露水，只为靠近你'],
+  deerArt: ['月光下，我一直在这里守着你 🦌','鹿角上的萤火虫，是为你点的灯','月圆的时候，我会想起你','森林深处，有一片只属于我们的月光','想一跃而起，跳过所有的烦恼','晨雾散开时，我在等你醒来','我踏过露水，只为靠近你'],
   bearArt: ['呼…睡得真香 zzz','雪落在我身上，也不觉得冷','等春天醒来，再陪你散步','我的呼噜声，是大地的摇篮曲','梦里有蜂蜜，还有你','雪再厚，也盖不住想你的体温','等我睡醒，第一个去找你','冬天很冷，但心里是暖的'],
 };
 ['owlArt','jellyArt','foxArt','deerArt'].forEach(function(id){
@@ -6354,12 +6347,12 @@ body[data-theme="moon"] #deerArt { display: block; opacity: .94; right: 8px; bot
         tip.style.display = 'block';
         setTimeout(function(){ tip.style.display = 'none'; }, 3200);
       }
-      el.classList.remove('flap','glow','pop','deer-hop','deer-spin');
+      el.classList.remove('flap','glow','pop','deer-hop');
       void el.offsetWidth;
       var acts = { owlArt:['flap','flap','glow'], jellyArt:['glow','glow','flap'], foxArt:['pop','burrow'], deerArt:['deer-leap','deer-hop'] };
       var pick = (acts[id] || ['pop'])[Math.floor(Math.random() * (acts[id] || ['pop']).length)];
       el.classList.add(pick);
-      setTimeout(function(){ el.classList.remove('flap','glow','pop','burrow','deer-hop','deer-spin','deer-leap'); }, 1500);
+      setTimeout(function(){ el.classList.remove('flap','glow','pop','burrow','deer-hop','deer-leap'); }, 1500);
     });
   });
   // 猫头鹰偶发眨眼

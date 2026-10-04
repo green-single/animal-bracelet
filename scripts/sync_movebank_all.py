@@ -16,6 +16,8 @@ from datetime import datetime
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 MB_AUTH = (os.environ.get("MB_USER", "green"), os.environ.get("MB_PASS", "Water1221"))
 CURL_BIN = "curl.exe" if os.name == "nt" else "curl"
+# 代理支持：优先 MB_PROXY，其次 HTTPS_PROXY/HTTP_PROXY 环境变量；空则不代理（本机开梯子时设置 MB_PROXY=http://127.0.0.1:7890）
+MB_PROXY = os.environ.get("MB_PROXY") or os.environ.get("HTTPS_PROXY") or os.environ.get("HTTP_PROXY") or ""
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "animals.db")
 
 # 需要同步的动物列表
@@ -79,9 +81,13 @@ def fetch_movebank_data(study_id, individual_id):
     url = (f"https://www.movebank.org/movebank/service/direct-read?"
            f"entity_type=event&study_id={study_id}"
            f"&individual_id={individual_id}&max_events=200000")
+    cmd = [CURL_BIN, "-s", "-A", UA, "-u", f"{MB_AUTH[0]}:{MB_AUTH[1]}",
+           "-L", "--max-time", "120"]
+    if MB_PROXY:
+        cmd += ["-x", MB_PROXY]
+    cmd += [url]
     r = subprocess.run(
-        [CURL_BIN, "-s", "-A", UA, "-u", f"{MB_AUTH[0]}:{MB_AUTH[1]}",
-         "-L", "--max-time", "120", url],
+        cmd,
         capture_output=True, text=True, timeout=125
     )
     if not r.stdout or 'timestamp' not in r.stdout[:500]:
