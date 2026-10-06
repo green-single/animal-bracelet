@@ -5611,10 +5611,9 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="music-grid">
     <button class="music-opt record" data-music="record" id="musicOptRecord">🎬 它的原声 · 一路同行</button>
     <button class="music-opt themeorig" data-music="themeorig" id="musicOptThemeOrig">🎵 旅途新声 · 相伴出发</button>
-    <button class="music-opt piano2" data-music="piano2" id="musicOptPiano2">🎹 钢琴新编 · 温柔重现</button>
-    <button class="music-opt themeethereal" data-music="themeethereal" id="musicOptThemeEthereal">🌙 空灵氛围 · 星河漫游</button>
+    <button class="music-opt life" data-music="life" id="musicOptLife">🎹 生命之名 · 温柔钢琴</button>
   </div>
-  <div style="font-size:11px;color:rgba(245,237,216,.6);line-height:1.7;margin-top:10px;text-align:center;">每个主题都有专属旋律：森林听旅途新声，源泉听星河空灵，雪原听原声，沙漠听星河空灵，月光听温柔重现。</div>
+  <div style="font-size:11px;color:rgba(245,237,216,.6);line-height:1.7;margin-top:10px;text-align:center;">每个主题都有专属旋律：旅途新声 · 生命之名 · 它的原声，静静陪着你。</div>
   <div class="music-now" id="musicNow" style="font-size:11.5px;color:rgba(245,197,66,.85);margin-top:10px;text-align:center;display:none;">♪ 正在播放：<b id="musicNowName"></b></div>
   <button class="music-off" id="musicOff">🔇 关闭音乐</button>
 </div>
@@ -5854,9 +5853,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // 旅途新声：真实原声音乐（森林主题）
     playThemeAudio('/static/assets/music/theme_orig.mp3');
   }
-  function startThemeEthereal() {
-    // 空灵氛围：钢琴+长音弦乐+竖琴风铃，梦幻星空（源泉主题）
-    playThemeAudio('/static/assets/music/theme_ethereal.mp3');
+  function startThemeLifeName() {
+    // 生命之名：久石让《千与千寻》气质的纯钢琴演绎（宫崎骏电影温柔梦幻）
+    playThemeAudio('/static/assets/music/theme_life_name.mp3');
   }
 
   function startSoul() {
@@ -5971,7 +5970,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
   var currentAnimal = typeof animalId !== 'undefined' ? animalId : '';
-  var runners = { record: startRecord, themeorig: startThemeOrig, piano2: startPiano2, themeethereal: startThemeEthereal };
+  var runners = { record: startRecord, themeorig: startThemeOrig, life: startThemeLifeName };
   function play(type) {
     stopMusic();
     ensureCtx();
@@ -5982,7 +5981,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setActive();
     var now = document.getElementById('musicNow');
     var nowName = document.getElementById('musicNowName');
-    var names = { record: '它的原声 · 一路同行', themeorig: '旅途新声 · 相伴出发', piano2: '钢琴新编 · 温柔重现', themeethereal: '空灵氛围 · 星河漫游' };
+    var names = { record: '它的原声 · 一路同行', themeorig: '旅途新声 · 相伴出发', life: '生命之名 · 温柔钢琴' };
     if (now && nowName) { now.style.display = 'block'; nowName.textContent = names[type] || ''; }
   }
   function setActive() {
@@ -6005,7 +6004,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 恢复上次选择（仅原声有效；旧版本其他选项一律清除）
   var saved = localStorage.getItem('bgm');
-  if (saved && saved !== 'record' && saved !== 'themeorig' && saved !== 'piano2' && saved !== 'themeethereal' && saved !== 'off') { localStorage.removeItem('bgm'); saved = null; }
+  if (saved && saved !== 'record' && saved !== 'themeorig' && saved !== 'life' && saved !== 'off') { localStorage.removeItem('bgm'); saved = null; }
   if (saved && saved !== 'off' && runners[saved]) {
     // 需用户手势才能播音频：首次点击页面任意处再启动
     var once = function(){ play(saved); document.removeEventListener('pointerdown', once); };
