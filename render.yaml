@@ -3,6 +3,7 @@ services:
     name: animal-bracelet
     runtime: python
     plan: free
+    branch: develop
     buildCommand: pip install -r requirements.txt
     startCommand: python run.py
     envVars:
