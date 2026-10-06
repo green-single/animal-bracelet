@@ -5611,7 +5611,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="music-grid">
     <button class="music-opt record" data-music="record" id="musicOptRecord">🎬 它的原声 · 一路同行</button>
     <button class="music-opt themeorig" data-music="themeorig" id="musicOptThemeOrig">🎵 旅途新声 · 相伴出发</button>
-    <button class="music-opt life" data-music="life" id="musicOptLife">🎹 生命之名 · 温柔钢琴</button>
+    <button class="music-opt life" data-music="life" id="musicOptLife">🎹 生命之名 · 原曲</button>
     <button class="music-opt zebra" data-music="zebra" id="musicOptZebra">🦓 斑马斑马 · 原曲</button>
   </div>
   <div style="font-size:11px;color:rgba(245,237,216,.6);line-height:1.7;margin-top:10px;text-align:center;">每个主题都有专属旋律：旅途新声 · 生命之名 · 它的原声，静静陪着你。</div>
@@ -5855,7 +5855,7 @@ document.addEventListener('DOMContentLoaded', function() {
     playThemeAudio('/static/assets/music/theme_orig.mp3');
   }
   function startThemeLifeName() {
-    // 生命之名：久石让《千与千寻》气质的纯钢琴演绎（宫崎骏电影温柔梦幻）
+    // 生命之名：久石让《千与千寻》原曲（用户提供视频提取）
     playThemeAudio('/static/assets/music/theme_life_name.mp3');
   }
   function startThemeZebra() {
@@ -5986,7 +5986,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setActive();
     var now = document.getElementById('musicNow');
     var nowName = document.getElementById('musicNowName');
-    var names = { record: '它的原声 · 一路同行', themeorig: '旅途新声 · 相伴出发', life: '生命之名 · 温柔钢琴', zebra: '斑马斑马 · 原曲' };
+    var names = { record: '它的原声 · 一路同行', themeorig: '旅途新声 · 相伴出发', life: '生命之名 · 原曲', zebra: '斑马斑马 · 原曲' };
     if (now && nowName) { now.style.display = 'block'; nowName.textContent = names[type] || ''; }
   }
   function setActive() {
