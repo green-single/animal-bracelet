@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -3173,6 +3173,19 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
               if (ach[achId]) return;
               ach[achId] = true;
               localStorage.setItem(key, JSON.stringify(ach));
+              // 成就跨设备同步：解锁后上传到服务端（按领养码）
+              try {
+                var _adU = JSON.parse(localStorage.getItem('adopted_' + animalId) || 'null');
+                if (_adU && _adU.code) {
+                  var _up = {};
+                  _up[achId] = true;
+                  fetch('/api/claim/' + encodeURIComponent(_adU.code) + '/achievements', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ achievements: _up })
+                  }).catch(function() {});
+                }
+              } catch(eU) {}
               var item = document.querySelector('.achievement-item[data-ach="' + achId + '"]');
               if (item) {
                 item.classList.remove('locked');
@@ -3274,6 +3287,42 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
             }
           });
           document.getElementById('achievementCount').textContent = unlockedCount + '/21 已解锁';
+
+          // —— 成就跨设备同步：按领养码从服务端拉取并合并（换手机/浏览器也不丢）——
+          try {
+            var _adA = null;
+            try { _adA = JSON.parse(localStorage.getItem('adopted_' + animalId) || 'null'); } catch(ea) {}
+            if (_adA && _adA.code) {
+              (function(_code) {
+                fetch('/api/claim/' + encodeURIComponent(_code) + '/achievements', { cache: 'no-store' })
+                  .then(function(r) { return r.json(); })
+                  .then(function(d) {
+                    if (!d || !d.achievements) return;
+                    var _merged = false;
+                    for (var k in d.achievements) {
+                      if (d.achievements[k] && !achievements[k]) { achievements[k] = true; _merged = true; }
+                    }
+                    if (_merged) {
+                      try { localStorage.setItem('achievements_' + animalId, JSON.stringify(achievements)); } catch(eb) {}
+                      var _uc = 0;
+                      document.querySelectorAll('.achievement-item').forEach(function(it) {
+                        var ak = it.dataset.ach;
+                        if (achievements[ak]) { it.classList.remove('locked'); it.classList.add('unlocked'); _uc++; }
+                      });
+                      document.getElementById('achievementCount').textContent = _uc + '/21 已解锁';
+                      // 合并结果回写服务端（防重复计算/覆盖）
+                      var _up2 = {};
+                      for (var k2 in achievements) { if (achievements[k2]) _up2[k2] = true; }
+                      fetch('/api/claim/' + encodeURIComponent(_code) + '/achievements', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ achievements: _up2 })
+                      }).catch(function() {});
+                    }
+                  }).catch(function() {});
+              })(_adA.code);
+            }
+          } catch(ec) {}
 
           // 存储总距离，供播放完成时检测迁徙见证者
           window._totalDistance = totalDist;

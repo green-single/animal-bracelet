@@ -163,6 +163,17 @@ def index(request: Request):
 
 @app.get("/c/{code}")
 def claim_page(code: str):
+    # 已领养的码：直接跳转到对应动物主页（NFC 碰一下直达「我的动物」）
+    try:
+        conn = database.get_conn()
+        row = conn.execute(
+            "SELECT animal_id, status FROM claim_codes WHERE code = ?", (code,)
+        ).fetchone()
+        conn.close()
+        if row and row["status"] == "claimed" and row["animal_id"] in ON_SALE_ANIMALS:
+            return RedirectResponse("/animal/" + row["animal_id"], status_code=302)
+    except Exception:
+        pass
     return _page(os.path.join(STATIC_DIR, "claim.html"))
 
 
@@ -292,6 +303,54 @@ def api_claim_status(code: str):
     if row["status"] == "claimed":
         return {"status": "claimed", "animal": animal}
     return {"status": "unused", "animal": animal}
+
+
+@app.get("/api/claim/{code}/achievements")
+def api_claim_achievements(code: str):
+    """读取某领养码的成就进度（跨设备同步用）"""
+    conn = database.get_conn()
+    row = conn.execute(
+        "SELECT animal_id, status, achievements FROM claim_codes WHERE code = ?", (code,)
+    ).fetchone()
+    conn.close()
+    if row is None or row["animal_id"] not in ON_SALE_ANIMALS:
+        raise HTTPException(status_code=404, detail="领养码不存在")
+    try:
+        ach = json.loads(row["achievements"] or "{}")
+    except Exception:
+        ach = {}
+    return {"code": code, "status": row["status"], "achievements": ach}
+
+
+class AchSyncRequest(BaseModel):
+    achievements: dict = {}
+
+
+@app.post("/api/claim/{code}/achievements")
+def api_claim_achievements_save(code: str, req: AchSyncRequest):
+    """保存某领养码的成就进度（跨设备同步用，幂等合并）"""
+    conn = database.get_conn()
+    row = conn.execute(
+        "SELECT animal_id, status, achievements FROM claim_codes WHERE code = ?", (code,)
+    ).fetchone()
+    if row is None or row["animal_id"] not in ON_SALE_ANIMALS:
+        conn.close()
+        raise HTTPException(status_code=404, detail="领养码不存在")
+    if row["status"] != "claimed":
+        conn.close()
+        raise HTTPException(status_code=409, detail="该领养码尚未被领养")
+    try:
+        old = json.loads(row["achievements"] or "{}")
+    except Exception:
+        old = {}
+    merged = {**old, **req.achievements}
+    conn.execute(
+        "UPDATE claim_codes SET achievements = ? WHERE code = ?",
+        (json.dumps(merged, ensure_ascii=False), code),
+    )
+    conn.commit()
+    conn.close()
+    return {"ok": True, "achievements": merged}
 
 
 class ClaimRequest(BaseModel):

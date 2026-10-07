@@ -63,6 +63,8 @@ def init_db():
         conn.execute("ALTER TABLE animals ADD COLUMN region_label TEXT DEFAULT ''")
     if "nickname" not in [r[1] for r in conn.execute("PRAGMA table_info(claim_codes)")]:
         conn.execute("ALTER TABLE claim_codes ADD COLUMN nickname TEXT")
+    if "achievements" not in [r[1] for r in conn.execute("PRAGMA table_info(claim_codes)")]:
+        conn.execute("ALTER TABLE claim_codes ADD COLUMN achievements TEXT DEFAULT '{}'")
     conn.commit()
     # 空库时自动从种子文件导入（防数据丢失/新部署空库）
     n = conn.execute("SELECT COUNT(*) FROM animals").fetchone()[0]
@@ -86,8 +88,8 @@ def init_db():
                       a.get("region_label", ""), a.get("created_at")) for a in animals],
                 )
                 conn.executemany(
-                    "INSERT OR REPLACE INTO claim_codes VALUES (?,?,?,?,?)",
-                    [list(c) + [None] * (5 - len(c)) for c in codes],
+                    "INSERT OR REPLACE INTO claim_codes VALUES (?,?,?,?,?,?)",
+                    [list(c) + [None] * (6 - len(c)) for c in codes],
                 )
                 for aid, pts in tracks.items():
                     conn.executemany(
