@@ -251,6 +251,17 @@ def admin_logout():
 ON_SALE_ANIMALS = {"turtle", "herringgull", "honeybuzzard", "noe", "redkite"}
 
 
+@app.get("/api/version")
+def api_version():
+    """版本探针：以 animal.html 修改时间为指纹，前端据此自检旧缓存并强刷"""
+    import hashlib
+    try:
+        v = str(os.path.getmtime(os.path.join(STATIC_DIR, "animal.html")))
+    except Exception:
+        v = "0"
+    return {"version": hashlib.md5(v.encode()).hexdigest()[:8]}
+
+
 @app.get("/api/animals")
 def api_animals():
     conn = database.get_conn()

@@ -2207,6 +2207,24 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
 <script src="/static/assets/lib/leaflet-ant-path.js"></script>
 <script>
 (function () {
+  // —— 版本自检：部署更新后旧缓存页面自动刷新一次拿新版（解决 PWA/微信旧缓存）——
+  (function () {
+    try {
+      var K = 'appver';
+      fetch('/api/version', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
+        if (!d || !d.version) return;
+        var old = localStorage.getItem(K);
+        if (old && old !== d.version) {
+          localStorage.setItem(K, d.version);
+          try { location.reload(true); } catch (e) { location.reload(); }
+        } else if (!old) {
+          localStorage.setItem(K, d.version);
+        }
+      }).catch(function () {});
+    } catch (e) {}
+  })();
+})();
+(function () {
   var animalId = decodeURIComponent((location.pathname.match(/\/animal\/([^/]+)/) || [, ''])[1] || '');
   // —— koa 示例数据已下架：直接回首页 ——
   if (animalId === 'koa') { try { location.replace('/'); } catch(e) {} }
