@@ -5195,12 +5195,15 @@ document.addEventListener('DOMContentLoaded', function() {
       } catch (e) { alert('复制失败，请手动复制'); }
     }
 
-    // ========== D. 留言板 ==========
+    // ========== D. 留言板（跟随领养码，跨设备同步） ==========
     var msgSec = document.getElementById('msgSection');
     if (msgSec) {
       var mKey = 'messages_' + animalId;
       var msgs = [];
       try { msgs = JSON.parse(localStorage.getItem(mKey) || '[]'); } catch (e) {}
+      var _adM = null;
+      try { _adM = JSON.parse(localStorage.getItem('adopted_' + animalId) || 'null'); } catch (e) {}
+      var _mCode = (_adM && _adM.code) ? _adM.code : null;
       var msgList = document.getElementById('msgList');
       function renderMsgs() {
         if (!msgList) return;
@@ -5212,16 +5215,37 @@ document.addEventListener('DOMContentLoaded', function() {
         msgList.innerHTML = html;
       }
       function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+      // 从服务端拉取该码留言（换手机/浏览器也不丢）
+      if (_mCode) {
+        fetch('/api/claim/' + encodeURIComponent(_mCode) + '/messages', { cache: 'no-store' })
+          .then(function(r) { return r.json(); })
+          .then(function(d) {
+            if (d && d.messages && d.messages.length) {
+              msgs = d.messages;
+              try { localStorage.setItem(mKey, JSON.stringify(msgs)); } catch (e) {}
+              renderMsgs();
+            }
+          }).catch(function() {});
+      }
       var sendBtn = document.getElementById('msgSend');
       var inp = document.getElementById('msgInput');
       if (sendBtn && inp) {
         sendBtn.onclick = function () {
           var v = inp.value.trim();
           if (!v) return;
-          msgs.push({ t: v.slice(0, 200), time: new Date().toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) });
+          var msg = { t: v.slice(0, 200), time: new Date().toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) };
+          msgs.push(msg);
           localStorage.setItem(mKey, JSON.stringify(msgs.slice(-100)));
           inp.value = '';
           renderMsgs();
+          // 同步到服务端（跟随领养码，对方设备也会看到）
+          if (_mCode) {
+            fetch('/api/claim/' + encodeURIComponent(_mCode) + '/messages', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: msg.t, time: msg.time })
+            }).catch(function() {});
+          }
           if (msgs.length >= 3 && window._unlockAch) window._unlockAch('talk3', '留言家');
         };
       }

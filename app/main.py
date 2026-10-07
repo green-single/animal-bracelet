@@ -353,6 +353,60 @@ def api_claim_achievements_save(code: str, req: AchSyncRequest):
     return {"ok": True, "achievements": merged}
 
 
+@app.get("/api/claim/{code}/messages")
+def api_claim_messages(code: str):
+    """读取某领养码的留言（跨设备同步，跟随领养码）"""
+    conn = database.get_conn()
+    row = conn.execute(
+        "SELECT animal_id, status, messages FROM claim_codes WHERE code = ?", (code,)
+    ).fetchone()
+    conn.close()
+    if row is None or row["animal_id"] not in ON_SALE_ANIMALS:
+        raise HTTPException(status_code=404, detail="领养码不存在")
+    try:
+        msgs = json.loads(row["messages"] or "[]")
+    except Exception:
+        msgs = []
+    return {"code": code, "status": row["status"], "messages": msgs}
+
+
+class MsgRequest(BaseModel):
+    text: str = ""
+    time: str = ""
+
+
+@app.post("/api/claim/{code}/messages")
+def api_claim_messages_save(code: str, req: MsgRequest):
+    """追加一条留言（仅已领养码可写，最多保留100条）"""
+    conn = database.get_conn()
+    row = conn.execute(
+        "SELECT animal_id, status, messages FROM claim_codes WHERE code = ?", (code,)
+    ).fetchone()
+    if row is None or row["animal_id"] not in ON_SALE_ANIMALS:
+        conn.close()
+        raise HTTPException(status_code=404, detail="领养码不存在")
+    if row["status"] != "claimed":
+        conn.close()
+        raise HTTPException(status_code=409, detail="该领养码尚未被领养")
+    try:
+        msgs = json.loads(row["messages"] or "[]")
+    except Exception:
+        msgs = []
+    text = (req.text or "").strip()[:200]
+    if not text:
+        conn.close()
+        raise HTTPException(status_code=400, detail="留言不能为空")
+    msgs.append({"t": text, "time": req.time or ""})
+    msgs = msgs[-100:]
+    conn.execute(
+        "UPDATE claim_codes SET messages = ? WHERE code = ?",
+        (json.dumps(msgs, ensure_ascii=False), code),
+    )
+    conn.commit()
+    conn.close()
+    return {"ok": True, "count": len(msgs)}
+
+
 class ClaimRequest(BaseModel):
     nickname: Optional[str] = None
 
