@@ -827,8 +827,8 @@ background: rgba(0,0,0,.92); z-index: 9998; flex-direction: column; align-items:
 .scan-tip { color: #fff; font-size: 14px; opacity: .9; text-align: center; padding: 0 24px; line-height: 1.7; }
 .scan-cancel { padding: 10px 30px; border: none; border-radius: 22px; background: rgba(255,255,255,.14); color: #fff; font-size: 15px; cursor: pointer; }
 @media (max-width: 560px) {
-/* 手机端：header 精简 */
-header { padding: 8px 12px; gap: 8px; justify-content: flex-end; }
+/* 手机端：header 精简（避开刘海/状态栏，按钮可点） */
+header { padding: calc(env(safe-area-inset-top, 0px) + 12px) 12px 6px; gap: 8px; justify-content: flex-end; align-items: flex-start; }
 .code-search input { display: none; }
 .brand { font-size: 14px; }
 .brand small { font-size: 10px; }
