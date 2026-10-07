@@ -3198,16 +3198,13 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
               localStorage.setItem(key, JSON.stringify(ach));
               // 成就跨设备同步：解锁后上传到服务端（按领养码）
               try {
-                var _adU = JSON.parse(localStorage.getItem('adopted_' + animalId) || 'null');
-                if (_adU && _adU.code) {
-                  var _up = {};
-                  _up[achId] = true;
-                  fetch('/api/claim/' + encodeURIComponent(_adU.code) + '/achievements', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ achievements: _up })
-                  }).catch(function() {});
-                }
+                var _up = {};
+                _up[achId] = true;
+                fetch('/api/animal/' + encodeURIComponent(animalId) + '/achievements', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ achievements: _up })
+                }).catch(function() {});
               } catch(eU) {}
               var item = document.querySelector('.achievement-item[data-ach="' + achId + '"]');
               if (item) {
@@ -3311,40 +3308,34 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
           });
           document.getElementById('achievementCount').textContent = unlockedCount + '/21 已解锁';
 
-          // —— 成就跨设备同步：按领养码从服务端拉取并合并（换手机/浏览器也不丢）——
+          // —— 成就跨设备同步：按动物从服务端拉取并合并（一只动物一份档案，换入口也不丢）——
           try {
-            var _adA = null;
-            try { _adA = JSON.parse(localStorage.getItem('adopted_' + animalId) || 'null'); } catch(ea) {}
-            if (_adA && _adA.code) {
-              (function(_code) {
-                fetch('/api/claim/' + encodeURIComponent(_code) + '/achievements', { cache: 'no-store' })
-                  .then(function(r) { return r.json(); })
-                  .then(function(d) {
-                    if (!d || !d.achievements) return;
-                    var _merged = false;
-                    for (var k in d.achievements) {
-                      if (d.achievements[k] && !achievements[k]) { achievements[k] = true; _merged = true; }
-                    }
-                    if (_merged) {
-                      try { localStorage.setItem('achievements_' + animalId, JSON.stringify(achievements)); } catch(eb) {}
-                      var _uc = 0;
-                      document.querySelectorAll('.achievement-item').forEach(function(it) {
-                        var ak = it.dataset.ach;
-                        if (achievements[ak]) { it.classList.remove('locked'); it.classList.add('unlocked'); _uc++; }
-                      });
-                      document.getElementById('achievementCount').textContent = _uc + '/21 已解锁';
-                      // 合并结果回写服务端（防重复计算/覆盖）
-                      var _up2 = {};
-                      for (var k2 in achievements) { if (achievements[k2]) _up2[k2] = true; }
-                      fetch('/api/claim/' + encodeURIComponent(_code) + '/achievements', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ achievements: _up2 })
-                      }).catch(function() {});
-                    }
+            fetch('/api/animal/' + encodeURIComponent(animalId) + '/achievements', { cache: 'no-store' })
+              .then(function(r) { return r.json(); })
+              .then(function(d) {
+                if (!d || !d.achievements) return;
+                var _merged = false;
+                for (var k in d.achievements) {
+                  if (d.achievements[k] && !achievements[k]) { achievements[k] = true; _merged = true; }
+                }
+                if (_merged) {
+                  try { localStorage.setItem('achievements_' + animalId, JSON.stringify(achievements)); } catch(eb) {}
+                  var _uc = 0;
+                  document.querySelectorAll('.achievement-item').forEach(function(it) {
+                    var ak = it.dataset.ach;
+                    if (achievements[ak]) { it.classList.remove('locked'); it.classList.add('unlocked'); _uc++; }
+                  });
+                  document.getElementById('achievementCount').textContent = _uc + '/21 已解锁';
+                  // 合并结果回写服务端（防重复计算/覆盖）
+                  var _up2 = {};
+                  for (var k2 in achievements) { if (achievements[k2]) _up2[k2] = true; }
+                  fetch('/api/animal/' + encodeURIComponent(animalId) + '/achievements', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ achievements: _up2 })
                   }).catch(function() {});
-              })(_adA.code);
-            }
+                }
+              }).catch(function() {});
           } catch(ec) {}
 
           // 存储总距离，供播放完成时检测迁徙见证者
@@ -5238,18 +5229,16 @@ document.addEventListener('DOMContentLoaded', function() {
         msgList.innerHTML = html;
       }
       function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-      // 从服务端拉取该码留言（换手机/浏览器也不丢）
-      if (_mCode) {
-        fetch('/api/claim/' + encodeURIComponent(_mCode) + '/messages', { cache: 'no-store' })
-          .then(function(r) { return r.json(); })
-          .then(function(d) {
-            if (d && d.messages && d.messages.length) {
-              msgs = d.messages;
-              try { localStorage.setItem(mKey, JSON.stringify(msgs)); } catch (e) {}
-              renderMsgs();
-            }
-          }).catch(function() {});
-      }
+      // 从服务端拉取留言（一只动物一份档案，换入口也不丢）
+      fetch('/api/animal/' + encodeURIComponent(animalId) + '/messages', { cache: 'no-store' })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d && d.messages && d.messages.length) {
+            msgs = d.messages;
+            try { localStorage.setItem(mKey, JSON.stringify(msgs)); } catch (e) {}
+            renderMsgs();
+          }
+        }).catch(function() {});
       var sendBtn = document.getElementById('msgSend');
       var inp = document.getElementById('msgInput');
       if (sendBtn && inp) {
@@ -5261,14 +5250,12 @@ document.addEventListener('DOMContentLoaded', function() {
           localStorage.setItem(mKey, JSON.stringify(msgs.slice(-100)));
           inp.value = '';
           renderMsgs();
-          // 同步到服务端（跟随领养码，对方设备也会看到）
-          if (_mCode) {
-            fetch('/api/claim/' + encodeURIComponent(_mCode) + '/messages', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: msg.t, time: msg.time })
-            }).catch(function() {});
-          }
+          // 同步到服务端（一只动物一份档案，对方设备也会看到）
+          fetch('/api/animal/' + encodeURIComponent(animalId) + '/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: msg.t, time: msg.time })
+          }).catch(function() {});
           if (msgs.length >= 3 && window._unlockAch) window._unlockAch('talk3', '留言家');
         };
       }

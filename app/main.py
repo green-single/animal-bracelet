@@ -409,34 +409,104 @@ def api_claim_messages_save(code: str, req: MsgRequest):
 
 @app.get("/api/animal/{animal_id}/me")
 def api_animal_me(animal_id: str):
-    """动物页领养身份：cookie 码优先，否则该动物最近一次已领养码（跨入口统一）"""
+    """动物页领养身份：一只动物一份档案，跨入口(二维码/NFC/书签)统一"""
     if animal_id not in ON_SALE_ANIMALS:
         raise HTTPException(status_code=404, detail="动物不存在")
     conn = database.get_conn()
-    cookie_code = None
-    try:
-        ck = request.cookies.get("my_animal", "")
-        if ck:
-            d = json.loads(ck)
-            if d.get("animal_id") == animal_id and d.get("code"):
-                cookie_code = d["code"]
-    except Exception:
-        pass
-    if cookie_code:
-        row = conn.execute(
-            "SELECT status, nickname, claimed_at FROM claim_codes WHERE code = ?", (cookie_code,)
-        ).fetchone()
-        if row and row["status"] == "claimed":
-            conn.close()
-            return {"claimed": True, "code": cookie_code, "nickname": row["nickname"] or "", "claimed_at": row["claimed_at"] or ""}
-    row = conn.execute(
-        "SELECT code, nickname, claimed_at FROM claim_codes WHERE animal_id = ? AND status = 'claimed' ORDER BY claimed_at DESC LIMIT 1",
-        (animal_id,),
+    prof = conn.execute(
+        "SELECT code, nickname, claimed_at FROM animal_profiles WHERE animal_id = ?", (animal_id,)
     ).fetchone()
     conn.close()
-    if row:
-        return {"claimed": True, "code": row["code"], "nickname": row["nickname"] or "", "claimed_at": row["claimed_at"] or ""}
+    if prof:
+        return {"claimed": True, "code": prof["code"], "nickname": prof["nickname"] or "", "claimed_at": prof["claimed_at"] or ""}
     return {"claimed": False}
+
+
+@app.get("/api/animal/{animal_id}/achievements")
+def api_animal_achievements(animal_id: str):
+    """按动物读取成就（一只动物一份档案）"""
+    if animal_id not in ON_SALE_ANIMALS:
+        raise HTTPException(status_code=404, detail="动物不存在")
+    conn = database.get_conn()
+    prof = conn.execute("SELECT achievements FROM animal_profiles WHERE animal_id = ?", (animal_id,)).fetchone()
+    conn.close()
+    if not prof:
+        return {"animal_id": animal_id, "claimed": False, "achievements": {}}
+    try:
+        ach = json.loads(prof["achievements"] or "{}")
+    except Exception:
+        ach = {}
+    return {"animal_id": animal_id, "claimed": True, "achievements": ach}
+
+
+@app.post("/api/animal/{animal_id}/achievements")
+def api_animal_achievements_save(animal_id: str, req: AchSyncRequest):
+    """按动物保存成就（一只动物一份档案）"""
+    if animal_id not in ON_SALE_ANIMALS:
+        raise HTTPException(status_code=404, detail="动物不存在")
+    conn = database.get_conn()
+    prof = conn.execute("SELECT achievements FROM animal_profiles WHERE animal_id = ?", (animal_id,)).fetchone()
+    if not prof:
+        conn.close()
+        raise HTTPException(status_code=409, detail="该动物尚未被领养")
+    try:
+        old = json.loads(prof["achievements"] or "{}")
+    except Exception:
+        old = {}
+    merged = {**old, **req.achievements}
+    conn.execute(
+        "UPDATE animal_profiles SET achievements = ? WHERE animal_id = ?",
+        (json.dumps(merged, ensure_ascii=False), animal_id),
+    )
+    conn.commit()
+    conn.close()
+    return {"ok": True, "achievements": merged}
+
+
+@app.get("/api/animal/{animal_id}/messages")
+def api_animal_messages(animal_id: str):
+    """按动物读取留言（一只动物一份档案）"""
+    if animal_id not in ON_SALE_ANIMALS:
+        raise HTTPException(status_code=404, detail="动物不存在")
+    conn = database.get_conn()
+    prof = conn.execute("SELECT messages FROM animal_profiles WHERE animal_id = ?", (animal_id,)).fetchone()
+    conn.close()
+    if not prof:
+        return {"animal_id": animal_id, "claimed": False, "messages": []}
+    try:
+        msgs = json.loads(prof["messages"] or "[]")
+    except Exception:
+        msgs = []
+    return {"animal_id": animal_id, "claimed": True, "messages": msgs}
+
+
+@app.post("/api/animal/{animal_id}/messages")
+def api_animal_messages_save(animal_id: str, req: MsgRequest):
+    """按动物追加留言（一只动物一份档案）"""
+    if animal_id not in ON_SALE_ANIMALS:
+        raise HTTPException(status_code=404, detail="动物不存在")
+    conn = database.get_conn()
+    prof = conn.execute("SELECT messages FROM animal_profiles WHERE animal_id = ?", (animal_id,)).fetchone()
+    if not prof:
+        conn.close()
+        raise HTTPException(status_code=409, detail="该动物尚未被领养")
+    try:
+        msgs = json.loads(prof["messages"] or "[]")
+    except Exception:
+        msgs = []
+    text = (req.text or "").strip()[:200]
+    if not text:
+        conn.close()
+        raise HTTPException(status_code=400, detail="留言不能为空")
+    msgs.append({"t": text, "time": req.time or ""})
+    msgs = msgs[-100:]
+    conn.execute(
+        "UPDATE animal_profiles SET messages = ? WHERE animal_id = ?",
+        (json.dumps(msgs, ensure_ascii=False), animal_id),
+    )
+    conn.commit()
+    conn.close()
+    return {"ok": True, "count": len(msgs)}
 
 
 class ClaimRequest(BaseModel):
@@ -452,17 +522,37 @@ def api_claim(code: str, claim_req: ClaimRequest = None):
     if row is None or row["animal_id"] not in ON_SALE_ANIMALS:
         conn.close()
         raise HTTPException(status_code=404, detail="领养码不存在")
+    aid = row["animal_id"]
     if row["status"] == "claimed":
+        # 已被使用：若动物已有档案，返回同一档案（NFC/二维码不同码也认领同一只）
+        prof = conn.execute("SELECT * FROM animal_profiles WHERE animal_id = ?", (aid,)).fetchone()
         conn.close()
+        if prof:
+            return {"ok": True, "animal_id": aid, "already_claimed": True, "profile_code": prof["code"]}
         raise HTTPException(status_code=409, detail="该领养码已被使用")
     conn.execute(
         "UPDATE claim_codes SET status = 'claimed', claimed_at = datetime('now'), nickname = ? WHERE code = ?",
         (nickname, code),
     )
+    # 动物级档案：已有则复用（不新建第二份），没有则创建
+    prof = conn.execute("SELECT * FROM animal_profiles WHERE animal_id = ?", (aid,)).fetchone()
+    if prof:
+        # 名字以档案为准（后续码填的名字不覆盖）
+        conn.execute("UPDATE claim_codes SET nickname = NULL WHERE code = ?", (code,))
+        conn.commit()
+        conn.close()
+        resp = JSONResponse({"ok": True, "animal_id": aid, "already_claimed": True, "profile_code": prof["code"]})
+        resp.set_cookie("my_animal", aid, path="/", max_age=31536000, samesite="lax")
+        return resp
+    conn.execute(
+        "INSERT INTO animal_profiles (animal_id, code, nickname, achievements, messages, claimed_at) "
+        "VALUES (?,?,?,?,?, datetime('now'))",
+        (aid, code, nickname or "", "{}", "[]"),
+    )
     conn.commit()
     conn.close()
-    resp = JSONResponse({"ok": True, "animal_id": row["animal_id"], "nickname": nickname})
-    resp.set_cookie("my_animal", row["animal_id"], path="/", max_age=31536000, samesite="lax")
+    resp = JSONResponse({"ok": True, "animal_id": aid, "already_claimed": False, "profile_code": code})
+    resp.set_cookie("my_animal", aid, path="/", max_age=31536000, samesite="lax")
     return resp
 
 

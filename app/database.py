@@ -45,6 +45,15 @@ CREATE TABLE IF NOT EXISTS push_subs (
     created_at TEXT DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS animal_profiles (
+    animal_id     TEXT PRIMARY KEY,
+    code          TEXT,
+    nickname      TEXT DEFAULT '',
+    achievements  TEXT DEFAULT '{}',
+    messages      TEXT DEFAULT '[]',
+    claimed_at    TEXT DEFAULT ''
+);
+
 """
 
 
@@ -67,6 +76,40 @@ def init_db():
         conn.execute("ALTER TABLE claim_codes ADD COLUMN achievements TEXT DEFAULT '{}'")
     if "messages" not in [r[1] for r in conn.execute("PRAGMA table_info(claim_codes)")]:
         conn.execute("ALTER TABLE claim_codes ADD COLUMN messages TEXT DEFAULT '[]'")
+    # 动物级档案迁移：把已领养数据跨码合并回填（一只动物一份档案，成就/留言合并）
+    try:
+        rows = conn.execute(
+            "SELECT animal_id, code, nickname, achievements, messages, claimed_at FROM claim_codes "
+            "WHERE status = 'claimed' ORDER BY claimed_at ASC"
+        ).fetchall()
+        merged = {}
+        for r in rows:
+            d = merged.get(r["animal_id"])
+            if d is None:
+                d = {"code": r["code"], "nickname": r["nickname"] or "",
+                     "claimed_at": r["claimed_at"] or "", "achievements": {}, "messages": []}
+                merged[r["animal_id"]] = d
+            try:
+                for k, v in json.loads(r["achievements"] or "{}").items():
+                    d["achievements"].setdefault(k, v)
+            except Exception:
+                pass
+            try:
+                for msg in json.loads(r["messages"] or "[]"):
+                    d["messages"].append(msg)
+            except Exception:
+                pass
+        for aid, d in merged.items():
+            d["messages"] = d["messages"][-100:]
+            conn.execute(
+                "INSERT OR REPLACE INTO animal_profiles (animal_id, code, nickname, achievements, messages, claimed_at) "
+                "VALUES (?,?,?,?,?,?)",
+                (aid, d["code"], d["nickname"],
+                 json.dumps(d["achievements"], ensure_ascii=False),
+                 json.dumps(d["messages"], ensure_ascii=False), d["claimed_at"]),
+            )
+    except Exception as e:
+        print(f"[migrate] animal_profiles 回填失败: {e}")
     conn.commit()
     # 空库时自动从种子文件导入（防数据丢失/新部署空库）
     n = conn.execute("SELECT COUNT(*) FROM animals").fetchone()[0]
