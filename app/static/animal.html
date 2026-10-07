@@ -2212,6 +2212,29 @@ body[data-theme="moon"] #map { box-shadow: 0 0 24px rgba(148,163,184,.05) !impor
   if (animalId === 'koa') { try { location.replace('/'); } catch(e) {} }
   // —— PWA 桌面直达：记住最后访问的动物，独立窗口打开时自动跳回 ——
   if (animalId) { try { localStorage.setItem('lastAnimalId', animalId); } catch(e) {} }
+
+  // —— 领养身份统一：向服务端确认这只动物的领养身份，跨入口(二维码/NFC/书签/PWA)自动补上领养码 ——
+  (function () {
+    try {
+      fetch('/api/animal/' + encodeURIComponent(animalId) + '/me', { cache: 'no-store' })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d || !d.claimed || !d.code) return;
+          var old = null;
+          try { old = JSON.parse(localStorage.getItem('adopted_' + animalId) || 'null'); } catch (e) {}
+          var need = !old || !old.date || !old.code || old.code !== d.code;
+          if (need) {
+            localStorage.setItem('adopted_' + animalId, JSON.stringify({
+              date: d.claimed_at || new Date().toISOString(),
+              code: d.code,
+              nickname: d.nickname || (old && old.nickname) || ''
+            }));
+            // 刷新页面，让成就/留言/每日任务按"已领养 + 统一领养码"重新加载
+            try { location.reload(); } catch (e) {}
+          }
+        }).catch(function () {});
+    } catch (e) {}
+  })();
   var points = [], timestamps = [], photos = [];
   var map = null, lineLayer = null, pathLayer = null;
   var worldMarker = null, playMarker = null;

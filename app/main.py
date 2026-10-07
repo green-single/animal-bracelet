@@ -407,6 +407,38 @@ def api_claim_messages_save(code: str, req: MsgRequest):
     return {"ok": True, "count": len(msgs)}
 
 
+@app.get("/api/animal/{animal_id}/me")
+def api_animal_me(animal_id: str):
+    """动物页领养身份：cookie 码优先，否则该动物最近一次已领养码（跨入口统一）"""
+    if animal_id not in ON_SALE_ANIMALS:
+        raise HTTPException(status_code=404, detail="动物不存在")
+    conn = database.get_conn()
+    cookie_code = None
+    try:
+        ck = request.cookies.get("my_animal", "")
+        if ck:
+            d = json.loads(ck)
+            if d.get("animal_id") == animal_id and d.get("code"):
+                cookie_code = d["code"]
+    except Exception:
+        pass
+    if cookie_code:
+        row = conn.execute(
+            "SELECT status, nickname, claimed_at FROM claim_codes WHERE code = ?", (cookie_code,)
+        ).fetchone()
+        if row and row["status"] == "claimed":
+            conn.close()
+            return {"claimed": True, "code": cookie_code, "nickname": row["nickname"] or "", "claimed_at": row["claimed_at"] or ""}
+    row = conn.execute(
+        "SELECT code, nickname, claimed_at FROM claim_codes WHERE animal_id = ? AND status = 'claimed' ORDER BY claimed_at DESC LIMIT 1",
+        (animal_id,),
+    ).fetchone()
+    conn.close()
+    if row:
+        return {"claimed": True, "code": row["code"], "nickname": row["nickname"] or "", "claimed_at": row["claimed_at"] or ""}
+    return {"claimed": False}
+
+
 class ClaimRequest(BaseModel):
     nickname: Optional[str] = None
 
